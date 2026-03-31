@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Star, Heart, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight } from 'lucide-react'
+import { MapPin, Star, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight, Search, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
+import { useBrands } from '@/hooks/useBrands'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { ShopSearchBar } from '@/components/shop/ShopSearchBar'
@@ -177,6 +179,8 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
   )
 }
 
+const TOP_BRAND_LIMIT = 40
+
 const TopPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -185,6 +189,8 @@ const TopPage = () => {
   const { data: categories } = useCategories()
   const { data: stats } = useTopStats()
   const { data: popularData } = useShops({ sort: 'popular' })
+  const { data: brands } = useBrands()
+  const [brandQuery, setBrandQuery] = useState('')
 
   const featuredShops = popularData?.pages[0]?.items.slice(0, 5) ?? []
 
@@ -197,6 +203,21 @@ const TopPage = () => {
     setShopFilters({ sort: 'popular', areaId })
     navigate('/shops')
   }
+
+  const goWithBrand = (brandId: string, brandName: string) => {
+    setShopFilters({ sort: 'popular', brandId, brandName })
+    navigate('/shops')
+  }
+
+  const displayBrands = (brands ?? []).filter((b) => {
+    if (!brandQuery) return true
+    const q = brandQuery.toLowerCase()
+    return (
+      b.name.toLowerCase().includes(q) ||
+      (b.nameKana ?? '').toLowerCase().includes(q) ||
+      b.aliases.some((a) => a.toLowerCase().includes(q))
+    )
+  }).slice(0, brandQuery ? 100 : TOP_BRAND_LIMIT)
 
   return (
     <div>
@@ -347,6 +368,79 @@ const TopPage = () => {
                 </button>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Brands ───────────────────────────────────────── */}
+      {brands && brands.length > 0 && (
+        <section className="border-b border-border bg-foreground py-20">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            {/* Header */}
+            <div className="mb-10 flex items-end justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/30">
+                  — By Brand
+                </span>
+                <h2 className="font-headline mt-2 text-4xl font-black text-white md:text-5xl">
+                  ブランドで探す
+                </h2>
+              </div>
+              <Link
+                to="/brands"
+                className="group flex shrink-0 items-center gap-1 text-sm font-bold text-white/40 transition-colors hover:text-white"
+              >
+                すべて見る
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-8 max-w-xs">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/25" />
+              <input
+                type="text"
+                value={brandQuery}
+                onChange={(e) => setBrandQuery(e.target.value)}
+                placeholder="ブランド名で絞り込み…"
+                className="h-10 w-full border border-white/10 bg-white/[0.04] pl-9 pr-9 text-sm text-white placeholder:text-white/20 transition-colors focus:border-white/25 focus:bg-white/[0.07] focus:outline-none"
+              />
+              {brandQuery && (
+                <button
+                  onClick={() => setBrandQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Brand tags */}
+            {displayBrands.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {displayBrands.map((brand) => (
+                  <button
+                    key={brand.id}
+                    onClick={() => goWithBrand(brand.id, brand.name)}
+                    className="border border-white/10 bg-white/[0.03] px-3 py-1.5 font-headline text-[11px] font-black text-white/50 tracking-wide transition-all hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
+                  >
+                    {brand.name}
+                  </button>
+                ))}
+                {!brandQuery && brands.length > TOP_BRAND_LIMIT && (
+                  <Link
+                    to="/brands"
+                    className="border border-white/10 px-3 py-1.5 font-headline text-[11px] font-black text-primary/50 tracking-wide transition-all hover:border-primary/30 hover:text-primary/80"
+                  >
+                    +{brands.length - TOP_BRAND_LIMIT} 件
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-white/30">
+                「{brandQuery}」に一致するブランドが見つかりません
+              </p>
+            )}
           </div>
         </section>
       )}

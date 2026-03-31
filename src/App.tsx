@@ -26,6 +26,9 @@ const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
 const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingRequestPage'))
 
+// Brand pages
+const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
+
 // Owner pages
 const OwnerDashboardPage = lazy(() => import('@/pages/owner/OwnerDashboardPage'))
 const ShopEditPage = lazy(() => import('@/pages/owner/ShopEditPage'))
@@ -68,6 +71,7 @@ const App = () => (
             <Route path="/shops" element={<ShopsPage />} />
             <Route path="/shops/:id" element={<ShopDetailPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/brands" element={<BrandSearchPage />} />
 
             {/* Auth */}
             <Route path="/auth/login" element={<LoginPage />} />
