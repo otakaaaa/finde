@@ -204,7 +204,7 @@ const TopPage = () => {
   return (
     <div>
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative min-h-[100svh] bg-primary overflow-hidden flex flex-col justify-end pb-16 pt-24">
+      <section className="relative min-h-[100svh] bg-primary overflow-hidden flex flex-col justify-center pb-16 pt-24">
         {/* Decorative large kanji */}
         <div
           aria-hidden
@@ -224,7 +224,7 @@ const TopPage = () => {
             className="text-white/30 text-[9px] font-bold tracking-[0.5em] uppercase"
             style={{ writingMode: 'vertical-rl' }}
           >
-            Vol. 01 — 2026
+            FUKUNAVI — 2026
           </span>
           <div className="h-16 w-px bg-white/20" />
         </div>
@@ -290,7 +290,7 @@ const TopPage = () => {
                   {stats.shopCount.toLocaleString()}
                 </div>
                 <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                  Shops Listed
+                  掲載店舗数
                 </div>
               </div>
               <div className="px-8 py-8">
@@ -299,13 +299,13 @@ const TopPage = () => {
                   <span className="text-xl">+</span>
                 </div>
                 <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                  Areas Covered
+                  対象エリア
                 </div>
               </div>
               <div className="pl-8 py-8">
                 <div className="font-headline text-[2.5rem] font-black leading-none">無料</div>
                 <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                  Free to Use
+                  ご利用料金
                 </div>
               </div>
             </div>
