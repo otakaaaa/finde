@@ -82,6 +82,24 @@ const fetchShops = async ({
     filteredShopIds = catResult.data?.map((c) => c.shop_id) ?? []
   }
 
+  // Resolve brandId to shop IDs via shop_brands join table
+  if (filters.brandId !== undefined) {
+    const brandResult = await supabase
+      .from('shop_brands')
+      .select('shop_id')
+      .eq('brand_id', filters.brandId) as unknown as {
+        data: { shop_id: string }[] | null
+        error: { message: string } | null
+      }
+    const brandShopIds = brandResult.data?.map((b) => b.shop_id) ?? []
+    if (filteredShopIds !== null) {
+      const brandSet = new Set(brandShopIds)
+      filteredShopIds = filteredShopIds.filter((id) => brandSet.has(id))
+    } else {
+      filteredShopIds = brandShopIds
+    }
+  }
+
   if (filteredShopIds !== null && filteredShopIds.length === 0) {
     return { items: [], pageInfo: { hasNextPage: false, endCursor: null } }
   }

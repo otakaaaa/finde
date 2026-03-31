@@ -4,7 +4,7 @@ import { useShops } from '@/hooks/useShops'
 import { useUiStore } from '@/store/uiStore'
 import { ShopCard } from '@/components/shop/ShopCard'
 import { cn } from '@/lib/utils'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Tag, X } from 'lucide-react'
 import type { ShopFilters, Area, Category, PriceRange } from '@/types'
 
 interface MasterData {
@@ -103,7 +103,8 @@ const ShopsPage = () => {
   const hasActiveFilters =
     shopFilters.areaId != null ||
     shopFilters.categoryId != null ||
-    shopFilters.priceRangeId != null
+    shopFilters.priceRangeId != null ||
+    shopFilters.brandId != null
 
   const update = (partial: Partial<ShopFilters>) =>
     setShopFilters({ ...shopFilters, ...partial })
@@ -199,6 +200,20 @@ const ShopsPage = () => {
                 </option>
               ))}
             </FilterSelect>
+
+            {shopFilters.brandId && shopFilters.brandName && (
+              <>
+                <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
+                <button
+                  onClick={() => update({ brandId: undefined, brandName: undefined })}
+                  className="flex h-8 shrink-0 items-center gap-1.5 border border-white/60 bg-white/15 px-2.5 text-xs font-bold text-white transition-colors hover:bg-white/25"
+                >
+                  <Tag className="h-3 w-3" />
+                  <span className="max-w-[120px] truncate">{shopFilters.brandName}</span>
+                  <X className="h-3 w-3 opacity-60" />
+                </button>
+              </>
+            )}
 
             {hasActiveFilters && (
               <>

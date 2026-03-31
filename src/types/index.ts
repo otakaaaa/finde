@@ -112,6 +112,7 @@ export interface ShopFilters {
   priceRangeId?: number
   tagIds?: number[]
   brandId?: string
+  brandName?: string
   query?: string
   sort?: 'popular' | 'newest' | 'rating'
 }
