@@ -1,15 +1,40 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, ImagePlus, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShop } from '@/hooks/useShop'
-import { ShopPhotosManager } from '@/components/shop/ShopPhotosManager'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
+const BUCKET = 'shop-photos'
+const getPhotoUrl = (storagePath: string) =>
+  `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`
+
+interface PhotoRow {
+  id: string
+  storagePath: string
+  order: number
+}
+
+const useShopPhotos = (shopId: string) =>
+  useQuery({
+    queryKey: ['shop-photos', shopId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shop_photos')
+        .select('id, storage_path, order')
+        .eq('shop_id', shopId)
+        .order('order', { ascending: true }) as unknown as Promise<{ data: { id: string; storage_path: string; order: number }[] | null; error: { message: string } | null }>
+      if (error) throw new Error(error.message)
+      return (data ?? []).map((p): PhotoRow => ({ id: p.id, storagePath: p.storage_path, order: p.order }))
+    },
+    enabled: !!shopId,
+  })
 
 const shopEditSchema = z.object({
   name: z.string().min(1, '店舗名を入力してください').max(100),
@@ -130,13 +155,67 @@ const useAdminUpdateShop = () => {
 const AdminShopEditPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [showSuccess, setShowSuccess] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  const { data: photos = [] } = useShopPhotos(id ?? '')
+
+  const { mutate: deletePhoto, isPending: isDeleting } = useMutation({
+    mutationFn: async ({ photoId, storagePath }: { photoId: string; storagePath: string }) => {
+      const { error: storageError } = await supabase.storage.from(BUCKET).remove([storagePath])
+      if (storageError) throw new Error(storageError.message)
+      const { error: dbError } = await supabase
+        .from('shop_photos')
+        .delete()
+        .eq('id', photoId) as unknown as { error: { message: string } | null }
+      if (dbError) throw new Error(dbError.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shop-photos', id] })
+      queryClient.invalidateQueries({ queryKey: ['shop', id] })
+    },
+  })
+
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0 || !id) return
+    setUploading(true)
+    setPhotoError(null)
+    try {
+      const maxOrder = photos.length > 0 ? Math.max(...photos.map((p) => p.order)) : -1
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+        const path = `${id}/${crypto.randomUUID()}.${ext}`
+        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
+        if (storageErr) throw new Error(storageErr.message)
+        const { error: dbErr } = await supabase
+          .from('shop_photos')
+          .insert({ shop_id: id, storage_path: path, order: maxOrder + 1 + i } as never) as unknown as { error: { message: string } | null }
+        if (dbErr) {
+          await supabase.storage.from(BUCKET).remove([path])
+          throw new Error(dbErr.message)
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['shop-photos', id] })
+      queryClient.invalidateQueries({ queryKey: ['shop', id] })
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : '画像のアップロードに失敗しました')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const { data: shop, isLoading: shopLoading } = useShop(id ?? '')
   const { data: masterData } = useMasterData()
   const { mutate, isPending, error } = useAdminUpdateShop()
 
   const { register, handleSubmit, watch, setValue, control, reset, formState: { errors } } = useForm<ShopEditFormValues>({
+
     resolver: zodResolver(shopEditSchema),
     defaultValues: { categoryIds: [], status: 'public' },
   })
@@ -498,7 +577,66 @@ const AdminShopEditPage = () => {
             {/* ── 07 PHOTOS ────────────────────────── */}
             <section className="space-y-4">
               <SectionLabel num="07" title="PHOTOS" optional />
-              <ShopPhotosManager shopId={id ?? ''} />
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="sr-only"
+                onChange={handlePhotoFileChange}
+              />
+
+              {/* Upload trigger */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || isDeleting}
+                className={cn(
+                  'flex w-full items-center justify-center gap-2 border border-dashed border-border py-8',
+                  'text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50',
+                  'transition-colors hover:border-primary/40 hover:text-primary/60 disabled:opacity-40',
+                )}
+              >
+                <ImagePlus className="h-4 w-4" />
+                {uploading ? 'アップロード中...' : '写真を追加'}
+              </button>
+
+              {/* Error */}
+              {photoError && (
+                <p className="text-[10px] font-medium text-red-500">{photoError}</p>
+              )}
+
+              {/* Photo grid */}
+              {photos.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {photos.map((photo, i) => (
+                    <div key={photo.id} className="group relative aspect-square overflow-hidden bg-muted">
+                      <img src={getPhotoUrl(photo.storagePath)} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => deletePhoto({ photoId: photo.id, storagePath: photo.storagePath })}
+                        disabled={uploading || isDeleting}
+                        className={cn(
+                          'absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full',
+                          'bg-foreground/70 text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-40',
+                        )}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      {i === 0 && (
+                        <span className="absolute bottom-1 left-1 rounded-sm bg-primary/80 px-1 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-white">
+                          Main
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[10px] text-muted-foreground/40">
+                JPEG / PNG / WebP · 最大10枚
+              </p>
             </section>
 
             {/* ── Submit ───────────────────────────── */}
