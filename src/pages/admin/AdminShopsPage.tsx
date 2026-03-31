@@ -85,24 +85,66 @@ const ShopListRow = ({ shop, index, onStatusChange, isUpdating }: ShopListRowPro
           <p className="truncate font-headline text-[13px] font-black tracking-tight text-foreground/80">
             {shop.name}
           </p>
-          <div className="mt-0.5 flex items-center gap-2">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
             {shop.areas?.city && (
               <span className="text-[10px] text-muted-foreground/50">{shop.areas.city}</span>
             )}
             <span className="text-[10px] tabular-nums text-muted-foreground/30">
               {new Date(shop.created_at).toLocaleDateString('ja-JP', { year: '2-digit', month: '2-digit', day: '2-digit' })}
             </span>
+            {/* Status badge — mobile only (shown inline with meta) */}
+            <span className={cn('sm:hidden rounded-sm px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider', conf.badgeClass)}>
+              {conf.label}
+            </span>
           </div>
         </div>
 
-        {/* Status badge */}
-        <span className={cn('shrink-0 rounded-sm px-2 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider', conf.badgeClass)}>
+        {/* Status badge — desktop only */}
+        <span className={cn('hidden sm:inline-flex shrink-0 rounded-sm px-2 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider', conf.badgeClass)}>
           {conf.label}
         </span>
       </div>
 
-      {/* Actions — visible on hover */}
-      <div className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+      {/* Mobile actions — always visible, hidden on desktop */}
+      <div className="flex sm:hidden shrink-0 items-center gap-1.5">
+        <Link
+          to={`/shops/${shop.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-7 w-7 items-center justify-center rounded-sm bg-muted text-muted-foreground"
+        >
+          <ExternalLink className="h-3 w-3" />
+        </Link>
+        <Link
+          to={`/admin/shops/${shop.id}/edit`}
+          className="flex h-7 w-7 items-center justify-center rounded-sm bg-muted text-muted-foreground"
+        >
+          <Pencil className="h-3 w-3" />
+        </Link>
+        {shop.status !== 'public' && (
+          <button
+            onClick={() => onStatusChange(shop.id, 'public')}
+            disabled={isUpdating}
+            className="flex h-7 w-7 items-center justify-center rounded-sm bg-emerald-50 text-emerald-700 disabled:opacity-40"
+            title="公開する"
+          >
+            <Eye className="h-3 w-3" />
+          </button>
+        )}
+        {shop.status !== 'private' && (
+          <button
+            onClick={() => onStatusChange(shop.id, 'private')}
+            disabled={isUpdating}
+            className="flex h-7 w-7 items-center justify-center rounded-sm bg-muted text-muted-foreground disabled:opacity-40"
+            title="非公開にする"
+          >
+            <EyeOff className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Actions — desktop hover only */}
+      <div className="hidden sm:flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <Link
           to={`/shops/${shop.id}`}
           target="_blank"
@@ -197,17 +239,17 @@ const AdminShopsPage = () => {
               <ChevronLeft className="h-3 w-3" />
               Dashboard
             </Link>
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
                   — Admin
                 </p>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                  SHOP MGMT
+                  SHOP MANAGEMENT
                 </h1>
               </div>
 
-              <div className="mb-0.5 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/admin/shops/bulk"
                   className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/70 transition-colors hover:bg-white/20 hover:text-white"
