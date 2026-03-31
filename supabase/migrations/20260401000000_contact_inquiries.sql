@@ -12,6 +12,7 @@ create table public.contact_inquiries (
   body        text not null,
   status      text not null default 'open'
                 check (status in ('open', 'in_progress', 'closed')),
+  is_noreply boolean not null default false,
   user_id     uuid references public.users(id) on delete set null,
   created_at  timestamptz not null default now()
 );

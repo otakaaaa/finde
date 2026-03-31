@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Mail, Search, ChevronDown } from 'lucide-react'
+import { ChevronLeft, Mail, Search, ChevronDown, Flag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +18,7 @@ interface Inquiry {
   subject: string
   body: string
   status: InquiryStatus
+  is_noreply: boolean
   user_id: string | null
   created_at: string
 }
@@ -109,6 +110,12 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
             )}>
               {conf.label}
             </span>
+            {inquiry.is_noreply && (
+              <span className="flex items-center gap-1 rounded-sm bg-muted px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground/60">
+                <Flag className="h-2.5 w-2.5" />
+                返信不要
+              </span>
+            )}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
             <span className="text-[10px] text-muted-foreground/50">{inquiry.name}</span>
@@ -132,7 +139,7 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
             {inquiry.body}
           </p>
 
-          {/* Status actions */}
+          {/* Actions */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/25">
               ステータス変更
@@ -155,7 +162,9 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
                   </button>
                 )
               })}
+          </div>
 
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <a
               href={`mailto:${inquiry.email}?subject=Re: ${encodeURIComponent(inquiry.subject)}`}
               className="ml-auto flex h-7 items-center gap-1 border border-border bg-muted px-2.5 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground transition-colors hover:bg-foreground hover:text-white"

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, Send, Mail } from 'lucide-react'
+import { CheckCircle2, Send, Mail, Flag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,7 @@ interface FormState {
   category: Category | ''
   subject: string
   body: string
+  isNoreply: boolean
 }
 
 // ── Config ─────────────────────────────────────────────────────
@@ -74,11 +75,12 @@ const ContactPage = () => {
   const { user, session } = useAuth()
 
   const [form, setForm] = useState<FormState>({
-    name:     user?.displayName ?? '',
-    email:    session?.user?.email ?? '',
-    category: '',
-    subject:  '',
-    body:     '',
+    name:        user?.displayName ?? '',
+    email:       session?.user?.email ?? '',
+    category:    '',
+    subject:     '',
+    body:        '',
+    isNoreply:   false,
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,12 +104,13 @@ const ContactPage = () => {
     const { data, error: err } = await supabase
       .from('contact_inquiries')
       .insert({
-        name:     form.name.trim(),
-        email:    form.email.trim(),
-        category: form.category,
-        subject:  form.subject.trim(),
-        body:     form.body.trim(),
-        user_id:  user?.id ?? null,
+        name:         form.name.trim(),
+        email:        form.email.trim(),
+        category:     form.category,
+        subject:      form.subject.trim(),
+        body:         form.body.trim(),
+        is_noreply:   form.isNoreply,
+        user_id:      user?.id ?? null,
       } as never)
       .select('id')
       .single() as unknown as { data: { id: string } | null; error: { message: string } | null }
@@ -311,8 +314,46 @@ const ContactPage = () => {
               </p>
             </div>
 
+            {/* ── 06 Reply needed ──────────────────── */}
+            <div className="wish-card-enter" style={{ animationDelay: '200ms' }}>
+              <button
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, isNoreply: !prev.isNoreply }))}
+                className={cn(
+                  'flex w-full items-center gap-3 border px-4 py-3 text-left transition-all duration-150',
+                  form.isNoreply
+                    ? 'border-foreground/20 bg-muted/50'
+                    : 'border-border bg-white hover:border-foreground/15 hover:bg-muted/40',
+                )}
+              >
+                <div className={cn(
+                  'flex h-5 w-5 shrink-0 items-center justify-center border transition-colors',
+                  form.isNoreply
+                    ? 'border-foreground/30 bg-foreground'
+                    : 'border-border bg-white',
+                )}>
+                  {form.isNoreply && (
+                    <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Flag className="h-3 w-3 text-muted-foreground/40" />
+                    <span className="font-headline text-[11px] font-black tracking-wide text-foreground/70">
+                      返信不要
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground/40">
+                    返信が不要な場合はチェックしてください
+                  </p>
+                </div>
+              </button>
+            </div>
+
             {/* ── Submit ───────────────────────────── */}
-            <div className="wish-card-enter border-t border-border pt-8" style={{ animationDelay: '200ms' }}>
+            <div className="wish-card-enter border-t border-border pt-8" style={{ animationDelay: '240ms' }}>
               <div className="flex items-center gap-4">
                 <button
                   type="button"
