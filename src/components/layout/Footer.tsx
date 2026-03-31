@@ -15,6 +15,7 @@ const NAV_COLUMNS = [
       { to: '/listing-request', text: '店舗掲載申請' },
       { to: '/mypage', text: 'マイページ' },
       { to: '/mypage/favorites', text: 'お気に入り' },
+      { to: '/contact', text: 'お問い合わせ' },
     ],
   },
   {

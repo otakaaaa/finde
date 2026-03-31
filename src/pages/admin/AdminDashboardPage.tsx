@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, CreditCard, Tags, ArrowRight, Check, X, AlertTriangle } from 'lucide-react'
+import { Store, FileText, Star, CreditCard, Tags, ArrowRight, Check, X, AlertTriangle, Mail } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -331,6 +331,13 @@ const AdminDashboardPage = () => {
                   label="サブスクリプション"
                   sublabel="契約状況の確認"
                   animDelay={220}
+                />
+                <NavTile
+                  to="/admin/contacts"
+                  icon={<Mail className="h-4 w-4" />}
+                  label="お問い合わせ"
+                  sublabel="ユーザーからの問い合わせ対応"
+                  animDelay={275}
                 />
               </div>
             </section>
