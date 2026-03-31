@@ -66,8 +66,8 @@ const FilterSelect = ({
       className={cn(
         'h-8 appearance-none rounded-sm border pl-3 pr-7 text-xs font-bold transition-all focus:outline-none',
         isActive
-          ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-border bg-white text-muted-foreground hover:border-primary'
+          ? 'border-white/70 bg-white text-primary'
+          : 'border-white/20 bg-transparent text-white/55 hover:border-white/40 hover:text-white/80'
       )}
     >
       <option value="">{placeholder}</option>
@@ -76,7 +76,7 @@ const FilterSelect = ({
     <ChevronDown
       className={cn(
         'pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2',
-        isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+        isActive ? 'text-primary' : 'text-white/35'
       )}
     />
   </div>
@@ -110,25 +110,29 @@ const ShopsPage = () => {
 
   return (
     <div>
-      {/* ── Header ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary py-8">
-        <div className="absolute left-0 right-0 top-0 h-px bg-white/10" />
-
-        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-16">
-          <div className="flex items-center gap-4">
-            <div className="h-px w-8 bg-white/30" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white/50">
-              — Archive
-            </span>
-            <h1 className="font-headline text-xl font-black text-white tracking-tight">
-              ALL SHOPS
-            </h1>
+      {/* ── Page header (scrolls away) ──────────────── */}
+      <section className="bg-primary px-6 pb-0 pt-10 md:px-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex items-end justify-between pb-6">
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+                — Archive
+              </p>
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                ALL SHOPS
+              </h1>
+            </div>
+            {shops.length > 0 && !isLoading && (
+              <span className="mb-0.5 font-headline text-[11px] font-black tabular-nums text-white/25">
+                {String(shops.length).padStart(3, '0')}
+              </span>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── Sticky filter bar ──────────────────────────── */}
-      <div className="sticky top-14 z-40 border-b border-border bg-white">
+      {/* ── Sticky filter bar (dark) ────────────────── */}
+      <div className="sticky top-14 z-40 border-b border-white/10 bg-primary">
         <div className="mx-auto max-w-6xl px-4 md:px-16">
           <div className="no-scrollbar flex items-center gap-2 overflow-x-auto py-3">
             {/* Sort tabs */}
@@ -140,8 +144,8 @@ const ShopsPage = () => {
                   className={cn(
                     'h-8 rounded-sm px-3 text-xs font-bold transition-all',
                     activeSort === opt.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
+                      ? 'border border-white/30 bg-white/15 text-white'
+                      : 'border border-white/15 text-white/45 hover:border-white/30 hover:text-white/75'
                   )}
                 >
                   {opt.label}
@@ -149,7 +153,7 @@ const ShopsPage = () => {
               ))}
             </div>
 
-            <div className="mx-1 h-4 w-px shrink-0 bg-border" />
+            <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
 
             <FilterSelect
               value={shopFilters.areaId?.toString() ?? ''}
@@ -192,10 +196,10 @@ const ShopsPage = () => {
 
             {hasActiveFilters && (
               <>
-                <div className="mx-1 h-4 w-px shrink-0 bg-border" />
+                <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
                 <button
                   onClick={() => setShopFilters({ sort: shopFilters.sort })}
-                  className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary"
+                  className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-white"
                 >
                   クリア
                 </button>
