@@ -1,22 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ChevronLeft } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShop } from '@/hooks/useShop'
 import { ShopPhotosManager } from '@/components/shop/ShopPhotosManager'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
 const shopEditSchema = z.object({
   name: z.string().min(1, '店舗名を入力してください').max(100),
-  description: z.string().max(2000, '2000文字以内で入力してください').optional(),
+  description: z.string().max(2000).optional(),
   areaId: z.number({ required_error: 'エリアを選択してください' }),
   priceRangeId: z.number().optional(),
   categoryIds: z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
@@ -28,6 +25,43 @@ const shopEditSchema = z.object({
 })
 
 type ShopEditFormValues = z.infer<typeof shopEditSchema>
+
+const STATUS_OPTIONS: { value: ShopEditFormValues['status']; label: string; sublabel: string; badgeClass: string }[] = [
+  { value: 'public', label: '公開', sublabel: '一般公開中', badgeClass: 'border-emerald-300 bg-emerald-50 text-emerald-700' },
+  { value: 'pending', label: '審査中', sublabel: '審査待ち状態', badgeClass: 'border-amber-300 bg-amber-50 text-amber-700' },
+  { value: 'private', label: '非公開', sublabel: '非公開で保存', badgeClass: 'border-border bg-muted text-muted-foreground' },
+]
+
+interface SectionLabelProps {
+  num: string
+  title: string
+  required?: boolean
+  optional?: boolean
+}
+
+const SectionLabel = ({ num, title, required, optional }: SectionLabelProps) => (
+  <div className="mb-4 flex items-baseline gap-3">
+    <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">{num}</span>
+    <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">{title}</span>
+    {required && <span className="text-[10px] font-bold text-primary">REQUIRED</span>}
+    {optional && <span className="text-[10px] font-medium text-muted-foreground/40">optional</span>}
+  </div>
+)
+
+const inputClass = cn(
+  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
+  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+)
+
+const selectClass = cn(
+  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
+  'focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none',
+)
+
+const inputWithIconClass = cn(
+  'h-10 w-full rounded-sm border border-border bg-white pl-9 pr-3 text-sm text-foreground',
+  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+)
 
 const useMasterData = () =>
   useQuery({
@@ -54,13 +88,8 @@ const useMasterData = () =>
 
 const useAdminUpdateShop = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: async ({
-      shopId,
-      categoryIds,
-      ...fields
-    }: ShopEditFormValues & { shopId: string }) => {
+    mutationFn: async ({ shopId, categoryIds, ...fields }: ShopEditFormValues & { shopId: string }) => {
       const { error: shopError } = await supabase
         .from('shops')
         .update({
@@ -101,16 +130,19 @@ const useAdminUpdateShop = () => {
 const AdminShopEditPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [showSuccess, setShowSuccess] = useState(false)
+
   const { data: shop, isLoading: shopLoading } = useShop(id ?? '')
   const { data: masterData } = useMasterData()
-  const { mutate, isPending, error, isSuccess } = useAdminUpdateShop()
+  const { mutate, isPending, error } = useAdminUpdateShop()
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ShopEditFormValues>({
+  const { register, handleSubmit, watch, setValue, control, reset, formState: { errors } } = useForm<ShopEditFormValues>({
     resolver: zodResolver(shopEditSchema),
     defaultValues: { categoryIds: [], status: 'public' },
   })
 
   const selectedCategories = watch('categoryIds')
+  const watchedStatus = watch('status')
 
   useEffect(() => {
     if (!shop) return
@@ -133,13 +165,21 @@ const AdminShopEditPage = () => {
     setValue(
       'categoryIds',
       current.includes(catId) ? current.filter((c) => c !== catId) : [...current, catId],
-      { shouldValidate: true }
+      { shouldValidate: true },
     )
   }
 
   const onSubmit = (values: ShopEditFormValues) => {
     if (!id) return
-    mutate({ ...values, shopId: id })
+    mutate(
+      { ...values, shopId: id },
+      {
+        onSuccess: () => {
+          setShowSuccess(true)
+          setTimeout(() => setShowSuccess(false), 4000)
+        },
+      },
+    )
   }
 
   if (shopLoading) {
@@ -150,147 +190,350 @@ const AdminShopEditPage = () => {
     )
   }
 
+  if (!shop) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <p className="font-headline text-2xl font-black tracking-tight text-muted-foreground">SHOP NOT FOUND</p>
+        <button
+          onClick={() => navigate('/admin/shops')}
+          className="text-xs font-bold uppercase tracking-[0.3em] text-primary underline-offset-2 hover:underline"
+        >
+          ← 店舗管理に戻る
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <button
-        onClick={() => navigate('/admin/shops')}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        店舗管理に戻る
-      </button>
-
-      <h1 className="mb-6 text-2xl font-bold">店舗を編集</h1>
-
-      {isSuccess && (
-        <Alert className="mb-4">
-          <AlertDescription>保存しました</AlertDescription>
-        </Alert>
-      )}
-
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{(error as Error).message}</AlertDescription>
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="name">店舗名 *</Label>
-          <Input id="name" placeholder="例: ○○古着店" {...register('name')} />
-          {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+    <div>
+      {/* ── Page header ──────────────────────────── */}
+      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+        <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
+          <span
+            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
+          >
+            EDIT
+          </span>
         </div>
 
-        <div className="space-y-2">
-          <Label>カテゴリ *（複数選択可）</Label>
-          <div className="flex flex-wrap gap-2">
-            {masterData?.categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => toggleCategory(cat.id)}
-                className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                  selectedCategories?.includes(cat.id)
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border bg-white hover:bg-muted'
-                }`}
+        <div className="relative mx-auto max-w-3xl">
+          <div className="pb-6">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/shops')}
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Shop Management
+            </button>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+              — Admin
+            </p>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                  EDIT SHOP
+                </h1>
+                <p className="mt-2 truncate text-sm font-medium text-white/50">{shop.name}</p>
+              </div>
+              <a
+                href={`/shops/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white/70"
               >
-                {cat.name}
-              </button>
-            ))}
+                <ExternalLink className="h-3 w-3" />
+                店舗ページ
+              </a>
+            </div>
           </div>
-          {errors.categoryIds && <p className="text-xs text-red-600">{errors.categoryIds.message}</p>}
         </div>
+      </section>
 
-        <div className="space-y-2">
-          <Label htmlFor="areaId">エリア *</Label>
-          <select
-            id="areaId"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('areaId', { valueAsNumber: true })}
-          >
-            <option value="">選択してください</option>
-            {masterData?.areas.map((area) => (
-              <option key={area.id} value={area.id}>{area.city}</option>
-            ))}
-          </select>
-          {errors.areaId && <p className="text-xs text-red-600">{errors.areaId.message}</p>}
+      {/* ── Form ─────────────────────────────────── */}
+      <div className="bg-background">
+        <div className="mx-auto max-w-3xl px-4 py-10 md:px-16 md:py-14">
+
+          {/* Success banner */}
+          {showSuccess && (
+            <div className="wish-card-enter mb-8 flex items-center gap-3 border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+              <p className="text-xs font-bold text-emerald-700">変更を保存しました</p>
+            </div>
+          )}
+
+          {/* Error banner */}
+          {error && (
+            <div className="mb-8 border border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-xs font-medium text-red-700">{(error as Error).message}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+
+            {/* ── 01 BASIC INFO ────────────────────── */}
+            <section>
+              <SectionLabel num="01" title="BASIC INFO" required />
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    店舗名
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="例: ○○古着店"
+                    className={cn(inputClass, errors.name && 'border-red-400')}
+                    {...register('name')}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.name.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    店舗説明
+                    <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="店舗の特徴、取り扱いブランド、雰囲気など…"
+                    className={cn(
+                      'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
+                      'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+                      'resize-none',
+                    )}
+                    {...register('description')}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* ── 02 LOCATION ──────────────────────── */}
+            <section>
+              <SectionLabel num="02" title="LOCATION" required />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    エリア
+                  </label>
+                  <select
+                    className={cn(selectClass, errors.areaId && 'border-red-400')}
+                    {...register('areaId', { valueAsNumber: true })}
+                  >
+                    <option value="">選択してください</option>
+                    {masterData?.areas.map((area) => (
+                      <option key={area.id} value={area.id}>{area.city}</option>
+                    ))}
+                  </select>
+                  {errors.areaId && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.areaId.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    価格帯
+                    <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
+                  </label>
+                  <select
+                    className={selectClass}
+                    {...register('priceRangeId', { valueAsNumber: true })}
+                  >
+                    <option value="">指定なし</option>
+                    {masterData?.priceRanges.map((pr) => (
+                      <option key={pr.id} value={pr.id}>{pr.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {/* ── 03 CATEGORY ──────────────────────── */}
+            <section>
+              <SectionLabel num="03" title="CATEGORY" required />
+              <div className="flex flex-wrap gap-2">
+                {masterData?.categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => toggleCategory(cat.id)}
+                    className={cn(
+                      'rounded-sm border px-3 py-2 text-[11px] font-bold transition-all',
+                      selectedCategories?.includes(cat.id)
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-border bg-white text-muted-foreground hover:border-primary/30',
+                    )}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+              {errors.categoryIds && (
+                <p className="mt-2 text-[10px] font-medium text-red-500">{errors.categoryIds.message}</p>
+              )}
+            </section>
+
+            {/* ── 04 CONTACT ───────────────────────── */}
+            <section>
+              <SectionLabel num="04" title="CONTACT" optional />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    電話番号
+                  </label>
+                  <div className="relative">
+                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="tel"
+                      placeholder="03-0000-0000"
+                      className={inputWithIconClass}
+                      {...register('phone')}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    公式サイト
+                  </label>
+                  <div className="relative">
+                    <Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="url"
+                      placeholder="https://example.com"
+                      className={cn(inputWithIconClass, errors.websiteUrl && 'border-red-400')}
+                      {...register('websiteUrl')}
+                    />
+                  </div>
+                  {errors.websiteUrl && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.websiteUrl.message}</p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ── 05 SOCIAL ────────────────────────── */}
+            <section>
+              <SectionLabel num="05" title="SOCIAL" optional />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    Instagram
+                  </label>
+                  <div className="relative">
+                    <Instagram className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="url"
+                      placeholder="https://instagram.com/..."
+                      className={cn(inputWithIconClass, errors.instagramUrl && 'border-red-400')}
+                      {...register('instagramUrl')}
+                    />
+                  </div>
+                  {errors.instagramUrl && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.instagramUrl.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    X
+                  </label>
+                  <div className="relative">
+                    <Twitter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="url"
+                      placeholder="https://x.com/..."
+                      className={cn(inputWithIconClass, errors.twitterUrl && 'border-red-400')}
+                      {...register('twitterUrl')}
+                    />
+                  </div>
+                  {errors.twitterUrl && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.twitterUrl.message}</p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ── 06 STATUS ────────────────────────── */}
+            <section>
+              <SectionLabel num="06" title="STATUS" />
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <div className="grid grid-cols-3 gap-3">
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => field.onChange(opt.value)}
+                        className={cn(
+                          'flex flex-col items-start rounded-sm border-2 bg-white p-3.5 text-left transition-all duration-150',
+                          watchedStatus === opt.value
+                            ? opt.badgeClass + ' border-current'
+                            : 'border-border hover:border-primary/30',
+                        )}
+                      >
+                        <span className={cn(
+                          'mb-1 font-headline text-[11px] font-black uppercase tracking-wide',
+                          watchedStatus === opt.value ? 'opacity-100' : 'text-foreground/70',
+                        )}>
+                          {opt.label}
+                        </span>
+                        <span className={cn(
+                          'text-[10px] leading-relaxed',
+                          watchedStatus === opt.value ? 'opacity-70' : 'text-muted-foreground/50',
+                        )}>
+                          {opt.sublabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
+            </section>
+
+            {/* ── 07 PHOTOS ────────────────────────── */}
+            <section className="space-y-4">
+              <SectionLabel num="07" title="PHOTOS" optional />
+              <ShopPhotosManager shopId={id ?? ''} />
+            </section>
+
+            {/* ── Submit ───────────────────────────── */}
+            <div className="border-t border-border pt-8">
+              <div className="flex items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className={cn(
+                    'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
+                    'hover:opacity-90 disabled:opacity-40',
+                  )}
+                >
+                  {isPending ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      SAVING...
+                    </span>
+                  ) : (
+                    'SAVE CHANGES'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/shops')}
+                  className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+          </form>
+
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="priceRangeId">価格帯</Label>
-          <select
-            id="priceRangeId"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('priceRangeId', { valueAsNumber: true })}
-          >
-            <option value="">指定なし</option>
-            {masterData?.priceRanges.map((pr) => (
-              <option key={pr.id} value={pr.id}>{pr.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">店舗説明</Label>
-          <textarea
-            id="description"
-            rows={4}
-            className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 resize-none"
-            {...register('description')}
-          />
-          {errors.description && <p className="text-xs text-red-600">{errors.description.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone">電話番号</Label>
-          <Input id="phone" type="tel" placeholder="03-0000-0000" {...register('phone')} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="websiteUrl">公式サイトURL</Label>
-          <Input id="websiteUrl" type="url" placeholder="https://example.com" {...register('websiteUrl')} />
-          {errors.websiteUrl && <p className="text-xs text-red-600">{errors.websiteUrl.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="instagramUrl">Instagram URL</Label>
-          <Input id="instagramUrl" type="url" placeholder="https://instagram.com/..." {...register('instagramUrl')} />
-          {errors.instagramUrl && <p className="text-xs text-red-600">{errors.instagramUrl.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="twitterUrl">X URL</Label>
-          <Input id="twitterUrl" type="url" placeholder="https://twitter.com/..." {...register('twitterUrl')} />
-          {errors.twitterUrl && <p className="text-xs text-red-600">{errors.twitterUrl.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="status">公開ステータス</Label>
-          <select
-            id="status"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('status')}
-          >
-            <option value="public">公開</option>
-            <option value="pending">審査中</option>
-            <option value="private">非公開</option>
-          </select>
-        </div>
-
-        <div className="flex gap-2 pt-2">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? '保存中...' : '変更を保存'}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/admin/shops')}>
-            キャンセル
-          </Button>
-        </div>
-      </form>
-
-      <div className="mt-8 space-y-3 border-t pt-6">
-        <h2 className="text-lg font-semibold">店舗写真</h2>
-        <ShopPhotosManager shopId={id ?? ''} />
       </div>
     </div>
   )
