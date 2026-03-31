@@ -32,6 +32,7 @@ const ShopEditPage = lazy(() => import('@/pages/owner/ShopEditPage'))
 const BrandsManagePage = lazy(() => import('@/pages/owner/BrandsManagePage'))
 
 // Admin pages
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const AdminShopsPage = lazy(() => import('@/pages/admin/AdminShopsPage'))
 const AdminShopNewPage = lazy(() => import('@/pages/admin/AdminShopNewPage'))
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'))
@@ -119,7 +120,7 @@ const App = () => (
             {/* Admin */}
             <Route
               path="/admin"
-              element={<ProtectedRoute requiredRole="admin"><AdminShopsPage /></ProtectedRoute>}
+              element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>}
             />
             <Route
               path="/admin/shops"
