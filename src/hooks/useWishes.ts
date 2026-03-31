@@ -100,6 +100,64 @@ export const useCreateWish = () => {
   })
 }
 
+export const useWish = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['wish', id],
+    queryFn: async () => {
+      if (!id) return null
+
+      const { data, error } = await supabase
+        .from('wishes')
+        .select(`
+          id, user_id, type, size, tags, condition, urgency,
+          note, is_public, notify_email, created_at, updated_at,
+          categories ( id, code, name ),
+          price_ranges ( id, label, min_price, max_price ),
+          areas ( id, prefecture, city, slug )
+        `)
+        .eq('id', id)
+        .single() as {
+          data: WishRow | null
+          error: { message: string } | null
+        }
+
+      if (error) throw new Error(error.message)
+      if (!data) return null
+      return mapWishRow(data)
+    },
+    enabled: !!id,
+  })
+}
+
+export const useUpdateWish = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+
+  return useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: WishFormValues }) => {
+      const { error } = await supabase.from('wishes').update({
+        type: values.type,
+        category_id: values.categoryId,
+        price_range_id: values.priceRangeId,
+        area_id: values.areaId,
+        size: values.size ?? null,
+        tags: values.tags ?? [],
+        condition: values.condition ?? null,
+        urgency: values.urgency ?? null,
+        note: values.note ?? null,
+        is_public: values.isPublic,
+        notify_email: values.notifyEmail,
+      } as never).eq('id', id) as unknown as { data: unknown; error: { message: string } | null }
+
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['wishes', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['wish', id] })
+    },
+  })
+}
+
 export const useDeleteWish = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
