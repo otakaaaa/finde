@@ -345,7 +345,7 @@ const ShopDetailPage = () => {
                   )}
                   {shop.twitterUrl && (
                     <ExternalLink href={shop.twitterUrl} icon={<Twitter className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
-                      X (Twitter)
+                      X
                     </ExternalLink>
                   )}
                 </div>
