@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { useAuthActions } from '@/hooks/useAuthActions'
+import { useUiStore } from '@/store/uiStore'
 import { useMyWishes } from '@/hooks/useWishes'
 import { useFavoriteShops } from '@/hooks/useFavorites'
 import { cn } from '@/lib/utils'
@@ -80,7 +80,7 @@ const NavItem = ({ to, icon, index, label, sublabel, animDelay = 0 }: NavItemPro
 
 const MyPage = () => {
   const { user, refreshUser } = useAuth()
-  const { signOut, loading: signOutLoading } = useAuthActions()
+  const { openLogoutModal } = useUiStore()
   const { data: wishes } = useMyWishes()
   const { data: favorites } = useFavoriteShops()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -350,12 +350,10 @@ const MyPage = () => {
           {/* Sign out */}
           <div className="mt-10 border-t border-border pt-8">
             <button
-              onClick={signOut}
-              disabled={signOutLoading}
+              onClick={openLogoutModal}
               className={cn(
                 'group flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.25em]',
                 'text-muted-foreground/40 transition-colors hover:text-foreground/70',
-                'disabled:opacity-30',
               )}
             >
               <LogOut className="h-3.5 w-3.5 transition-transform duration-150 group-hover:-translate-x-0.5" />

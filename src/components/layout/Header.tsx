@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthActions } from '@/hooks/useAuthActions'
 import { cn } from '@/lib/utils'
+import { useUiStore } from '@/store/uiStore'
 
 interface NavItem {
   to: string
@@ -51,10 +52,10 @@ const NavLink = ({ item, onClick }: { item: NavItem; onClick?: () => void }) => 
 
 export const Header = () => {
   const { user } = useAuth()
-  const { signOut } = useAuthActions()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const { openLogoutModal } = useUiStore()
 
   // Close menu on route change
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
@@ -139,7 +140,7 @@ export const Header = () => {
                   )}
                 </div>
                 <button
-                  onClick={signOut}
+                  onClick={openLogoutModal}
                   className={cn(
                     'font-headline text-[10px] font-black uppercase tracking-[0.25em]',
                     'text-muted-foreground/50 transition-colors hover:text-foreground',
@@ -256,7 +257,7 @@ export const Header = () => {
           >
             {user ? (
               <button
-                onClick={signOut}
+                onClick={openLogoutModal}
                 className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 transition-colors hover:text-foreground"
               >
                 Sign Out
