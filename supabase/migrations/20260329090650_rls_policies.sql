@@ -56,6 +56,16 @@ create policy "tags: public read"         on public.tags         for select usin
 create policy "users: self and admin read" on public.users
   for select using (id = auth.uid() or public.is_admin());
 
+-- レビュー投稿者など、公開コンテンツに紐づくユーザーの基本情報は誰でも参照可能
+create policy "users: public read for review authors" on public.users
+  for select using (
+    exists (
+      select 1 from public.reviews r
+      where r.user_id = public.users.id
+        and r.status = 'published'
+    )
+  );
+
 create policy "users: self update" on public.users
   for update using (id = auth.uid())
   with check (
