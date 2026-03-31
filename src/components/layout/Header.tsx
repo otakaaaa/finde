@@ -7,10 +7,15 @@ export const Header = () => {
   const { signOut } = useAuthActions()
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link to="/" className="text-xl font-bold tracking-tight text-primary">
-          フクナビ
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-black text-white leading-none select-none">
+            服
+          </span>
+          <span className="text-xl font-black tracking-tight text-foreground">
+            フクナビ
+          </span>
         </Link>
 
         <nav className="flex items-center gap-4 text-sm">
