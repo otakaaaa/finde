@@ -111,8 +111,14 @@ const ShopsPage = () => {
   return (
     <div>
       {/* ── Page header (scrolls away) ──────────────── */}
-      <section className="bg-primary px-6 pb-0 pt-10 md:px-16">
-        <div className="mx-auto max-w-6xl">
+      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+        {/* Decorative watermark */}
+        <div className="pointer-events-none absolute bottom-0 right-0 select-none translate-y-1/4 pr-2 md:pr-6">
+          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
+            SHOPS
+          </span>
+        </div>
+        <div className="relative mx-auto max-w-6xl">
           <div className="flex items-end justify-between pb-6">
             <div>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
@@ -215,7 +221,15 @@ const ShopsPage = () => {
           {/* Loading skeleton */}
           {isLoading && (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {/* Featured skeleton */}
+              <div className="col-span-2 animate-pulse">
+                <div className="aspect-video bg-muted" />
+                <div className="border-t border-border bg-background px-3 py-3">
+                  <div className="mb-1.5 h-3.5 w-3/4 rounded-sm bg-muted" />
+                  <div className="h-2.5 w-1/2 rounded-sm bg-muted" />
+                </div>
+              </div>
+              {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[3/4] bg-muted" />
                   <div className="border-t border-border bg-background px-3 py-3">
@@ -262,9 +276,14 @@ const ShopsPage = () => {
           {/* Grid */}
           {!isLoading && shops.length > 0 && (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6">
-              {shops.map((shop) => (
-                <ShopCard key={shop.id} shop={shop} />
-              ))}
+              {shops.map((shop, i) => {
+                const isFeatured = i === 0 && !hasActiveFilters
+                return (
+                  <div key={shop.id} className={isFeatured ? 'col-span-2' : ''}>
+                    <ShopCard shop={shop} featured={isFeatured} />
+                  </div>
+                )
+              })}
             </div>
           )}
 

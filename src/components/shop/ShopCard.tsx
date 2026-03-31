@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { MapPin, Star, ArrowUpRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
@@ -9,9 +10,10 @@ const getPhotoUrl = (storagePath: string) =>
 
 interface ShopCardProps {
   shop: Shop
+  featured?: boolean
 }
 
-export const ShopCard = ({ shop }: ShopCardProps) => {
+export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
   const coverPhoto = shop.photos[0]
 
   return (
@@ -20,7 +22,7 @@ export const ShopCard = ({ shop }: ShopCardProps) => {
       className="group relative block overflow-hidden bg-muted"
     >
       {/* Photo */}
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className={cn('relative overflow-hidden', featured ? 'aspect-video' : 'aspect-[3/4]')}>
         {coverPhoto ? (
           <img
             src={getPhotoUrl(coverPhoto.storagePath)}
