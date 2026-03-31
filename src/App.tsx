@@ -23,6 +23,7 @@ const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
 const FavoritesPage = lazy(() => import('@/pages/mypage/FavoritesPage'))
 const WishesPage = lazy(() => import('@/pages/wishes/WishesPage'))
 const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
+const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
 const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingRequestPage'))
 
 // Owner pages
@@ -91,6 +92,10 @@ const App = () => (
             <Route
               path="/wishes/new"
               element={<ProtectedRoute><WishNewPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/wishes/:id/edit"
+              element={<ProtectedRoute><WishEditPage /></ProtectedRoute>}
             />
             <Route
               path="/listing-request"

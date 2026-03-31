@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Plus, Trash2, Globe, Lock, Bell, BellOff } from 'lucide-react'
+import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil } from 'lucide-react'
 import { useMyWishes, useDeleteWish } from '@/hooks/useWishes'
 import { cn } from '@/lib/utils'
 import type { Wish } from '@/types'
@@ -79,14 +79,23 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             )}
           </div>
 
-          <button
-            onClick={() => deleteWish(wish.id)}
-            disabled={isPending}
-            className="shrink-0 text-muted-foreground/30 transition-colors hover:text-red-500 disabled:opacity-30 group-hover:text-muted-foreground/50"
-            title="削除"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              to={`/wishes/${wish.id}/edit`}
+              className="text-muted-foreground/30 transition-colors hover:text-primary group-hover:text-muted-foreground/50"
+              title="編集"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Link>
+            <button
+              onClick={() => deleteWish(wish.id)}
+              disabled={isPending}
+              className="text-muted-foreground/30 transition-colors hover:text-red-500 disabled:opacity-30 group-hover:text-muted-foreground/50"
+              title="削除"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Main attributes */}
