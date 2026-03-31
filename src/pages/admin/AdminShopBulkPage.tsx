@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Upload, Download, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import {
+  ChevronLeft, Upload, Download, CheckCircle2, XCircle,
+  FileText, AlertTriangle, ArrowRight,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
 // -----------------------------------------------------------------------
@@ -112,11 +114,11 @@ const useMasterData = () =>
   })
 
 // -----------------------------------------------------------------------
-// サンプル CSV 生成
+// サンプル CSV
 // -----------------------------------------------------------------------
 const SAMPLE_CSV = `name,area_city,categories,description,phone,website_url,instagram_url,twitter_url,status,price_range_label
-渋谷古着屋,渋谷区,"古着,ヴィンテージ",渋谷の古着専門店です,03-1234-5678,https://example.com,https://instagram.com/xxx,,public,〜¥3,000
-原宿セレクト,渋谷区,セレクトショップ,原宿発のセレクトショップ,,,,https://twitter.com/yyy,public,¥3,001〜¥10,000
+渋谷古着屋,渋谷区,"ユニセックス,ヴィンテージ",渋谷の古着専門店です,03-1234-5678,https://example.com,https://instagram.com/xxx,,public,〜¥3,000
+原宿セレクト,渋谷区,ユニセックス,原宿発のセレクトショップ,,,,https://twitter.com/yyy,public,¥3,001〜¥10,000
 `
 
 function downloadSampleCSV() {
@@ -144,9 +146,7 @@ function validateRows(
   if (!header) return []
 
   const colIndex: Record<string, number> = {}
-  header.forEach((h, i) => {
-    colIndex[h.trim().toLowerCase()] = i
-  })
+  header.forEach((h, i) => { colIndex[h.trim().toLowerCase()] = i })
 
   const get = (row: string[], key: string) =>
     row[colIndex[key] ?? -1]?.trim() ?? ''
@@ -154,9 +154,7 @@ function validateRows(
   return dataRows.map((row, idx) => {
     const errors: string[] = []
 
-    const raw = Object.fromEntries(
-      COLUMNS.map((c) => [c, get(row, c)])
-    ) as Record<ColKey, string>
+    const raw = Object.fromEntries(COLUMNS.map((c) => [c, get(row, c)])) as Record<ColKey, string>
 
     const name = raw.name
     if (!name) errors.push('店舗名は必須です')
@@ -164,10 +162,7 @@ function validateRows(
     const area = areas.find((a) => a.city === raw.area_city) ?? null
     if (!area) errors.push(`エリア "${raw.area_city}" が見つかりません`)
 
-    const catNames = raw.categories
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
+    const catNames = raw.categories.split(',').map((s) => s.trim()).filter(Boolean)
     const matchedCats = catNames
       .map((cn) => categories.find((c) => c.name === cn))
       .filter((c): c is Category => c !== undefined)
@@ -178,16 +173,13 @@ function validateRows(
     }
 
     const statusRaw = raw.status || 'public'
-    const status =
-      statusRaw === 'private' || statusRaw === 'pending' ? statusRaw : 'public'
+    const status = statusRaw === 'private' || statusRaw === 'pending' ? statusRaw : 'public'
 
-    const priceRange =
-      raw.price_range_label
-        ? (priceRanges.find((p) => p.label === raw.price_range_label) ?? null)
-        : null
-    if (raw.price_range_label && !priceRange) {
+    const priceRange = raw.price_range_label
+      ? (priceRanges.find((p) => p.label === raw.price_range_label) ?? null)
+      : null
+    if (raw.price_range_label && !priceRange)
       errors.push(`価格帯 "${raw.price_range_label}" が見つかりません`)
-    }
 
     if (raw.website_url && !URL_RE.test(raw.website_url))
       errors.push('website_url のURL形式が不正です')
@@ -198,21 +190,22 @@ function validateRows(
 
     return {
       rowIndex: idx + 2,
-      raw,
-      name,
-      area,
+      raw, name, area,
       categories: matchedCats,
       description: raw.description,
       phone: raw.phone,
       websiteUrl: raw.website_url,
       instagramUrl: raw.instagram_url,
       twitterUrl: raw.twitter_url,
-      status,
-      priceRange,
-      errors,
+      status, priceRange, errors,
     }
   })
 }
+
+// -----------------------------------------------------------------------
+// 状態バッジ
+// -----------------------------------------------------------------------
+const STATUS_LABEL: Record<string, string> = { public: '公開', pending: '審査中', private: '非公開' }
 
 // -----------------------------------------------------------------------
 // ページ本体
@@ -222,6 +215,8 @@ const AdminShopBulkPage = () => {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [fileName, setFileName] = useState<string | null>(null)
 
   const { data: masterData, isLoading: masterLoading } = useMasterData()
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([])
@@ -262,9 +257,7 @@ const AdminShopBulkPage = () => {
           if (row.categories.length > 0) {
             const { error: catError } = await supabase
               .from('shop_categories')
-              .insert(
-                row.categories.map((c) => ({ shop_id: shop.id, category_id: c.id })) as never
-              ) as unknown as { error: { message: string } | null }
+              .insert(row.categories.map((c) => ({ shop_id: shop.id, category_id: c.id })) as never) as unknown as { error: { message: string } | null }
 
             if (catError) {
               failures.push({ rowIndex: row.rowIndex, message: catError.message })
@@ -293,6 +286,7 @@ const AdminShopBulkPage = () => {
       setFileError('CSVファイルを選択してください')
       return
     }
+    setFileName(file.name)
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target?.result as string
@@ -307,148 +301,407 @@ const AdminShopBulkPage = () => {
   }
 
   const validRows = parsedRows.filter((r) => r.errors.length === 0)
-  const hasErrors = parsedRows.some((r) => r.errors.length > 0)
+  const errorRows = parsedRows.filter((r) => r.errors.length > 0)
+  const hasErrors = errorRows.length > 0
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <button
-        onClick={() => navigate('/admin/shops')}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        店舗管理に戻る
-      </button>
-
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">CSV一括登録</h1>
-        <Button variant="outline" size="sm" onClick={downloadSampleCSV}>
-          <Download className="mr-1.5 h-4 w-4" />
-          サンプルCSV
-        </Button>
-      </div>
-
-      {/* Upload area */}
-      <div
-        className="mb-6 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 py-12 transition-colors hover:bg-muted/50"
-        onClick={() => fileInputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault()
-          const file = e.dataTransfer.files[0]
-          if (file) handleFile(file)
-        }}
-      >
-        <Upload className="mb-3 h-8 w-8 text-muted-foreground" />
-        <p className="text-sm font-medium">CSVファイルをドロップ、またはクリックして選択</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          文字コード: UTF-8 / ヘッダー行必須
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-        />
-      </div>
-
-      {fileError && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{fileError}</AlertDescription>
-        </Alert>
-      )}
-
-      {masterLoading && (
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    <div>
+      {/* ── Page header ──────────────────────────── */}
+      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+        <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
+          <span
+            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
+          >
+            IMPORT
+          </span>
         </div>
-      )}
 
-      {/* Preview table */}
-      {parsedRows.length > 0 && !result && (
-        <>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              全{parsedRows.length}行 / 有効: <span className="font-medium text-green-600">{validRows.length}</span>行 / エラー: <span className="font-medium text-red-600">{parsedRows.length - validRows.length}</span>行
+        <div className="relative mx-auto max-w-5xl">
+          <div className="pb-6">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/shops')}
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Shop Management
+            </button>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+              — Admin
             </p>
-            {validRows.length > 0 && (
-              <Button onClick={() => importRows(validRows)} disabled={isPending}>
-                {isPending
-                  ? <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" />登録中...</>
-                  : `有効な${validRows.length}件を登録`}
-              </Button>
-            )}
-          </div>
-
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full text-xs">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-3 py-2 text-left font-medium">行</th>
-                  <th className="px-3 py-2 text-left font-medium">状態</th>
-                  <th className="px-3 py-2 text-left font-medium">店舗名</th>
-                  <th className="px-3 py-2 text-left font-medium">エリア</th>
-                  <th className="px-3 py-2 text-left font-medium">カテゴリ</th>
-                  <th className="px-3 py-2 text-left font-medium">ステータス</th>
-                  {hasErrors && <th className="px-3 py-2 text-left font-medium text-red-600">エラー</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {parsedRows.map((row) => (
-                  <tr key={row.rowIndex} className={row.errors.length > 0 ? 'bg-red-50' : 'hover:bg-muted/40'}>
-                    <td className="px-3 py-2 text-muted-foreground">{row.rowIndex}</td>
-                    <td className="px-3 py-2">
-                      {row.errors.length === 0
-                        ? <CheckCircle className="h-4 w-4 text-green-500" />
-                        : <XCircle className="h-4 w-4 text-red-500" />}
-                    </td>
-                    <td className="px-3 py-2 font-medium">{row.name || '—'}</td>
-                    <td className="px-3 py-2">{row.area?.city ?? <span className="text-red-600">{row.raw.area_city}</span>}</td>
-                    <td className="px-3 py-2">
-                      {row.categories.length > 0
-                        ? row.categories.map((c) => c.name).join('、')
-                        : <span className="text-red-600">{row.raw.categories || '未指定'}</span>}
-                    </td>
-                    <td className="px-3 py-2">{row.status === 'public' ? '公開' : row.status === 'pending' ? '審査中' : '非公開'}</td>
-                    {hasErrors && (
-                      <td className="px-3 py-2 text-red-600">{row.errors.join(' / ')}</td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-
-      {/* Import result */}
-      {result && (
-        <div className="space-y-4">
-          <Alert className={result.failures.length === 0 ? 'border-green-200 bg-green-50' : undefined}>
-            <AlertDescription>
-              <span className="font-medium text-green-700">{result.success}件</span> 登録しました。
-              {result.failures.length > 0 && (
-                <span className="ml-2 text-red-600">{result.failures.length}件 失敗しました。</span>
-              )}
-            </AlertDescription>
-          </Alert>
-          {result.failures.length > 0 && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
-              {result.failures.map((f) => (
-                <div key={f.rowIndex}>{f.rowIndex}行目: {f.message}</div>
-              ))}
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                CSV IMPORT
+              </h1>
+              <button
+                type="button"
+                onClick={downloadSampleCSV}
+                className="flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+              >
+                <Download className="h-3 w-3" />
+                サンプル CSV
+              </button>
             </div>
-          )}
-          <div className="flex gap-2">
-            <Button onClick={() => { setParsedRows([]); setResult(null) }}>
-              続けてインポート
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/admin/shops')}>
-              店舗管理へ戻る
-            </Button>
           </div>
         </div>
-      )}
+      </section>
+
+      {/* ── Content ──────────────────────────────── */}
+      <div className="bg-background">
+        <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-14 space-y-12">
+
+          {/* ── 01 フォーマット ───────────────────── */}
+          <section>
+            <div className="mb-4 flex items-baseline gap-3">
+              <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">01</span>
+              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">CSV Format</span>
+            </div>
+
+            <div className="overflow-hidden border border-border">
+              {/* Header row */}
+              <div className="border-b border-border bg-muted/50 px-4 py-2.5 flex items-center justify-between">
+                <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">
+                  Required Columns
+                </span>
+                <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
+                  UTF-8 · Header row required
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/20">
+                      {(['name', 'area_city', 'categories', 'status'] as const).map((col) => (
+                        <th key={col} className="px-3 py-2 text-left font-headline font-black uppercase tracking-wider text-primary/70">
+                          {col}
+                        </th>
+                      ))}
+                      {(['description', 'phone', 'website_url', 'instagram_url', 'twitter_url', 'price_range_label'] as const).map((col) => (
+                        <th key={col} className="px-3 py-2 text-left font-headline font-black uppercase tracking-wider text-muted-foreground/30">
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-3 py-2.5 font-medium text-foreground/80">渋谷古着屋</td>
+                      <td className="px-3 py-2.5 text-foreground/60">渋谷区</td>
+                      <td className="px-3 py-2.5 text-foreground/60">"ユニセックス,ヴィンテージ"</td>
+                      <td className="px-3 py-2.5">
+                        <span className="rounded-sm bg-emerald-50 px-1.5 py-0.5 font-headline text-[9px] font-black text-emerald-700">public</span>
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">渋谷の古着店…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">03-0000-0000</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">〜¥3,000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-border px-4 py-2 flex gap-4">
+                <span className="flex items-center gap-1.5 text-[9px] font-bold text-primary/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                  REQUIRED
+                </span>
+                <span className="flex items-center gap-1.5 text-[9px] font-medium text-muted-foreground/40">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
+                  OPTIONAL
+                </span>
+                <span className="ml-auto text-[9px] text-muted-foreground/40">
+                  status: public / pending / private
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ── 02 アップロード ───────────────────── */}
+          <section>
+            <div className="mb-4 flex items-baseline gap-3">
+              <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">02</span>
+              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Upload File</span>
+            </div>
+
+            {/* Drop zone */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setIsDragging(false)
+                const file = e.dataTransfer.files[0]
+                if (file) handleFile(file)
+              }}
+              className={cn(
+                'relative flex cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed py-14 transition-all',
+                isDragging
+                  ? 'border-primary bg-primary/5'
+                  : fileName
+                    ? 'border-emerald-400 bg-emerald-50/50'
+                    : 'border-border hover:border-primary/40 hover:bg-muted/20',
+              )}
+            >
+              {fileName ? (
+                <>
+                  <FileText className={cn('h-8 w-8', 'text-emerald-500')} />
+                  <div className="text-center">
+                    <p className="font-headline text-sm font-black tracking-tight text-emerald-700">{fileName}</p>
+                    <p className="mt-1 text-[10px] text-emerald-600/60">クリックして別のファイルを選択</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Upload className={cn('h-8 w-8', isDragging ? 'text-primary' : 'text-muted-foreground/30')} />
+                  <div className="text-center">
+                    <p className={cn(
+                      'font-headline text-xs font-black uppercase tracking-[0.2em]',
+                      isDragging ? 'text-primary' : 'text-muted-foreground/50',
+                    )}>
+                      ここにCSVファイルをドラッグするか、クリックして選択してください。
+                    </p>
+                    <p className="mt-1.5 text-[10px] text-muted-foreground/30">
+                      文字コード: UTF-8 · ヘッダー行必須
+                    </p>
+                  </div>
+                </>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="sr-only"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+              />
+            </div>
+
+            {/* File error */}
+            {fileError && (
+              <div className="mt-3 flex items-start gap-2 border border-red-200 bg-red-50 px-4 py-3">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
+                <p className="text-xs font-medium text-red-700">{fileError}</p>
+              </div>
+            )}
+
+            {/* Master loading */}
+            {masterLoading && (
+              <div className="mt-3 flex items-center gap-2 px-1">
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground/20 border-t-muted-foreground/60" />
+                <p className="text-[10px] text-muted-foreground/40">マスターデータを読み込み中…</p>
+              </div>
+            )}
+          </section>
+
+          {/* ── 03 プレビュー ─────────────────────── */}
+          {parsedRows.length > 0 && !result && (
+            <section className="wish-card-enter">
+              <div className="mb-4 flex items-baseline justify-between gap-3">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">03</span>
+                  <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Preview</span>
+                </div>
+                {/* Summary chips */}
+                <div className="flex items-center gap-2">
+                  <span className="rounded-sm bg-emerald-50 px-2 py-1 font-headline text-[9px] font-black text-emerald-700">
+                    {String(validRows.length).padStart(2, '0')} VALID
+                  </span>
+                  {hasErrors && (
+                    <span className="rounded-sm bg-red-50 px-2 py-1 font-headline text-[9px] font-black text-red-600">
+                      {String(errorRows.length).padStart(2, '0')} ERRORS
+                    </span>
+                  )}
+                  <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/30">
+                    / {String(parsedRows.length).padStart(2, '0')} TOTAL
+                  </span>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto border border-border">
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 w-10">ROW</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 w-8" />
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">店舗名</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">エリア</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">カテゴリ</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">ステータス</th>
+                      {hasErrors && (
+                        <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-red-400">エラー</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {parsedRows.map((row) => {
+                      const isValid = row.errors.length === 0
+                      return (
+                        <tr
+                          key={row.rowIndex}
+                          className={cn(
+                            'transition-colors',
+                            isValid ? 'hover:bg-muted/20' : 'bg-red-50/60',
+                          )}
+                        >
+                          <td className="px-3 py-2.5 font-headline font-black tabular-nums text-muted-foreground/25">
+                            {String(row.rowIndex).padStart(2, '0')}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {isValid
+                              ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                              : <XCircle className="h-3.5 w-3.5 text-red-400" />}
+                          </td>
+                          <td className="px-3 py-2.5 font-medium text-foreground/80">
+                            {row.name || <span className="italic text-red-400">未入力</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {row.area?.city
+                              ? <span className="text-foreground/60">{row.area.city}</span>
+                              : <span className="font-medium text-red-500">{row.raw.area_city || '未入力'}</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {row.categories.length > 0
+                              ? (
+                                <span className="text-foreground/60">
+                                  {row.categories.map((c) => c.name).join('、')}
+                                </span>
+                              )
+                              : <span className="font-medium text-red-500">{row.raw.categories || '未指定'}</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <span className={cn(
+                              'rounded-sm px-1.5 py-0.5 font-headline text-[9px] font-black',
+                              row.status === 'public' ? 'bg-emerald-50 text-emerald-700' :
+                              row.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                              'bg-muted text-muted-foreground',
+                            )}>
+                              {STATUS_LABEL[row.status]}
+                            </span>
+                          </td>
+                          {hasErrors && (
+                            <td className="px-3 py-2.5 text-[10px] text-red-500">
+                              {row.errors.join(' · ') || '—'}
+                            </td>
+                          )}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Import action */}
+              {validRows.length > 0 && (
+                <div className="mt-6 flex items-center gap-4 border-t border-border pt-6">
+                  <button
+                    type="button"
+                    onClick={() => importRows(validRows)}
+                    disabled={isPending}
+                    className={cn(
+                      'flex items-center gap-2 bg-primary px-8 py-3 font-headline text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
+                      'hover:opacity-90 disabled:opacity-40',
+                    )}
+                  >
+                    {isPending ? (
+                      <>
+                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        IMPORTING...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                        {validRows.length}件を登録
+                      </>
+                    )}
+                  </button>
+                  {hasErrors && (
+                    <p className="text-[10px] text-muted-foreground/50">
+                      エラーのある{errorRows.length}行はスキップされます
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* ── 完了 ─────────────────────────────── */}
+          {result && (
+            <section className="wish-card-enter space-y-6">
+              <div className="flex items-baseline gap-3">
+                <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">03</span>
+                <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Result</span>
+              </div>
+
+              {/* Result banner */}
+              <div className={cn(
+                'border px-5 py-4',
+                result.failures.length === 0
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : 'border-amber-200 bg-amber-50',
+              )}>
+                <p className={cn(
+                  'font-headline text-2xl font-black tracking-tight',
+                  result.failures.length === 0 ? 'text-emerald-700' : 'text-amber-700',
+                )}>
+                  {String(result.success).padStart(2, '0')} IMPORTED
+                </p>
+                {result.failures.length > 0 && (
+                  <p className="mt-1 text-xs font-medium text-amber-600">
+                    {result.failures.length}件が失敗しました
+                  </p>
+                )}
+              </div>
+
+              {/* Failure details */}
+              {result.failures.length > 0 && (
+                <div className="border border-red-200 bg-red-50/50">
+                  <div className="border-b border-red-200 px-4 py-2">
+                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-red-400">
+                      FAILED ROWS
+                    </span>
+                  </div>
+                  <div className="divide-y divide-red-100">
+                    {result.failures.map((f) => (
+                      <div key={f.rowIndex} className="flex items-start gap-3 px-4 py-2.5">
+                        <span className="w-10 shrink-0 font-headline text-[10px] font-black tabular-nums text-red-300">
+                          {String(f.rowIndex).padStart(2, '0')}行
+                        </span>
+                        <span className="text-[11px] text-red-600">{f.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setParsedRows([]); setResult(null); setFileName(null) }}
+                  className="bg-primary px-8 py-3 font-headline text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity hover:opacity-90"
+                >
+                  続けてインポート
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/shops')}
+                  className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  ← Shop Management
+                </button>
+              </div>
+            </section>
+          )}
+
+        </div>
+      </div>
     </div>
   )
 }
