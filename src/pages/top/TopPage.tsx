@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Star, Heart, Shirt, ShoppingBag, Baby, Users, Sparkles } from 'lucide-react'
+import { MapPin, Star, Heart, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
 import { useAuth } from '@/hooks/useAuth'
@@ -15,11 +15,11 @@ const getPhotoUrl = (storagePath: string) =>
   `${SUPABASE_URL}/storage/v1/object/public/shop-photos/${storagePath}?width=600&height=450&resize=cover`
 
 const CATEGORY_ICONS: Record<CategoryCode, ReactNode> = {
-  mens: <Shirt className="h-8 w-8" />,
-  ladies: <ShoppingBag className="h-8 w-8" />,
-  kids: <Baby className="h-8 w-8" />,
-  unisex: <Users className="h-8 w-8" />,
-  vintage: <Sparkles className="h-8 w-8" />,
+  mens: <Shirt className="h-5 w-5" />,
+  ladies: <ShoppingBag className="h-5 w-5" />,
+  kids: <Baby className="h-5 w-5" />,
+  unisex: <Users className="h-5 w-5" />,
+  vintage: <Sparkles className="h-5 w-5" />,
 }
 
 const CITY_ROMAJI: Record<string, string> = {
@@ -112,57 +112,70 @@ const useTopStats = () =>
 
 interface FeaturedCardProps {
   shop: Shop
+  variant?: 'large' | 'small'
 }
 
-const FeaturedCard = ({ shop }: FeaturedCardProps) => {
+const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
   const coverPhoto = shop.photos[0]
   return (
     <Link
       to={`/shops/${shop.id}`}
-      className="group bg-white rounded-2xl overflow-hidden editorial-shadow transition-transform hover:-translate-y-2"
+      className="group relative block overflow-hidden bg-muted"
     >
-      <div className="relative h-72 overflow-hidden">
+      <div className={variant === 'large' ? 'h-[480px]' : 'h-64'}>
         {coverPhoto ? (
           <img
             src={getPhotoUrl(coverPhoto.storagePath)}
             alt={shop.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-muted text-5xl">🏪</div>
         )}
-        {shop.categories[0] && (
-          <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm">
-            {shop.categories[0].name}
-          </span>
-        )}
-        <div className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-transform hover:scale-110">
-          <Heart className="h-4 w-4" />
-        </div>
+        {/* Dark overlay on hover */}
+        <div className="absolute inset-0 bg-primary/0 transition-all duration-500 group-hover:bg-primary/40" />
       </div>
-      <div className="p-8">
-        <div className="mb-2 flex items-start justify-between">
-          <h3 className="font-headline text-xl font-bold">{shop.name}</h3>
-          <div className="flex items-center gap-1 text-amber-500">
-            <Star className="h-4 w-4 fill-amber-500" />
-            <span className="text-sm font-bold">
-              {shop.averageRating ? shop.averageRating.toFixed(1) : '—'}
-            </span>
+
+      {/* Info bar */}
+      <div className="relative border-t border-border bg-background px-4 py-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="truncate font-headline text-sm font-bold">{shop.name}</h3>
+            {shop.area && (
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span>{shop.area.city}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            {shop.averageRating && (
+              <div className="flex items-center gap-0.5 text-amber-500">
+                <Star className="h-3 w-3 fill-amber-500" />
+                <span className="text-xs font-bold">{shop.averageRating.toFixed(1)}</span>
+              </div>
+            )}
+            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-all group-hover:border-primary group-hover:text-primary">
+              <Heart className="h-3 w-3" />
+            </div>
           </div>
         </div>
-        {shop.area && (
-          <div className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 shrink-0" />
-            <span>{shop.area.city}</span>
-          </div>
-        )}
-        {shop.description && (
-          <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+        {variant === 'large' && shop.description && (
+          <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
             {shop.description}
           </p>
         )}
       </div>
+
+      {/* Category tag */}
+      {shop.categories[0] && (
+        <div className="absolute left-3 top-3">
+          <span className="rounded-sm bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
+            {shop.categories[0].name}
+          </span>
+        </div>
+      )}
     </Link>
   )
 }
@@ -176,7 +189,7 @@ const TopPage = () => {
   const { data: stats } = useTopStats()
   const { data: popularData } = useShops({ sort: 'popular' })
 
-  const featuredShops = popularData?.pages[0]?.items.slice(0, 6) ?? []
+  const featuredShops = popularData?.pages[0]?.items.slice(0, 5) ?? []
 
   const goWithCategory = (categoryId: number) => {
     setShopFilters({ sort: 'popular', categoryId })
@@ -190,46 +203,109 @@ const TopPage = () => {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative flex min-h-[600px] items-center justify-center overflow-hidden bg-primary">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/95" />
-        <div className="relative z-10 max-w-4xl px-6 text-center">
-          <h1 className="font-headline mb-8 text-4xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">
-            あなたの街の、<br />とっておきの一着へ。
-          </h1>
-          <div className="editorial-shadow flex flex-col items-center gap-2 rounded-2xl bg-white p-2 md:flex-row">
-            <div className="flex flex-1 items-center px-4 w-full">
-              <ShopSearchBar />
+      {/* ── Hero ─────────────────────────────────────────── */}
+      <section className="relative min-h-[100svh] bg-primary overflow-hidden flex flex-col justify-center pb-16 pt-24">
+        {/* Decorative large kanji */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[-2vw] top-[-4vw] select-none font-headline font-black leading-none text-white"
+          style={{ fontSize: 'clamp(12rem, 40vw, 36rem)', opacity: 0.03 }}
+        >
+          服
+        </div>
+
+        {/* Thin horizontal rule at top */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-white/10" />
+
+        {/* Volume indicator — left edge */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-3">
+          <div className="h-16 w-px bg-white/20" />
+          <span
+            className="text-white/30 text-[9px] font-bold tracking-[0.5em] uppercase"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            FUKUNAVI — 2026
+          </span>
+          <div className="h-16 w-px bg-white/20" />
+        </div>
+
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-8 md:px-16">
+          {/* Eyebrow */}
+          <div className="mb-10 flex items-center gap-4">
+            <div className="h-px w-8 bg-white/30" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white/50">
+              Select Shop Navigator
+            </span>
+          </div>
+
+          {/* Main headline — offset staggered */}
+          <div className="mb-14 overflow-hidden">
+            <h1 className="font-headline font-black text-white leading-[0.88] tracking-tighter">
+              <span
+                className="block"
+                style={{ fontSize: 'clamp(3.5rem, 11vw, 10rem)' }}
+              >
+                FIND
+              </span>
+              <span
+                className="block"
+                style={{
+                  fontSize: 'clamp(3.5rem, 11vw, 10rem)',
+                  paddingLeft: 'clamp(2rem, 8vw, 8rem)',
+                }}
+              >
+                YOUR
+              </span>
+              <span
+                className="block"
+                style={{ fontSize: 'clamp(3.5rem, 11vw, 10rem)' }}
+              >
+                STYLE.
+              </span>
+            </h1>
+          </div>
+
+          {/* Bottom row: description + search */}
+          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="max-w-xs text-sm leading-relaxed text-white/60">
+                全国のセレクトショップ・古着屋を、<br />
+                エリアやカテゴリから探せる。
+              </p>
+            </div>
+            <div className="w-full max-w-lg">
+              <ShopSearchBar className="w-full" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
+      {/* ── Stats ticker ─────────────────────────────────── */}
       {stats && (stats.shopCount > 0 || stats.areaCount > 0) && (
-        <section className="border-b bg-gray-50 py-12">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
-              <div className="p-6">
-                <div className="font-headline mb-2 text-5xl font-black text-primary">
+        <section className="overflow-hidden border-b border-border bg-background">
+          <div className="mx-auto max-w-6xl px-4 md:px-16">
+            <div className="grid grid-cols-3 divide-x divide-border">
+              <div className="py-6 pr-4 md:py-8 md:pr-8">
+                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
                   {stats.shopCount.toLocaleString()}
                 </div>
-                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  Registered Shops
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
+                  掲載店舗数
                 </div>
               </div>
-              <div className="p-6">
-                <div className="font-headline mb-2 text-5xl font-black text-primary">
-                  {stats.areaCount}+
+              <div className="px-4 py-6 md:px-8 md:py-8">
+                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
+                  {stats.areaCount}
+                  <span className="text-base md:text-xl">+</span>
                 </div>
-                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  Curated Areas
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
+                  対象エリア
                 </div>
               </div>
-              <div className="p-6">
-                <div className="font-headline mb-2 text-5xl font-black text-primary">Free</div>
-                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                  Search Experience
+              <div className="pl-4 py-6 md:pl-8 md:py-8">
+                <div className="font-headline font-black leading-none text-[1.75rem] md:text-[2.5rem]">無料</div>
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
+                  ご利用料金
                 </div>
               </div>
             </div>
@@ -237,33 +313,40 @@ const TopPage = () => {
         </section>
       )}
 
-      {/* Categories */}
+      {/* ── Categories — Magazine index style ────────────── */}
       {categories && categories.length > 0 && (
-        <section className="bg-white py-24">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-12 flex flex-col items-end justify-between gap-4 md:flex-row">
+        <section className="bg-white py-24 border-b border-border">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            <div className="mb-12 flex items-baseline justify-between">
               <div>
-                <span className="mb-3 block text-xs font-bold uppercase tracking-[0.3em] text-primary">
-                  Discovery
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+                  — Browse
                 </span>
-                <h2 className="font-headline text-3xl font-extrabold md:text-4xl">
-                  カテゴリで探す
+                <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
+                  カテゴリ
                 </h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
-              {categories.map((cat) => (
+
+            <div className="divide-y divide-border">
+              {categories.map((cat, i) => (
                 <button
                   key={cat.id}
                   onClick={() => goWithCategory(cat.id)}
-                  className="group flex flex-col items-center rounded-2xl bg-white p-8 editorial-shadow transition-all hover:bg-primary active:scale-95"
+                  className="group flex w-full items-center justify-between py-5 transition-all duration-200 hover:pl-3"
                 >
-                  <span className="mb-4 text-primary transition-all group-hover:scale-110 group-hover:text-white">
-                    {CATEGORY_ICONS[cat.code as CategoryCode] ?? <Shirt className="h-8 w-8" />}
-                  </span>
-                  <span className="text-sm font-bold group-hover:text-white">
-                    {cat.name}
-                  </span>
+                  <div className="flex items-center gap-6">
+                    <span className="w-8 text-right text-xs tabular-nums text-muted-foreground">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-muted-foreground transition-colors group-hover:text-primary">
+                      {CATEGORY_ICONS[cat.code as CategoryCode] ?? <Shirt className="h-5 w-5" />}
+                    </span>
+                    <span className="font-headline text-2xl font-bold transition-colors group-hover:text-primary md:text-3xl">
+                      {cat.name}
+                    </span>
+                  </div>
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary group-hover:opacity-100" />
                 </button>
               ))}
             </div>
@@ -271,16 +354,16 @@ const TopPage = () => {
         </section>
       )}
 
-      {/* Featured shops */}
+      {/* ── Featured shops — Asymmetric editorial grid ───── */}
       {featuredShops.length > 0 && (
-        <section className="bg-gray-50 py-24">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-16 flex items-end justify-between">
+        <section className="bg-muted py-24">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            <div className="mb-12 flex items-end justify-between">
               <div>
-                <span className="mb-3 block text-xs font-bold uppercase tracking-[0.3em] text-primary">
-                  Highly Rated
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+                  — Curated
                 </span>
-                <h2 className="font-headline text-3xl font-extrabold md:text-4xl">
+                <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
                   注目の店舗
                 </h2>
               </div>
@@ -290,41 +373,64 @@ const TopPage = () => {
                 className="group flex items-center gap-1 text-sm font-bold text-primary"
               >
                 すべて見る
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-              {featuredShops.map((shop) => (
-                <FeaturedCard key={shop.id} shop={shop} />
+
+            {/* Asymmetric grid: 1 large left + 2 small right, then 2 small bottom */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {/* Large feature card */}
+              {featuredShops[0] && (
+                <div className="md:col-span-2 md:row-span-2">
+                  <FeaturedCard shop={featuredShops[0]} variant="large" />
+                </div>
+              )}
+              {/* Small cards */}
+              {featuredShops.slice(1, 3).map((shop) => (
+                <div key={shop.id}>
+                  <FeaturedCard shop={shop} />
+                </div>
+              ))}
+              {/* Bottom row */}
+              {featuredShops.slice(3, 5).map((shop) => (
+                <div key={shop.id}>
+                  <FeaturedCard shop={shop} />
+                </div>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Areas */}
+      {/* ── Areas ────────────────────────────────────────── */}
       {areas && areas.length > 0 && (
-        <section className="bg-white py-24">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-16 text-center">
-              <span className="mb-3 block text-xs font-bold uppercase tracking-[0.3em] text-primary">
-                Location
+        <section className="bg-white py-24 border-b border-border">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            <div className="mb-12">
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+                — Location
               </span>
-              <h2 className="font-headline text-3xl font-extrabold md:text-4xl">
+              <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
                 エリアで探す
               </h2>
             </div>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {areas.slice(0, 8).map((area) => (
                 <button
                   key={area.id}
                   onClick={() => goWithArea(area.id)}
-                  className="group rounded-2xl bg-gray-100 p-6 text-center transition-all hover:bg-white hover:editorial-shadow"
+                  className="group relative overflow-hidden border border-border bg-background p-5 text-left transition-all duration-200 hover:border-primary hover:bg-primary"
                 >
-                  <div className="mb-1 text-lg font-bold transition-colors group-hover:text-primary">
-                    {CITY_ROMAJI[area.city] ?? area.city}
+                  <div className="relative z-10">
+                    <div className="font-headline text-lg font-bold transition-colors group-hover:text-primary-foreground">
+                      {area.city}
+                    </div>
+                    <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground transition-colors group-hover:text-primary-foreground/60">
+                      {CITY_ROMAJI[area.city] ?? area.prefecture}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">{area.prefecture}</div>
+                  <ArrowUpRight className="absolute bottom-4 right-4 h-4 w-4 text-border opacity-0 transition-all group-hover:text-primary-foreground/50 group-hover:opacity-100" />
                 </button>
               ))}
             </div>
@@ -332,28 +438,34 @@ const TopPage = () => {
         </section>
       )}
 
-      {/* CTA */}
+      {/* ── CTA ──────────────────────────────────────────── */}
       {!user && (
-        <section className="px-6 py-24">
-          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-primary">
-            <div className="relative z-10 px-12 py-20 text-center md:px-20">
-              <h2 className="font-headline mb-6 text-3xl font-extrabold text-white md:text-5xl">
-                理想の一着との出会いを、ここから。
-              </h2>
-              <p className="mx-auto mb-12 max-w-2xl text-lg text-white/80">
-                会員登録して、お気に入りのショップを保存したり、<br />
-                新着アイテムの通知を受け取りましょう。
-              </p>
-              <div className="flex flex-col items-center justify-center gap-4 md:flex-row">
+        <section className="bg-primary py-28">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            <div className="flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+                  — Join Us
+                </span>
+                <h2 className="font-headline mt-4 max-w-lg text-4xl font-black text-white leading-tight md:text-5xl">
+                  理想の一着との出会いを、ここから。
+                </h2>
+                <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/60">
+                  会員登録して、お気に入りのショップを保存したり、
+                  新着情報の通知を受け取りましょう。
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
                 <Link
                   to="/auth/register"
-                  className="w-full rounded-2xl bg-white px-12 py-5 text-lg font-bold text-primary transition-opacity hover:opacity-90 active:scale-95 md:w-auto"
+                  className="inline-flex items-center justify-center gap-2 rounded-sm bg-white px-8 py-4 text-sm font-bold text-primary transition-opacity hover:opacity-90"
                 >
                   無料で始める
+                  <ArrowUpRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/auth/login"
-                  className="w-full rounded-2xl border-2 border-white/30 px-12 py-5 text-lg font-bold text-white transition-all hover:bg-white/10 md:w-auto"
+                  className="inline-flex items-center justify-center rounded-sm border border-white/20 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-white/10"
                 >
                   ログイン
                 </Link>

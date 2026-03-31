@@ -2,13 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @theme {
-  --color-primary: oklch(0.45 0.22 264);
+  --color-primary: oklch(0.18 0.004 250);
   --color-primary-foreground: oklch(0.98 0 0);
-  --color-muted: oklch(0.96 0 0);
-  --color-muted-foreground: oklch(0.52 0 0);
-  --color-background: oklch(0.99 0 0);
-  --color-foreground: oklch(0.13 0 0);
-  --color-border: oklch(0.91 0 0);
+  --color-muted: oklch(0.94 0.003 250);
+  --color-muted-foreground: oklch(0.50 0.005 250);
+  --color-background: oklch(0.985 0.002 250);
+  --color-foreground: oklch(0.12 0.004 250);
+  --color-border: oklch(0.87 0.003 250);
 
   --radius: 0.5rem;
 
@@ -35,5 +35,5 @@ body {
 }
 
 @utility editorial-shadow {
-  box-shadow: 0 24px 48px -12px rgba(44, 47, 48, 0.06);
+  box-shadow: 0 24px 48px -12px rgba(10, 15, 25, 0.10);
 }
