@@ -16,7 +16,7 @@ interface ListingRequestRow {
   is_owner_request: boolean
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
-  users: { id: string; display_name: string | null } | null
+  users: { display_name: string | null } | null
 }
 
 // ── Data hooks ─────────────────────────────────────────────────
@@ -27,13 +27,13 @@ const useListingRequests = (status: string) =>
     queryFn: async () => {
       let query = supabase
         .from('shop_listing_requests')
-        .select('id, shop_name, address, website_url, note, is_owner_request, status, created_at, users:submitted_by ( id, display_name )')
+        .select('id, shop_name, address, website_url, note, is_owner_request, status, created_at, users:submitted_by ( display_name )')
         .order('created_at', { ascending: false })
         .limit(100)
 
       if (status !== 'all') query = query.eq('status', status)
 
-      const { data, error } = query as unknown as { data: ListingRequestRow[] | null; error: { message: string } | null }
+      const { data, error } = await (query as unknown as Promise<{ data: ListingRequestRow[] | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
       return data ?? []
     },
@@ -201,7 +201,7 @@ const AdminApplicationsPage = () => {
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<string>('pending')
 
-  const { data: requests, isLoading } = useListingRequests(statusFilter)
+  const { data: requests, isLoading, error } = useListingRequests(statusFilter)
   const { data: allRequests } = useListingRequests('all')
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
@@ -304,6 +304,13 @@ const AdminApplicationsPage = () => {
             })}
           </div>
 
+          {/* Error */}
+          {error && (
+            <div className="mb-4 rounded-sm border border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-xs font-medium text-red-700">{(error as Error).message}</p>
+            </div>
+          )}
+
           {/* Loading */}
           {isLoading && (
             <div className="flex justify-center py-16">
@@ -312,7 +319,7 @@ const AdminApplicationsPage = () => {
           )}
 
           {/* Empty */}
-          {!isLoading && requests?.length === 0 && (
+          {!isLoading && !error && requests?.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
                 No Applications
