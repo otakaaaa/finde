@@ -1,13 +1,16 @@
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ImagePlus, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
+
+const BUCKET = 'shop-photos'
 
 const shopSchema = z.object({
   name: z.string().min(1, '店舗名を入力してください').max(100),
@@ -65,6 +68,27 @@ const AdminShopNewPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+
+  // Generate / revoke object URLs when pendingFiles changes
+  useEffect(() => {
+    const urls = pendingFiles.map((f) => URL.createObjectURL(f))
+    setPreviewUrls(urls)
+    return () => urls.forEach((u) => URL.revokeObjectURL(u))
+  }, [pendingFiles])
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    setPendingFiles((prev) => [...prev, ...files])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeFile = (index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const { data: masterData } = useQuery({
     queryKey: ['master-data'],
@@ -116,6 +140,25 @@ const AdminShopNewPage = () => {
         .insert(categoryRows as never) as unknown as { error: { message: string } | null }
 
       if (catError) throw new Error(catError.message)
+
+      // Upload pending photos
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i]
+        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+        const path = `${shop.id}/${crypto.randomUUID()}.${ext}`
+
+        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
+        if (storageErr) throw new Error(storageErr.message)
+
+        const { error: photoErr } = await supabase
+          .from('shop_photos')
+          .insert({ shop_id: shop.id, storage_path: path, order: i } as never) as unknown as { error: { message: string } | null }
+
+        if (photoErr) {
+          await supabase.storage.from(BUCKET).remove([path])
+          throw new Error(photoErr.message)
+        }
+      }
 
       return shop.id
     },
@@ -353,13 +396,13 @@ const AdminShopNewPage = () => {
 
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    X (Twitter)
+                    X
                   </label>
                   <div className="relative">
                     <Twitter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="url"
-                      placeholder="https://twitter.com/..."
+                      placeholder="https://x.com/..."
                       className={cn(inputWithIconClass, errors.twitterUrl && 'border-red-400')}
                       {...register('twitterUrl')}
                     />
@@ -408,6 +451,67 @@ const AdminShopNewPage = () => {
                   </div>
                 )}
               />
+            </section>
+
+            {/* ── 07 PHOTOS ────────────────────────── */}
+            <section className="space-y-4">
+              <div className="flex items-baseline gap-3">
+                <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/25">07</span>
+                <h2 className="font-headline text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/50">Photos</h2>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="sr-only"
+                onChange={handleFileSelect}
+              />
+
+              {/* Upload trigger */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  'flex w-full items-center justify-center gap-2 border border-dashed border-border py-8',
+                  'text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50',
+                  'transition-colors hover:border-primary/40 hover:text-primary/60',
+                )}
+              >
+                <ImagePlus className="h-4 w-4" />
+                写真を追加
+              </button>
+
+              {/* Preview grid */}
+              {previewUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {previewUrls.map((url, i) => (
+                    <div key={url} className="group relative aspect-square overflow-hidden bg-muted">
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className={cn(
+                          'absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full',
+                          'bg-foreground/70 text-white opacity-0 transition-opacity group-hover:opacity-100',
+                        )}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      {i === 0 && (
+                        <span className="absolute bottom-1 left-1 rounded-sm bg-primary/80 px-1 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-white">
+                          Main
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[10px] text-muted-foreground/40">
+                JPEG / PNG / WebP · 最大10枚
+              </p>
             </section>
 
             {/* ── Submit ───────────────────────────── */}
