@@ -274,6 +274,8 @@ const AdminReviewsPage = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-review-reports'] })
       queryClient.invalidateQueries({ queryKey: ['admin-reviews'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['my-review'] })
     },
   })
 
