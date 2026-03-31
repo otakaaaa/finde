@@ -1,14 +1,13 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
+import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useCreateWish } from '@/hooks/useWishes'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
 const wishSchema = z.object({
@@ -20,11 +19,109 @@ const wishSchema = z.object({
   note: z.string().max(500, '500文字以内で入力してください').optional(),
   condition: z.enum(['new', 'used']).optional(),
   urgency: z.enum(['low', 'medium', 'high']).optional(),
+  tags: z.array(z.string()).optional(),
   isPublic: z.boolean(),
   notifyEmail: z.boolean(),
 })
 
 type WishFormSchema = z.infer<typeof wishSchema>
+
+const TYPE_OPTIONS: { value: WishFormSchema['type']; label: string; subLabel: string; watermark: string }[] = [
+  { value: 'brand', label: 'ブランド', subLabel: 'BRAND', watermark: 'B' },
+  { value: 'item', label: 'アイテム', subLabel: 'ITEM', watermark: 'I' },
+  { value: 'condition', label: 'コンディション', subLabel: 'CONDITION', watermark: 'C' },
+]
+
+const URGENCY_OPTIONS: { value: WishFormSchema['urgency'] & string; label: string; colorClass: string; activeClass: string }[] = [
+  { value: 'low', label: '低', colorClass: 'text-emerald-700', activeClass: 'bg-emerald-50 border-emerald-300 text-emerald-700' },
+  { value: 'medium', label: '中', colorClass: 'text-amber-700', activeClass: 'bg-amber-50 border-amber-400 text-amber-700' },
+  { value: 'high', label: '高', colorClass: 'text-red-700', activeClass: 'bg-red-50 border-red-400 text-red-700' },
+]
+
+interface SectionLabelProps {
+  num: string
+  title: string
+  required?: boolean
+  optional?: boolean
+}
+
+const SectionLabel = ({ num, title, required, optional }: SectionLabelProps) => (
+  <div className="mb-4 flex items-baseline gap-3">
+    <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">{num}</span>
+    <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">{title}</span>
+    {required && <span className="text-[10px] font-bold text-primary">REQUIRED</span>}
+    {optional && <span className="text-[10px] font-medium text-muted-foreground/40">optional</span>}
+  </div>
+)
+
+interface TagInputProps {
+  value: string[]
+  onChange: (tags: string[]) => void
+}
+
+const TagInput = ({ value, onChange }: TagInputProps) => {
+  const [input, setInput] = useState('')
+
+  const addTag = () => {
+    const trimmed = input.trim()
+    if (trimmed && !value.includes(trimmed)) {
+      onChange([...value, trimmed])
+    }
+    setInput('')
+  }
+
+  const removeTag = (tag: string) => {
+    onChange(value.filter((t) => t !== tag))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag()
+    }
+    if (e.key === 'Backspace' && !input && value.length > 0) {
+      onChange(value.slice(0, -1))
+    }
+  }
+
+  return (
+    <div className="min-h-[48px] w-full rounded-sm border border-border bg-white px-3 py-2 focus-within:ring-1 focus-within:ring-primary/50">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {value.map((tag) => (
+          <span
+            key={tag}
+            className="flex items-center gap-1 rounded-sm bg-primary/[0.07] px-2 py-0.5 text-[11px] font-bold text-primary"
+          >
+            <Tag className="h-2.5 w-2.5" />
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(tag)}
+              className="ml-0.5 text-primary/50 hover:text-primary"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </span>
+        ))}
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={addTag}
+          placeholder={value.length === 0 ? 'Enterで追加（例: ニット, オーバーサイズ）' : ''}
+          className="min-w-[160px] flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+        />
+      </div>
+    </div>
+  )
+}
+
+const selectClass = cn(
+  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
+  'focus:outline-none focus:ring-1 focus:ring-primary/50',
+  'appearance-none',
+)
 
 const WishNewPage = () => {
   const navigate = useNavigate()
@@ -47,10 +144,21 @@ const WishNewPage = () => {
     staleTime: Infinity,
   })
 
-  const { register, handleSubmit, formState: { errors } } = useForm<WishFormSchema>({
+  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<WishFormSchema>({
     resolver: zodResolver(wishSchema),
-    defaultValues: { type: 'brand', isPublic: true, notifyEmail: true },
+    defaultValues: {
+      type: 'brand',
+      isPublic: true,
+      notifyEmail: true,
+      tags: [],
+    },
   })
+
+  const watchedType = watch('type')
+  const watchedUrgency = watch('urgency')
+  const watchedCondition = watch('condition')
+  const watchedIsPublic = watch('isPublic')
+  const watchedNotifyEmail = watch('notifyEmail')
 
   const onSubmit = (values: WishFormSchema) => {
     mutate(values, {
@@ -59,147 +167,405 @@ const WishNewPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">ウィッシュを追加</h1>
-
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error.message}</AlertDescription>
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Type */}
-        <div className="space-y-2">
-          <Label htmlFor="type">タイプ</Label>
-          <select
-            id="type"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('type')}
+    <div>
+      {/* ── Page header ──────────────────────────── */}
+      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+        {/* Decorative watermark */}
+        <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
+          <span
+            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
-            <option value="brand">ブランド</option>
-            <option value="item">アイテム</option>
-            <option value="condition">コンディション</option>
-          </select>
+            ADD
+          </span>
         </div>
 
-        {/* Category */}
-        <div className="space-y-2">
-          <Label htmlFor="categoryId">カテゴリ *</Label>
-          <select
-            id="categoryId"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('categoryId', { valueAsNumber: true })}
-          >
-            <option value="">選択してください</option>
-            {masterData?.categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-          {errors.categoryId && <p className="text-xs text-red-600">{errors.categoryId.message}</p>}
+        <div className="relative mx-auto max-w-3xl">
+          <div className="flex items-end justify-between pb-6">
+            <div>
+              <button
+                type="button"
+                onClick={() => navigate('/wishes')}
+                className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+              >
+                <ChevronLeft className="h-3 w-3" />
+                Back to List
+              </button>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+                — My List
+              </p>
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                NEW WISH
+              </h1>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Price Range */}
-        <div className="space-y-2">
-          <Label htmlFor="priceRangeId">価格帯 *</Label>
-          <select
-            id="priceRangeId"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('priceRangeId', { valueAsNumber: true })}
-          >
-            <option value="">選択してください</option>
-            {masterData?.priceRanges.map((pr) => (
-              <option key={pr.id} value={pr.id}>{pr.label}</option>
-            ))}
-          </select>
-          {errors.priceRangeId && <p className="text-xs text-red-600">{errors.priceRangeId.message}</p>}
-        </div>
+      {/* ── Form ─────────────────────────────────── */}
+      <div className="bg-background">
+        <div className="mx-auto max-w-3xl px-4 py-10 md:px-16 md:py-14">
+          {error && (
+            <div className="mb-8 border border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-xs font-medium text-red-700">{error.message}</p>
+            </div>
+          )}
 
-        {/* Area */}
-        <div className="space-y-2">
-          <Label htmlFor="areaId">エリア *</Label>
-          <select
-            id="areaId"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('areaId', { valueAsNumber: true })}
-          >
-            <option value="">選択してください</option>
-            {masterData?.areas.map((area) => (
-              <option key={area.id} value={area.id}>{area.city}</option>
-            ))}
-          </select>
-          {errors.areaId && <p className="text-xs text-red-600">{errors.areaId.message}</p>}
-        </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
 
-        {/* Size */}
-        <div className="space-y-2">
-          <Label htmlFor="size">サイズ（任意）</Label>
-          <Input id="size" placeholder="例: M, 175cm, 28inch" {...register('size')} />
-        </div>
+            {/* ── 01 TYPE ──────────────────────────── */}
+            <section>
+              <SectionLabel num="01" title="TYPE" required />
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <div className="grid grid-cols-3 gap-3">
+                    {TYPE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => field.onChange(opt.value)}
+                        className={cn(
+                          'relative overflow-hidden border-2 bg-white p-4 text-left transition-all duration-150 editorial-shadow',
+                          watchedType === opt.value
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-border hover:border-primary/30',
+                        )}
+                      >
+                        <div className="pointer-events-none absolute right-1 bottom-0 select-none">
+                          <span
+                            className={cn(
+                              'font-headline font-black leading-none tracking-tighter',
+                              watchedType === opt.value ? 'text-white/[0.08]' : 'text-black/[0.04]',
+                            )}
+                            style={{ fontSize: 'clamp(32px, 5vw, 52px)' }}
+                          >
+                            {opt.watermark}
+                          </span>
+                        </div>
+                        <span
+                          className={cn(
+                            'mb-0.5 block font-headline text-[9px] font-black uppercase tracking-[0.25em]',
+                            watchedType === opt.value ? 'text-white/50' : 'text-muted-foreground/40',
+                          )}
+                        >
+                          {opt.subLabel}
+                        </span>
+                        <span
+                          className={cn(
+                            'block font-headline text-base font-black leading-none tracking-tight',
+                            watchedType === opt.value ? 'text-white' : 'text-foreground',
+                          )}
+                        >
+                          {opt.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
+            </section>
 
-        {/* Condition */}
-        <div className="space-y-2">
-          <Label htmlFor="condition">コンディション（任意）</Label>
-          <select
-            id="condition"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('condition')}
-          >
-            <option value="">指定なし</option>
-            <option value="new">新品</option>
-            <option value="used">中古</option>
-          </select>
-        </div>
+            {/* ── 02 CORE ──────────────────────────── */}
+            <section>
+              <SectionLabel num="02" title="CORE FIELDS" required />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {/* Category */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    カテゴリ
+                  </label>
+                  <div className="relative">
+                    <select
+                      className={cn(selectClass, errors.categoryId && 'border-red-400')}
+                      {...register('categoryId', { valueAsNumber: true })}
+                    >
+                      <option value="">選択</option>
+                      {masterData?.categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.categoryId && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.categoryId.message}</p>
+                  )}
+                </div>
 
-        {/* Urgency */}
-        <div className="space-y-2">
-          <Label htmlFor="urgency">優先度（任意）</Label>
-          <select
-            id="urgency"
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            {...register('urgency')}
-          >
-            <option value="">指定なし</option>
-            <option value="low">低</option>
-            <option value="medium">中</option>
-            <option value="high">高</option>
-          </select>
-        </div>
+                {/* Price Range */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    価格帯
+                  </label>
+                  <div className="relative">
+                    <select
+                      className={cn(selectClass, errors.priceRangeId && 'border-red-400')}
+                      {...register('priceRangeId', { valueAsNumber: true })}
+                    >
+                      <option value="">選択</option>
+                      {masterData?.priceRanges.map((pr) => (
+                        <option key={pr.id} value={pr.id}>{pr.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.priceRangeId && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.priceRangeId.message}</p>
+                  )}
+                </div>
 
-        {/* Note */}
-        <div className="space-y-2">
-          <Label htmlFor="note">メモ（任意）</Label>
-          <textarea
-            id="note"
-            rows={3}
-            placeholder="探しているアイテムの詳細など"
-            className="flex w-full rounded-md border border-border bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 resize-none"
-            {...register('note')}
-          />
-          {errors.note && <p className="text-xs text-red-600">{errors.note.message}</p>}
-        </div>
+                {/* Area */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    エリア
+                  </label>
+                  <div className="relative">
+                    <select
+                      className={cn(selectClass, errors.areaId && 'border-red-400')}
+                      {...register('areaId', { valueAsNumber: true })}
+                    >
+                      <option value="">選択</option>
+                      {masterData?.areas.map((area) => (
+                        <option key={area.id} value={area.id}>{area.city}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.areaId && (
+                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.areaId.message}</p>
+                  )}
+                </div>
+              </div>
+            </section>
 
-        {/* Options */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register('isPublic')} className="h-4 w-4" />
-            ウィッシュを公開する（他のユーザーに見せる）
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register('notifyEmail')} className="h-4 w-4" />
-            マッチする店舗が見つかったらメール通知を受け取る
-          </label>
-        </div>
+            {/* ── 03 CONDITION & URGENCY ───────────── */}
+            <section>
+              <SectionLabel num="03" title="CONDITION & URGENCY" optional />
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Condition */}
+                <div>
+                  <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    コンディション
+                  </label>
+                  <Controller
+                    name="condition"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="flex gap-2">
+                        {[
+                          { value: undefined, label: '指定なし' },
+                          { value: 'new' as const, label: '新品' },
+                          { value: 'used' as const, label: '中古' },
+                        ].map((opt) => (
+                          <button
+                            key={String(opt.value)}
+                            type="button"
+                            onClick={() => field.onChange(opt.value)}
+                            className={cn(
+                              'flex-1 rounded-sm border py-2 text-[11px] font-bold transition-all',
+                              watchedCondition === opt.value
+                                ? 'border-primary bg-primary text-white'
+                                : 'border-border bg-white text-muted-foreground hover:border-primary/30',
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  />
+                </div>
 
-        <div className="flex gap-2">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? '保存中...' : '保存する'}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/wishes')}>
-            キャンセル
-          </Button>
+                {/* Urgency */}
+                <div>
+                  <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    優先度
+                  </label>
+                  <Controller
+                    name="urgency"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="flex gap-2">
+                        {[
+                          { value: undefined, label: '指定なし', activeClass: 'border-primary bg-primary text-white' },
+                          ...URGENCY_OPTIONS,
+                        ].map((opt) => (
+                          <button
+                            key={String(opt.value)}
+                            type="button"
+                            onClick={() => field.onChange(opt.value)}
+                            className={cn(
+                              'flex-1 rounded-sm border py-2 text-[11px] font-bold transition-all',
+                              watchedUrgency === opt.value
+                                ? (opt.activeClass ?? 'border-primary bg-primary text-white')
+                                : 'border-border bg-white text-muted-foreground hover:border-primary/30',
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* ── 04 SIZE & TAGS ───────────────────── */}
+            <section>
+              <SectionLabel num="04" title="SIZE & TAGS" optional />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Size */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    サイズ
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="例: M, 175cm, 28inch"
+                    className="h-10 w-full rounded-sm border border-border bg-white px-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    {...register('size')}
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                    <Plus className="h-3 w-3" />
+                    タグ
+                  </label>
+                  <Controller
+                    name="tags"
+                    control={control}
+                    render={({ field }) => (
+                      <TagInput value={field.value ?? []} onChange={field.onChange} />
+                    )}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* ── 05 NOTE ──────────────────────────── */}
+            <section>
+              <SectionLabel num="05" title="NOTE" optional />
+              <textarea
+                rows={4}
+                placeholder="探しているアイテムの詳細、こだわり条件など…"
+                className={cn(
+                  'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
+                  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+                  'resize-none',
+                )}
+                {...register('note')}
+              />
+              {errors.note && (
+                <p className="mt-1 text-[10px] font-medium text-red-500">{errors.note.message}</p>
+              )}
+            </section>
+
+            {/* ── 06 OPTIONS ───────────────────────── */}
+            <section>
+              <SectionLabel num="06" title="OPTIONS" />
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {/* isPublic */}
+                <Controller
+                  name="isPublic"
+                  control={control}
+                  render={({ field }) => (
+                    <button
+                      type="button"
+                      onClick={() => field.onChange(!watchedIsPublic)}
+                      className={cn(
+                        'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
+                        watchedIsPublic
+                          ? 'border-primary/20 bg-primary/[0.04]'
+                          : 'border-border bg-white',
+                      )}
+                    >
+                      <div className={cn(
+                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-sm',
+                        watchedIsPublic ? 'bg-primary text-white' : 'bg-muted text-muted-foreground',
+                      )}>
+                        {watchedIsPublic ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[11px] font-black uppercase tracking-wide text-foreground/70">
+                          {watchedIsPublic ? '公開中' : '非公開'}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground/50">
+                          {watchedIsPublic ? '他のユーザーに表示される' : '自分だけに見える'}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                />
+
+                {/* notifyEmail */}
+                <Controller
+                  name="notifyEmail"
+                  control={control}
+                  render={({ field }) => (
+                    <button
+                      type="button"
+                      onClick={() => field.onChange(!watchedNotifyEmail)}
+                      className={cn(
+                        'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
+                        watchedNotifyEmail
+                          ? 'border-primary/20 bg-primary/[0.04]'
+                          : 'border-border bg-white',
+                      )}
+                    >
+                      <div className={cn(
+                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-sm',
+                        watchedNotifyEmail ? 'bg-primary text-white' : 'bg-muted text-muted-foreground',
+                      )}>
+                        {watchedNotifyEmail ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[11px] font-black uppercase tracking-wide text-foreground/70">
+                          {watchedNotifyEmail ? '通知ON' : '通知OFF'}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground/50">
+                          {watchedNotifyEmail ? 'マッチ時にメール通知' : '通知を受け取らない'}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                />
+              </div>
+            </section>
+
+            {/* ── Submit ───────────────────────────── */}
+            <div className="border-t border-border pt-8">
+              <div className="flex items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className={cn(
+                    'relative overflow-hidden bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
+                    'hover:opacity-90 disabled:opacity-40',
+                  )}
+                >
+                  {isPending ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      SAVING...
+                    </span>
+                  ) : (
+                    'SAVE WISH'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/wishes')}
+                  className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   )
 }
