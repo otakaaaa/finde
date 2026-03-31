@@ -260,7 +260,7 @@ const AdminShopEditPage = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="twitterUrl">X (Twitter) URL</Label>
+          <Label htmlFor="twitterUrl">X URL</Label>
           <Input id="twitterUrl" type="url" placeholder="https://twitter.com/..." {...register('twitterUrl')} />
           {errors.twitterUrl && <p className="text-xs text-red-600">{errors.twitterUrl.message}</p>}
         </div>
