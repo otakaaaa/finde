@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams, Link } from 'react-router'
+import { useParams, useLocation, Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Search, Plus, X, Tag, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -68,12 +68,16 @@ const useSearchBrands = (query: string) =>
 
 const BrandsManagePage = () => {
   const { id: shopId } = useParams<{ id: string }>()
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/admin')
+  const backTo = isAdmin ? `/admin/shops/${shopId}/edit` : `/owner/shops/${shopId}`
+  const backLabel = isAdmin ? '店舗編集へ戻る' : '店舗編集へ戻る'
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [newBrandName, setNewBrandName] = useState('')
+  const [_, setNewBrandName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -177,11 +181,11 @@ const BrandsManagePage = () => {
         <div className="relative mx-auto max-w-3xl">
           <div className="pb-6">
             <Link
-              to={`/owner/shops/${shopId}`}
+              to={backTo}
               className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
               <ChevronLeft className="h-3 w-3" />
-              店舗編集へ戻る
+              {backLabel}
             </Link>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
               — Owner

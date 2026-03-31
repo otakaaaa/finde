@@ -4,7 +4,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, ImagePlus, X } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, ImagePlus, X, Tag } from 'lucide-react'
+import { Link } from 'react-router'
 import { supabase } from '@/lib/supabase'
 import { useShop } from '@/hooks/useShop'
 import { cn } from '@/lib/utils'
@@ -29,7 +30,7 @@ const useShopPhotos = (shopId: string) =>
         .from('shop_photos')
         .select('id, storage_path, order')
         .eq('shop_id', shopId)
-        .order('order', { ascending: true }) as unknown as Promise<{ data: { id: string; storage_path: string; order: number }[] | null; error: { message: string } | null }>
+        .order('order', { ascending: true }) as unknown as { data: { id: string; storage_path: string; order: number }[] | null; error: { message: string } | null }
       if (error) throw new Error(error.message)
       return (data ?? []).map((p): PhotoRow => ({ id: p.id, storagePath: p.storage_path, order: p.order }))
     },
@@ -638,6 +639,28 @@ const AdminShopEditPage = () => {
                 JPEG / PNG / WebP · 最大10枚
               </p>
             </section>
+
+            {/* ── Brand Management ─────────────────── */}
+            <div className="border-t border-border pt-8">
+              <Link
+                to={`/admin/shops/${id}/brands`}
+                className={cn(
+                  'flex w-full items-center gap-3 border border-border bg-white px-4 py-3.5 transition-colors',
+                  'hover:border-primary/20 hover:bg-primary/[0.02] editorial-shadow',
+                )}
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground">
+                  <Tag className="h-3.5 w-3.5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-headline text-[12px] font-black uppercase tracking-[0.15em] text-foreground/80">
+                    ブランド管理
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground/50">この店舗に紐付くブランドを編集する</p>
+                </div>
+                <ChevronLeft className="h-3.5 w-3.5 rotate-180 text-muted-foreground/20" />
+              </Link>
+            </div>
 
             {/* ── Submit ───────────────────────────── */}
             <div className="border-t border-border pt-8">
