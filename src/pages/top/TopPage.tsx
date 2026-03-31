@@ -283,28 +283,28 @@ const TopPage = () => {
       {/* ── Stats ticker ─────────────────────────────────── */}
       {stats && (stats.shopCount > 0 || stats.areaCount > 0) && (
         <section className="overflow-hidden border-b border-border bg-background">
-          <div className="mx-auto max-w-6xl px-8 md:px-16">
+          <div className="mx-auto max-w-6xl px-4 md:px-16">
             <div className="grid grid-cols-3 divide-x divide-border">
-              <div className="py-8 pr-8">
-                <div className="font-headline text-[2.5rem] font-black tabular-nums leading-none">
+              <div className="py-6 pr-4 md:py-8 md:pr-8">
+                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
                   {stats.shopCount.toLocaleString()}
                 </div>
-                <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
                   掲載店舗数
                 </div>
               </div>
-              <div className="px-8 py-8">
-                <div className="font-headline text-[2.5rem] font-black tabular-nums leading-none">
+              <div className="px-4 py-6 md:px-8 md:py-8">
+                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
                   {stats.areaCount}
-                  <span className="text-xl">+</span>
+                  <span className="text-base md:text-xl">+</span>
                 </div>
-                <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
                   対象エリア
                 </div>
               </div>
-              <div className="pl-8 py-8">
-                <div className="font-headline text-[2.5rem] font-black leading-none">無料</div>
-                <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="pl-4 py-6 md:pl-8 md:py-8">
+                <div className="font-headline font-black leading-none text-[1.75rem] md:text-[2.5rem]">無料</div>
+                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
                   ご利用料金
                 </div>
               </div>
