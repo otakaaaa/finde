@@ -1,5 +1,7 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthActions } from '@/hooks/useAuthActions'
 import { useMyWishes } from '@/hooks/useWishes'
@@ -77,10 +79,55 @@ const NavItem = ({ to, icon, index, label, sublabel, animDelay = 0 }: NavItemPro
 )
 
 const MyPage = () => {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { signOut, loading: signOutLoading } = useAuthActions()
   const { data: wishes } = useMyWishes()
   const { data: favorites } = useFavoriteShops()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    setUploading(true)
+    setUploadError(null)
+
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `${user.id}/${Date.now()}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('user-avatars')
+      .upload(path, file)
+
+    if (uploadError) {
+      setUploadError('アップロードに失敗しました')
+      setUploading(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('user-avatars')
+      .getPublicUrl(path)
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ avatar_url: publicUrl } as never)
+      .eq('id', user.id) as unknown as { error: { message: string } | null }
+
+    if (updateError) {
+      setUploadError('プロフィールの更新に失敗しました')
+      setUploading(false)
+      return
+    }
+
+    await refreshUser()
+    setUploading(false)
+
+    // reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   const initial = user?.displayName?.[0]?.toUpperCase() ?? '?'
   const roleLabel = ROLE_LABEL[user?.role ?? 'user'] ?? 'MEMBER'
@@ -115,18 +162,52 @@ const MyPage = () => {
 
           {/* Avatar + name */}
           <div className="flex items-end gap-5">
+            {/* Avatar — clickable upload */}
             <div className="relative">
-              {user?.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.displayName ?? ''}
-                  className="h-16 w-16 rounded-sm object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-sm border border-white/10 bg-white/[0.06]">
-                  <span className="font-headline text-2xl font-black text-white/60">{initial}</span>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="group relative block h-16 w-16 overflow-hidden rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                title="プロフィール画像を変更"
+              >
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.displayName ?? ''}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center border border-white/10 bg-white/[0.06]">
+                    <span className="font-headline text-2xl font-black text-white/60">{initial}</span>
+                  </div>
+                )}
+
+                {/* Hover overlay */}
+                <div className={cn(
+                  'absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/50 transition-opacity duration-200',
+                  uploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                )}>
+                  {uploading ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 text-white" />
+                      <span className="font-headline text-[7px] font-black uppercase tracking-widest text-white/80">
+                        変更
+                      </span>
+                    </>
+                  )}
                 </div>
-              )}
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </div>
 
             <div className="pb-0.5">
@@ -140,6 +221,15 @@ const MyPage = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Upload error ─────────────────────────── */}
+      {uploadError && (
+        <div className="bg-primary px-6 pb-4 md:px-16">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-[11px] font-medium text-red-300">{uploadError}</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Stats ────────────────────────────────── */}
       <div className="bg-background">

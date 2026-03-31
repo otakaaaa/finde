@@ -1,20 +1,43 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/authStore'
 import type { User } from '@/types'
 
 interface AuthState {
   session: Session | null
   user: User | null
   loading: boolean
+  refreshUser: () => Promise<void>
+}
+
+const fetchUser = async (id: string) => {
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .single() as { data: { id: string; role: string; display_name: string | null; avatar_url: string | null; created_at: string; updated_at: string } | null; error: unknown }
+
+  const { setUser, setLoading } = useAuthStore.getState()
+
+  if (data) {
+    setUser({
+      id: data.id,
+      role: data.role as User['role'],
+      displayName: data.display_name,
+      avatarUrl: data.avatar_url,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    })
+  }
+  setLoading(false)
 }
 
 export const useAuth = (): AuthState => {
-  const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { session, user, loading, setSession, setUser, setLoading } = useAuthStore()
 
   useEffect(() => {
+    // Only set up the listener once (when loading is still true = first mount)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session?.user) {
@@ -37,27 +60,15 @@ export const useAuth = (): AuthState => {
     )
 
     return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const fetchUser = async (id: string) => {
-    const { data } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single() as { data: { id: string; role: string; display_name: string | null; avatar_url: string | null; created_at: string; updated_at: string } | null; error: unknown }
-
-    if (data) {
-      setUser({
-        id: data.id,
-        role: data.role as User['role'],
-        displayName: data.display_name,
-        avatarUrl: data.avatar_url,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      })
+  const refreshUser = async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession()
+    if (currentSession?.user) {
+      await fetchUser(currentSession.user.id)
     }
-    setLoading(false)
   }
 
-  return { session, user, loading }
+  return { session, user, loading, refreshUser }
 }
