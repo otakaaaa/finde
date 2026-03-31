@@ -44,6 +44,10 @@ const AdminApplicationsPage = lazy(() => import('@/pages/admin/AdminApplications
 const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'))
 const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
 const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
+const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
+
+// Contact pages
+const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +76,7 @@ const App = () => (
             <Route path="/shops/:id" element={<ShopDetailPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/brands" element={<BrandSearchPage />} />
+            <Route path="/contact" element={<ContactPage />} />
 
             {/* Auth */}
             <Route path="/auth/login" element={<LoginPage />} />
@@ -161,6 +166,10 @@ const App = () => (
             <Route
               path="/admin/subscriptions"
               element={<ProtectedRoute requiredRole="admin"><AdminSubscriptionsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/contacts"
+              element={<ProtectedRoute requiredRole="admin"><AdminContactsPage /></ProtectedRoute>}
             />
           </Route>
         </Routes>
