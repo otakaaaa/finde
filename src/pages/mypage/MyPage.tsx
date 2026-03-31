@@ -24,17 +24,17 @@ const StatPanel = ({
   index: number
 }) => (
   <div
-    className="wish-card-enter border border-border bg-white p-5 editorial-shadow"
+    className="wish-card-enter border border-border bg-white p-3 sm:p-5 editorial-shadow"
     style={{ animationDelay: `${index * 60}ms` }}
   >
     <p className="mb-1 text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
       {label}
     </p>
-    <p className="font-headline text-3xl font-black leading-none tracking-tight text-foreground">
+    <p className="font-headline text-lg sm:text-3xl font-black leading-none tracking-tight text-foreground">
       {value}
     </p>
     {sublabel && (
-      <p className="mt-1 text-[10px] font-medium text-muted-foreground/50">{sublabel}</p>
+      <p className="mt-1 text-[8px] sm:text-[10px] font-medium text-muted-foreground/50">{sublabel}</p>
     )}
   </div>
 )
