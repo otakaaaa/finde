@@ -3,6 +3,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { ToastStack } from '@/components/ui/Toast'
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal'
+import { ReviewReportModal } from '@/components/review/ReviewReportModal'
 
 export const Layout = () => (
   <div className="flex min-h-screen flex-col bg-background">
@@ -13,5 +14,6 @@ export const Layout = () => (
     <Footer />
     <ToastStack />
     <LogoutConfirmModal />
+    <ReviewReportModal />
   </div>
 )
