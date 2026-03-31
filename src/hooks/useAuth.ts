@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
+import { useUiStore } from '@/store/uiStore'
 import type { User } from '@/types'
 
 interface AuthState {
@@ -48,10 +49,16 @@ export const useAuth = (): AuthState => {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session)
         if (session?.user) {
           fetchUser(session.user.id)
+          if (event === 'SIGNED_IN') {
+            useUiStore.getState().addToast({
+              title: 'ログインしました',
+              variant: 'default',
+            })
+          }
         } else {
           setUser(null)
           setLoading(false)

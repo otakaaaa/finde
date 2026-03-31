@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { ShopFilters } from '@/types'
 
-interface Toast {
+export interface Toast {
   id: string
   title: string
   description?: string
@@ -23,6 +23,11 @@ interface UiState {
   reviewReportModalReviewId: string | null
   openReviewReportModal: (reviewId: string) => void
   closeReviewReportModal: () => void
+
+  // Logout modal
+  logoutModalOpen: boolean
+  openLogoutModal: () => void
+  closeLogoutModal: () => void
 }
 
 const DEFAULT_FILTERS: ShopFilters = {
@@ -45,4 +50,8 @@ export const useUiStore = create<UiState>((set) => ({
   reviewReportModalReviewId: null,
   openReviewReportModal: (reviewId) => set({ reviewReportModalReviewId: reviewId }),
   closeReviewReportModal: () => set({ reviewReportModalReviewId: null }),
+
+  logoutModalOpen: false,
+  openLogoutModal: () => set({ logoutModalOpen: true }),
+  closeLogoutModal: () => set({ logoutModalOpen: false }),
 }))
