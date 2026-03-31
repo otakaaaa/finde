@@ -33,7 +33,10 @@ export const useAuthActions = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) { setError(error.message); return }
-      if (data.user) await redirectByRole(data.user.id)
+      if (data.user) {
+        localStorage.setItem('pending_login_toast', 'true')
+        await redirectByRole(data.user.id)
+      }
     } finally {
       setLoading(false)
     }

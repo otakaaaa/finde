@@ -40,6 +40,7 @@ const CallbackPage = () => {
         .single() as { data: { role: string } | null; error: unknown }
 
       const role = (data?.role ?? 'user') as UserRole
+      localStorage.setItem('pending_login_toast', 'true')
       navigate(ROLE_REDIRECT[role] ?? '/')
     }
 
