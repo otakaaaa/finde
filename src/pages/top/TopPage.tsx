@@ -156,9 +156,6 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
                 <span className="text-xs font-bold">{shop.averageRating.toFixed(1)}</span>
               </div>
             )}
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-all group-hover:border-primary group-hover:text-primary">
-              <Heart className="h-3 w-3" />
-            </div>
           </div>
         </div>
         {variant === 'large' && shop.description && (
