@@ -1,22 +1,126 @@
 import { Link } from 'react-router'
 
+const NAV_COLUMNS = [
+  {
+    label: 'Browse',
+    links: [
+      { to: '/shops', text: '店舗を探す' },
+      { to: '/search', text: '検索' },
+      { to: '/wishes', text: 'ウィッシュ' },
+    ],
+  },
+  {
+    label: 'Service',
+    links: [
+      { to: '/listing-request', text: '店舗掲載申請' },
+      { to: '/mypage', text: 'マイページ' },
+      { to: '/mypage/favorites', text: 'お気に入り' },
+    ],
+  },
+  {
+    label: 'Legal',
+    links: [
+      { to: '/terms', text: '利用規約' },
+      { to: '/privacy', text: 'プライバシーポリシー' },
+    ],
+  },
+]
+
 export const Footer = () => (
-  <footer className="border-t border-border/60 bg-background py-10 text-sm text-muted-foreground">
-    <div className="mx-auto max-w-5xl px-4">
-      <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-xs font-black text-white leading-none select-none">
-            服
-          </span>
-          <span className="font-black text-foreground tracking-tight">フクナビ</span>
+  <footer className="relative overflow-hidden bg-primary">
+
+    {/* Watermark */}
+    <div
+      aria-hidden
+      className="pointer-events-none absolute bottom-0 left-0 select-none leading-none"
+    >
+      <span
+        className="font-headline font-black tracking-tighter text-white/[0.03]"
+        style={{ fontSize: 'clamp(100px, 22vw, 220px)', lineHeight: 0.85 }}
+      >
+        服
+      </span>
+    </div>
+
+    {/* Main content */}
+    <div className="relative mx-auto max-w-5xl px-6 pb-10 pt-14 md:px-16">
+
+      {/* Top row: logo + nav grid */}
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_2fr]">
+
+        {/* Brand column */}
+        <div className="flex flex-col justify-between gap-8">
+          <div>
+            {/* Logo mark */}
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center border border-white/20 font-headline text-base font-black leading-none text-white select-none">
+                服
+              </span>
+              <div className="flex flex-col leading-none">
+                <span className="font-headline text-[13px] font-black tracking-[0.15em] text-white">
+                  FUKUNAVI
+                </span>
+                <span className="font-headline text-[8px] font-bold tracking-[0.4em] text-white/30">
+                  フクナビ
+                </span>
+              </div>
+            </div>
+
+            {/* Tagline */}
+            <p className="max-w-[200px] text-[11px] leading-relaxed text-white/35">
+              古着・ヴィンテージ・セレクトショップの探し方が変わる。
+            </p>
+          </div>
+
+          {/* CTA */}
+          <Link
+            to="/listing-request"
+            className="group inline-flex w-fit items-center gap-2 border border-white/20 px-4 py-2.5 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
+          >
+            <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-white/60 transition-colors group-hover:text-white/90">
+              店舗掲載申請
+            </span>
+            <span className="font-headline text-[9px] font-black text-white/20 transition-colors group-hover:text-white/40">
+              →
+            </span>
+          </Link>
         </div>
-        <nav className="flex gap-6">
-          <Link to="/terms" className="hover:text-foreground transition-colors">利用規約</Link>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">プライバシーポリシー</Link>
-          <Link to="/listing-request" className="hover:text-foreground transition-colors">店舗掲載申請</Link>
-        </nav>
-        <span className="text-xs">© 2026 フクナビ</span>
+
+        {/* Nav columns */}
+        <div className="grid grid-cols-3 gap-6">
+          {NAV_COLUMNS.map((col) => (
+            <div key={col.label}>
+              <p className="mb-4 font-headline text-[9px] font-black uppercase tracking-[0.4em] text-white/25">
+                {col.label}
+              </p>
+              <ul className="space-y-3">
+                {col.links.map((link) => (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      className="text-[11px] text-white/45 transition-colors duration-100 hover:text-white/80"
+                    >
+                      {link.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
       </div>
+
+      {/* Bottom strip */}
+      <div className="mt-12 flex flex-col items-start gap-2 border-t border-white/[0.07] pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-headline text-[9px] font-black tabular-nums tracking-[0.3em] text-white/20">
+          © 2026 FUKUNAVI
+        </span>
+        <span className="font-headline text-[9px] font-bold uppercase tracking-[0.2em] text-white/15">
+          古着 · ヴィンテージ · セレクト
+        </span>
+      </div>
+
     </div>
   </footer>
 )
