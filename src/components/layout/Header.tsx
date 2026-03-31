@@ -131,8 +131,12 @@ export const Header = () => {
             {/* Auth area */}
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary font-headline text-[10px] font-black text-white">
-                  {userInitial}
+                <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
+                  )}
                 </div>
                 <button
                   onClick={signOut}
@@ -161,8 +165,12 @@ export const Header = () => {
           {/* ── Mobile: right side ───────────────── */}
           <div className="flex items-center gap-3 md:hidden">
             {user && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary font-headline text-[10px] font-black text-white">
-                {userInitial}
+              <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
+                )}
               </div>
             )}
             {/* Hamburger */}
