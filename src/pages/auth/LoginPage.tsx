@@ -3,11 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useSearchParams } from 'react-router'
 import { useAuthActions } from '@/hooks/useAuthActions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { cn } from '@/lib/utils'
 
 const loginSchema = z.object({
   email: z.string().email('有効なメールアドレスを入力してください'),
@@ -15,6 +11,8 @@ const loginSchema = z.object({
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
+
+// ── Shared sub-components ──────────────────────────────────────
 
 const GoogleIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -24,6 +22,38 @@ const GoogleIcon = () => (
     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
   </svg>
 )
+
+interface LineFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string
+  fieldId: string
+  error?: string
+  animDelay?: number
+}
+
+const LineField = ({ label, fieldId, error, animDelay = 0, ...props }: LineFieldProps) => (
+  <div className="wish-card-enter" style={{ animationDelay: `${animDelay}ms` }}>
+    <label
+      htmlFor={fieldId}
+      className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/45"
+    >
+      {label}
+    </label>
+    <input
+      id={fieldId}
+      className={cn(
+        'w-full border-b bg-transparent pb-2.5 pt-1 text-[14px] text-foreground placeholder:text-muted-foreground/25',
+        'transition-colors duration-200 focus:outline-none',
+        error ? 'border-red-400 focus:border-red-500' : 'border-border focus:border-foreground',
+      )}
+      {...props}
+    />
+    {error && (
+      <p className="mt-1.5 text-[10px] text-red-500">{error}</p>
+    )}
+  </div>
+)
+
+// ── Page ───────────────────────────────────────────────────────
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams()
@@ -39,97 +69,193 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {registered && (
-          <Alert className="mb-4">
-            <AlertDescription>
-              確認メールを送信しました。メール内のリンクをクリックしてアカウントを有効化してください。
-            </AlertDescription>
-          </Alert>
-        )}
+    <div className="flex min-h-[calc(100vh-56px)]">
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle>ログイン</CardTitle>
-            <CardDescription>フクナビにログインしてください</CardDescription>
-          </CardHeader>
+      {/* ── Left decorative panel ─────────────────── */}
+      <div className="relative hidden overflow-hidden bg-primary lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-12">
 
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+        {/* Subtle grid texture */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 48px)',
+          }}
+        />
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={signInWithGoogle}
-              disabled={loading}
-            >
-              <GoogleIcon />
-              Googleでログイン
-            </Button>
+        {/* Ghost watermark */}
+        <div className="pointer-events-none absolute -bottom-4 -left-4 select-none">
+          <span
+            className="font-headline font-black leading-none tracking-tighter text-white/[0.05]"
+            style={{ fontSize: 'clamp(120px, 20vw, 260px)' }}
+          >
+            IN
+          </span>
+        </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
+        {/* Top: brand mark */}
+        <div className="relative">
+          <p className="font-headline text-[9px] font-black uppercase tracking-[0.6em] text-white/30">
+            fukunavi
+          </p>
+        </div>
+
+        {/* Center: headline */}
+        <div className="relative">
+          <div className="mb-6 h-px w-10 bg-white/20" />
+          <h2 className="mb-5 font-headline text-[52px] font-black leading-[0.88] tracking-tighter text-white">
+            WELCOME<br />BACK.
+          </h2>
+          <p className="max-w-[200px] text-[12px] leading-[1.8] text-white/35">
+            お気に入りの古着屋を<br />見つけよう。
+          </p>
+        </div>
+
+        {/* Bottom: page indicator */}
+        <div className="relative flex items-center gap-3">
+          <span className="h-[2px] w-6 bg-white/25" />
+          <span className="font-headline text-[8px] font-black uppercase tracking-[0.5em] text-white/20">
+            Login
+          </span>
+        </div>
+      </div>
+
+      {/* ── Right form panel ──────────────────────── */}
+      <div className="flex flex-1 flex-col justify-center bg-white px-8 py-12 sm:px-12 md:px-16 lg:px-20">
+
+        {/* Mobile brand header */}
+        <div className="mb-10 lg:hidden">
+          <p className="mb-1 font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/35">
+            fukunavi
+          </p>
+          <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground">
+            LOGIN
+          </h1>
+        </div>
+
+        <div className="mx-auto w-full max-w-[360px]">
+
+          {/* Desktop heading */}
+          <div className="mb-8 hidden lg:block">
+            <p className="mb-1 font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/35">
+              ようこそ
+            </p>
+            <h1 className="font-headline text-2xl font-black tracking-tight text-foreground">
+              ログイン
+            </h1>
+          </div>
+
+          {/* Registered notice */}
+          {registered && (
+            <div className="wish-card-enter mb-6 border-l-[3px] border-l-emerald-400 bg-emerald-50 px-4 py-3">
+              <p className="text-[11px] font-medium leading-relaxed text-emerald-700">
+                確認メールを送信しました。メール内のリンクをクリックしてアカウントを有効化してください。
+              </p>
+            </div>
+          )}
+
+          {/* Auth error */}
+          {error && (
+            <div className="wish-card-enter mb-6 border-l-[3px] border-l-red-400 bg-red-50 px-4 py-3">
+              <p className="text-[11px] font-medium text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Google OAuth */}
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            disabled={loading}
+            className="wish-card-enter mb-6 flex w-full items-center justify-center gap-2.5 border border-border py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/60 transition-all hover:border-foreground/25 hover:bg-muted/50 disabled:opacity-50"
+            style={{ animationDelay: '0ms' }}
+          >
+            <GoogleIcon />
+            Google でログイン
+          </button>
+
+          {/* Divider */}
+          <div
+            className="wish-card-enter mb-6 flex items-center gap-3"
+            style={{ animationDelay: '40ms' }}
+          >
+            <span className="flex-1 border-t border-border" />
+            <span className="font-headline text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
+              または
+            </span>
+            <span className="flex-1 border-t border-border" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <LineField
+              label="メールアドレス"
+              fieldId="email"
+              type="email"
+              placeholder="example@email.com"
+              autoComplete="email"
+              error={errors.email?.message}
+              animDelay={80}
+              {...register('email')}
+            />
+
+            <div className="wish-card-enter" style={{ animationDelay: '120ms' }}>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/45"
+                >
+                  パスワード
+                </label>
+                <Link
+                  to="/auth/forgot-password"
+                  className="font-headline text-[8px] font-black uppercase tracking-[0.25em] text-muted-foreground/35 transition-colors hover:text-primary"
+                >
+                  忘れた方 →
+                </Link>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">または</span>
-              </div>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                className={cn(
+                  'w-full border-b bg-transparent pb-2.5 pt-1 text-[14px] text-foreground',
+                  'transition-colors duration-200 focus:outline-none',
+                  errors.password
+                    ? 'border-red-400 focus:border-red-500'
+                    : 'border-border focus:border-foreground',
+                )}
+                {...register('password')}
+              />
+              {errors.password && (
+                <p className="mt-1.5 text-[10px] text-red-500">{errors.password.message}</p>
+              )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">メールアドレス</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="example@email.com"
-                  autoComplete="email"
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-600">{errors.email.message}</p>
-                )}
-              </div>
+            <div className="wish-card-enter pt-2" style={{ animationDelay: '160ms' }}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary py-4 font-headline text-[10px] font-black uppercase tracking-[0.4em] text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              >
+                {loading ? 'ログイン中…' : 'ログイン'}
+              </button>
+            </div>
+          </form>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">パスワード</Label>
-                  <Link to="/auth/forgot-password" className="text-xs text-primary hover:underline">
-                    パスワードを忘れた方
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  {...register('password')}
-                />
-                {errors.password && (
-                  <p className="text-xs text-red-600">{errors.password.message}</p>
-                )}
-              </div>
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'ログイン中...' : 'ログイン'}
-              </Button>
-            </form>
-          </CardContent>
-
-          <CardFooter className="justify-center">
-            <p className="text-sm text-muted-foreground">
-              アカウントをお持ちでない方は{' '}
-              <Link to="/auth/register" className="text-primary hover:underline">
-                新規登録
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
+          {/* Footer link */}
+          <p
+            className="wish-card-enter mt-8 text-center font-headline text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/35"
+            style={{ animationDelay: '200ms' }}
+          >
+            初めての方は{' '}
+            <Link
+              to="/auth/register"
+              className="text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+            >
+              新規登録
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
