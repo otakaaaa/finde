@@ -45,6 +45,7 @@ const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptio
 const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
 const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
 const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
 
 // Contact pages
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
@@ -170,6 +171,10 @@ const App = () => (
             <Route
               path="/admin/contacts"
               element={<ProtectedRoute requiredRole="admin"><AdminContactsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/users"
+              element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>}
             />
           </Route>
         </Routes>
