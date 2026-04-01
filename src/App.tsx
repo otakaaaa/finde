@@ -46,6 +46,7 @@ const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
 const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
 const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
+const AdminEmailTemplatesPage = lazy(() => import('@/pages/admin/AdminEmailTemplatesPage'))
 
 // Contact pages
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
@@ -175,6 +176,10 @@ const App = () => (
             <Route
               path="/admin/users"
               element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/email-templates"
+              element={<ProtectedRoute requiredRole="admin"><AdminEmailTemplatesPage /></ProtectedRoute>}
             />
           </Route>
         </Routes>

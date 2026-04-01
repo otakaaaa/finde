@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, CreditCard, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users } from 'lucide-react'
+import { Store, FileText, Star, CreditCard, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, MailOpen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -345,6 +345,13 @@ const AdminDashboardPage = () => {
                   label="ユーザー管理"
                   sublabel="ユーザーの一覧確認・ロール変更"
                   animDelay={330}
+                />
+                <NavTile
+                  to="/admin/email-templates"
+                  icon={<MailOpen className="h-4 w-4" />}
+                  label="メールテンプレート"
+                  sublabel="自動送信メールの件名・本文を管理"
+                  animDelay={385}
                 />
               </div>
             </section>
