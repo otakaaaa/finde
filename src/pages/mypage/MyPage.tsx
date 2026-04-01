@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
@@ -80,7 +80,7 @@ const NavItem = ({ to, icon, index, label, sublabel, animDelay = 0 }: NavItemPro
 
 const MyPage = () => {
   const { user, refreshUser } = useAuth()
-  const { openLogoutModal } = useUiStore()
+  const { openLogoutModal, openDeleteAccountModal } = useUiStore()
   const { data: wishes } = useMyWishes()
   const { data: favorites } = useFavoriteShops()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -347,18 +347,31 @@ const MyPage = () => {
             </div>
           )}
 
-          {/* Sign out */}
+          {/* Sign out + Danger zone */}
           <div className="mt-10 border-t border-border pt-8">
-            <button
-              onClick={openLogoutModal}
-              className={cn(
-                'group flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.25em]',
-                'text-muted-foreground/40 transition-colors hover:text-foreground/70',
-              )}
-            >
-              <LogOut className="h-3.5 w-3.5 transition-transform duration-150 group-hover:-translate-x-0.5" />
-              Sign Out
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={openLogoutModal}
+                className={cn(
+                  'group flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.25em]',
+                  'text-muted-foreground/40 transition-colors hover:text-foreground/70',
+                )}
+              >
+                <LogOut className="h-3.5 w-3.5 transition-transform duration-150 group-hover:-translate-x-0.5" />
+                Sign Out
+              </button>
+
+              <button
+                onClick={openDeleteAccountModal}
+                className={cn(
+                  'group flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]',
+                  'text-muted-foreground/25 transition-colors hover:text-red-500',
+                )}
+              >
+                <Trash2 className="h-3 w-3" />
+                アカウントを削除
+              </button>
+            </div>
           </div>
 
         </div>

@@ -28,6 +28,11 @@ interface UiState {
   logoutModalOpen: boolean
   openLogoutModal: () => void
   closeLogoutModal: () => void
+
+  // Delete account modal
+  deleteAccountModalOpen: boolean
+  openDeleteAccountModal: () => void
+  closeDeleteAccountModal: () => void
 }
 
 const DEFAULT_FILTERS: ShopFilters = {
@@ -54,4 +59,8 @@ export const useUiStore = create<UiState>((set) => ({
   logoutModalOpen: false,
   openLogoutModal: () => set({ logoutModalOpen: true }),
   closeLogoutModal: () => set({ logoutModalOpen: false }),
+
+  deleteAccountModalOpen: false,
+  openDeleteAccountModal: () => set({ deleteAccountModalOpen: true }),
+  closeDeleteAccountModal: () => set({ deleteAccountModalOpen: false }),
 }))

@@ -3,6 +3,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { ToastStack } from '@/components/ui/Toast'
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal'
+import { DeleteAccountModal } from '@/components/auth/DeleteAccountModal'
 import { ReviewReportModal } from '@/components/review/ReviewReportModal'
 
 export const Layout = () => (
@@ -14,6 +15,7 @@ export const Layout = () => (
     <Footer />
     <ToastStack />
     <LogoutConfirmModal />
+    <DeleteAccountModal />
     <ReviewReportModal />
   </div>
 )
