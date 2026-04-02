@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
-import { useForm, Controller } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -16,7 +16,6 @@ const listingRequestSchema = z.object({
   categoryIds: z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   websiteUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   note: z.string().max(500).optional(),
-  isOwnerRequest: z.boolean(),
 })
 
 type ListingRequestFormValues = z.infer<typeof listingRequestSchema>
@@ -118,28 +117,29 @@ const ListingRequestPage = () => {
     mutationFn: async (values: ListingRequestFormValues) => {
       if (!user) throw new Error('ログインが必要です')
 
-      const { error } = await supabase.from('shop_listing_requests').insert({
-        submitted_by: user.id,
-        shop_name: values.shopName,
-        address: values.address || null,
-        category_ids: values.categoryIds,
-        website_url: values.websiteUrl || null,
-        note: values.note || null,
-        is_owner_request: values.isOwnerRequest,
-      } as never) as unknown as { data: unknown; error: { message: string } | null }
+      const { error: insertError } = await supabase
+        .from('shop_listing_requests')
+        .insert({
+          submitted_by: user.id,
+          shop_name: values.shopName,
+          address: values.address || null,
+          category_ids: values.categoryIds,
+          website_url: values.websiteUrl || null,
+          note: values.note || null,
+          is_owner_request: false,
+        } as never)
 
-      if (error) throw new Error(error.message)
+      if (insertError) throw new Error(insertError.message)
     },
     onSuccess: () => setSubmitted(true),
   })
 
-  const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<ListingRequestFormValues>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ListingRequestFormValues>({
     resolver: zodResolver(listingRequestSchema),
-    defaultValues: { categoryIds: [], isOwnerRequest: false },
+    defaultValues: { categoryIds: [] },
   })
 
   const selectedCategories = watch('categoryIds')
-  const isOwnerRequest = watch('isOwnerRequest')
 
   const toggleCategory = (id: number) => {
     const current = selectedCategories ?? []
@@ -204,10 +204,21 @@ const ListingRequestPage = () => {
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  フクナビに掲載したい店舗を申請してください。<br/>
-                  スタッフが確認後、掲載いたします。<br/>
-                  オーナーの方はオーナー申請を選択することで、ダッシュボードから店舗情報を管理できます。
+                  フクナビに掲載したい店舗を申請してください。<br />
+                  スタッフが確認後、掲載いたします。
                 </p>
+                <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
+                  <p className="text-[10px] leading-relaxed text-muted-foreground/60">
+                    店舗のオーナー・スタッフの方は
+                    <Link
+                      to="/owner-application/new"
+                      className="mx-0.5 font-bold text-primary underline-offset-2 hover:underline"
+                    >
+                      オーナー申請
+                    </Link>
+                    からご申請ください。ダッシュボードから店舗情報を管理できます。
+                  </p>
+                </div>
               </div>
 
               {/* Process steps */}
@@ -338,72 +349,6 @@ const ListingRequestPage = () => {
                       'resize-none',
                     )}
                     {...register('note')}
-                  />
-                </section>
-
-                {/* ── 05 APPLICATION TYPE ──────────── */}
-                <section>
-                  <SectionLabel num="05" title="APPLICATION TYPE" />
-                  <Controller
-                    name="isOwnerRequest"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {/* User request */}
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(false)}
-                          className={cn(
-                            'flex items-start gap-3 rounded-sm border p-4 text-left transition-all',
-                            !isOwnerRequest
-                              ? 'border-primary/20 bg-primary/[0.04]'
-                              : 'border-border bg-white hover:border-primary/20',
-                          )}
-                        >
-                          <div className={cn(
-                            'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2',
-                            !isOwnerRequest ? 'border-primary' : 'border-border',
-                          )}>
-                            {!isOwnerRequest && <div className="h-2 w-2 rounded-full bg-primary" />}
-                          </div>
-                          <div>
-                            <p className="font-headline text-[11px] font-black uppercase tracking-wide text-foreground/70">
-                              一般申請
-                            </p>
-                            <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground/50">
-                              知っている店舗を掲載申請する
-                            </p>
-                          </div>
-                        </button>
-
-                        {/* Owner request */}
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(true)}
-                          className={cn(
-                            'flex items-start gap-3 rounded-sm border p-4 text-left transition-all',
-                            isOwnerRequest
-                              ? 'border-primary/20 bg-primary/[0.04]'
-                              : 'border-border bg-white hover:border-primary/20',
-                          )}
-                        >
-                          <div className={cn(
-                            'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2',
-                            isOwnerRequest ? 'border-primary' : 'border-border',
-                          )}>
-                            {isOwnerRequest && <div className="h-2 w-2 rounded-full bg-primary" />}
-                          </div>
-                          <div>
-                            <p className="font-headline text-[11px] font-black uppercase tracking-wide text-foreground/70">
-                              オーナー申請
-                            </p>
-                            <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground/50">
-                              自分の店舗として管理権限を申請する
-                            </p>
-                          </div>
-                        </button>
-                      </div>
-                    )}
                   />
                 </section>
 

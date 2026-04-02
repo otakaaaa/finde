@@ -47,6 +47,8 @@ const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
 const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
 const AdminEmailTemplatesPage = lazy(() => import('@/pages/admin/AdminEmailTemplatesPage'))
+const OwnerApplicationDMPage = lazy(() => import('@/pages/owner-application/OwnerApplicationDMPage'))
+const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/OwnerApplicationNewPage'))
 
 // Contact pages
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
@@ -112,6 +114,14 @@ const App = () => (
             <Route
               path="/listing-request"
               element={<ProtectedRoute><ListingRequestPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/owner-application/new"
+              element={<ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/owner-application/:requestId"
+              element={<ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute>}
             />
 
             {/* Owner */}
