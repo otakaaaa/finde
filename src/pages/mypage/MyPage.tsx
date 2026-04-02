@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2 } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useMyWishes } from '@/hooks/useWishes'
 import { useFavoriteShops } from '@/hooks/useFavorites'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 
 const ROLE_LABEL: Record<string, string> = {
@@ -83,6 +84,24 @@ const MyPage = () => {
   const { openLogoutModal, openDeleteAccountModal } = useUiStore()
   const { data: wishes } = useMyWishes()
   const { data: favorites } = useFavoriteShops()
+
+  const { data: ownerApplications } = useQuery({
+    queryKey: ['my-owner-applications', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('shop_listing_requests')
+        .select('id, shop_name, status')
+        .eq('submitted_by', user!.id)
+        .eq('is_owner_request', true)
+        .order('created_at', { ascending: false })
+        .limit(5) as unknown as {
+          data: { id: string; shop_name: string; status: string }[] | null
+          error: unknown
+        }
+      return data ?? []
+    },
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -291,10 +310,64 @@ const MyPage = () => {
               icon={<Store className="h-3.5 w-3.5" />}
               index="03"
               label="店舗の掲載申請"
-              sublabel="あなたのお店を登録する"
+              sublabel="知っている店舗を登録する"
               animDelay={110}
             />
+            <NavItem
+              to="/owner-application/new"
+              icon={<MessageCircle className="h-3.5 w-3.5" />}
+              index="04"
+              label="オーナー申請"
+              sublabel="自分の店舗としてオーナー権限を申請する"
+              animDelay={165}
+            />
           </div>
+
+          {/* Owner application DM links — show for non-owners with pending/approved applications */}
+          {ownerApplications && ownerApplications.length > 0 && user?.role === 'user' && (
+            <div className="mt-8">
+              <div className="mb-5 flex items-baseline gap-3">
+                <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
+                  オーナー申請
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <div className="space-y-2">
+                {ownerApplications.map((app, i) => {
+                  const isPending = app.status === 'pending'
+                  return (
+                    <Link
+                      key={app.id}
+                      to={`/owner-application/${app.id}`}
+                      className={cn(
+                        'wish-card-enter flex items-center gap-4 border px-5 py-4 transition-all editorial-shadow',
+                        isPending
+                          ? 'border-amber-200 bg-amber-50/60 hover:border-amber-300'
+                          : 'border-border bg-white hover:border-primary/20',
+                      )}
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <div className={cn(
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-sm',
+                        isPending ? 'bg-amber-100 text-amber-600' : 'bg-muted text-muted-foreground',
+                      )}>
+                        <MessageCircle className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-headline text-[12px] font-black uppercase tracking-[0.15em] text-foreground/80 truncate">
+                          {app.shop_name}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground/50">
+                          {isPending ? '審査中 — スタッフとのDM' : app.status === 'approved' ? '承認済' : '却下'}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20" />
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Owner/Admin links */}
           {(user?.role === 'shop_owner' || user?.role === 'admin') && (
@@ -311,7 +384,7 @@ const MyPage = () => {
                   <Link
                     to="/owner/dashboard"
                     className="wish-card-enter group flex items-center gap-4 border border-primary/20 bg-primary/[0.03] px-5 py-4 transition-all hover:border-primary/40"
-                    style={{ animationDelay: '165ms' }}
+                    style={{ animationDelay: '220ms' }}
                   >
                     <span className="font-headline text-[9px] font-black tabular-nums text-primary/25">01</span>
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
@@ -329,7 +402,7 @@ const MyPage = () => {
                   <Link
                     to="/admin"
                     className="wish-card-enter group flex items-center gap-4 border border-primary/20 bg-primary/[0.03] px-5 py-4 transition-all hover:border-primary/40"
-                    style={{ animationDelay: '165ms' }}
+                    style={{ animationDelay: '220ms' }}
                   >
                     <span className="font-headline text-[9px] font-black tabular-nums text-primary/25">01</span>
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-white">

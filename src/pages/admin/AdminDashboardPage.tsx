@@ -305,7 +305,7 @@ const AdminDashboardPage = () => {
                 <NavTile
                   to="/admin/applications"
                   icon={<FileText className="h-4 w-4" />}
-                  label="掲載申請"
+                  label="申請管理"
                   sublabel="ユーザーからの申請を審査する"
                   badge={stats?.applicationsPending}
                   animDelay={55}
