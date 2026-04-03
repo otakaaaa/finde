@@ -124,7 +124,7 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
       to={`/shops/${shop.id}`}
       className="group relative block overflow-hidden bg-muted"
     >
-      <div className={variant === 'large' ? 'h-[480px]' : 'h-64'}>
+      <div className={variant === 'large' ? 'relative h-[480px] overflow-hidden' : 'relative h-64 overflow-hidden'}>
         {coverPhoto ? (
           <img
             src={getPhotoUrl(coverPhoto.storagePath)}
@@ -135,8 +135,24 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
         ) : (
           <div className="flex h-full items-center justify-center bg-muted text-5xl">🏪</div>
         )}
-        {/* Dark overlay on hover */}
-        <div className="absolute inset-0 bg-primary/0 transition-all duration-500 group-hover:bg-primary/40" />
+
+        <div className="absolute inset-0 bg-primary/0 transition-all duration-500 group-hover:bg-primary/80" />
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-3 text-center">
+          <div className="translate-y-3 opacity-0 transition-all duration-400 group-hover:translate-y-0 group-hover:opacity-100">
+            <p className="font-headline text-base font-black leading-tight text-white">{shop.name}</p>
+            {shop.area && (
+              <p className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-white/60">
+                <MapPin className="h-2.5 w-2.5" />
+                {shop.area.city}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center bg-white/0 opacity-0 transition-all duration-300 group-hover:bg-white group-hover:opacity-100">
+          <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
+        </div>
       </div>
 
       {/* Info bar */}
