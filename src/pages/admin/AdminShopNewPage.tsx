@@ -1,11 +1,12 @@
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ImagePlus, X } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
@@ -68,7 +69,6 @@ const AdminShopNewPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
 
@@ -79,11 +79,10 @@ const AdminShopNewPage = () => {
     return () => urls.forEach((u) => URL.revokeObjectURL(u))
   }, [pendingFiles])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (files.length === 0) return
     setPendingFiles((prev) => [...prev, ...files])
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -460,28 +459,7 @@ const AdminShopNewPage = () => {
                 <h2 className="font-headline text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/50">Photos</h2>
               </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="sr-only"
-                onChange={handleFileSelect}
-              />
-
-              {/* Upload trigger */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  'flex w-full items-center justify-center gap-2 border border-dashed border-border py-8',
-                  'text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50',
-                  'transition-colors hover:border-primary/40 hover:text-primary/60',
-                )}
-              >
-                <ImagePlus className="h-4 w-4" />
-                写真を追加
-              </button>
+              <ShopPhotoUploadInput onChange={handleFileSelect}/>
 
               {/* Preview grid */}
               {previewUrls.length > 0 && (

@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, ImagePlus, X, Tag } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, X, Tag } from 'lucide-react'
 import { Link } from 'react-router'
 import { supabase } from '@/lib/supabase'
 import { useShop } from '@/hooks/useShop'
+import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -158,7 +159,6 @@ const AdminShopEditPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showSuccess, setShowSuccess] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
 
@@ -207,7 +207,6 @@ const AdminShopEditPage = () => {
       setPhotoError(err instanceof Error ? err.message : '画像のアップロードに失敗しました')
     } finally {
       setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -579,29 +578,11 @@ const AdminShopEditPage = () => {
             <section className="space-y-4">
               <SectionLabel num="07" title="PHOTOS" optional />
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="sr-only"
+              <ShopPhotoUploadInput
                 onChange={handlePhotoFileChange}
-              />
-
-              {/* Upload trigger */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || isDeleting}
-                className={cn(
-                  'flex w-full items-center justify-center gap-2 border border-dashed border-border py-8',
-                  'text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50',
-                  'transition-colors hover:border-primary/40 hover:text-primary/60 disabled:opacity-40',
-                )}
-              >
-                <ImagePlus className="h-4 w-4" />
-                {uploading ? 'アップロード中...' : '写真を追加'}
-              </button>
+                uploading={uploading}
+              />
 
               {/* Error */}
               {photoError && (
