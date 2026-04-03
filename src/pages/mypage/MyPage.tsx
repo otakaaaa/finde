@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useMyWishes } from '@/hooks/useWishes'
@@ -13,6 +14,24 @@ const ROLE_LABEL: Record<string, string> = {
   user: 'MEMBER',
   shop_owner: 'OWNER',
   admin: 'ADMIN',
+}
+
+const AVATAR_BUCKET = 'user-avatars'
+
+const getAvatarStoragePath = (avatarUrl: string | null) => {
+  if (!avatarUrl) return null
+
+  try {
+    const url = new URL(avatarUrl)
+    const marker = `/${AVATAR_BUCKET}/`
+    const markerIndex = url.pathname.indexOf(marker)
+
+    if (markerIndex === -1) return null
+
+    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length))
+  } catch {
+    return null
+  }
 }
 
 const StatPanel = ({
@@ -113,12 +132,30 @@ const MyPage = () => {
     setUploading(true)
     setUploadError(null)
 
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${user.id}/${Date.now()}.${ext}`
+    try {
+      await validateAllowedImageFiles([file])
+    } catch (err) {
+      setUploadError('画像の検証に失敗しました')
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
+    const { data: currentUserRow } = await supabase
+      .from('users')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single() as unknown as { data: { avatar_url: string | null } | null; error: { message: string } | null }
+
+    const path = `${user.id}/avatar`
+    const previousAvatarPath = getAvatarStoragePath(currentUserRow?.avatar_url ?? user.avatarUrl)
 
     const { error: uploadError } = await supabase.storage
-      .from('user-avatars')
-      .upload(path, file)
+      .from(AVATAR_BUCKET)
+      .upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      })
 
     if (uploadError) {
       setUploadError('アップロードに失敗しました')
@@ -126,19 +163,27 @@ const MyPage = () => {
       return
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('user-avatars')
-      .getPublicUrl(path)
+    const cacheBustedAvatarUrl = `${supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl}?t=${Date.now()}`
 
-    const { error: updateError } = await supabase
+    const { data: updatedUser, error: updateError } = await supabase
       .from('users')
-      .update({ avatar_url: publicUrl } as never)
-      .eq('id', user.id) as unknown as { error: { message: string } | null }
+      .update({
+        avatar_url: cacheBustedAvatarUrl,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq('id', user.id)
+      .select('id, avatar_url')
+      .single() as unknown as { data: { id: string; avatar_url: string | null } | null; error: { message: string } | null }
 
-    if (updateError) {
+    if (updateError || !updatedUser) {
+      await supabase.storage.from(AVATAR_BUCKET).remove([path])
       setUploadError('プロフィールの更新に失敗しました')
       setUploading(false)
       return
+    }
+
+    if (previousAvatarPath && previousAvatarPath !== path) {
+      await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath])
     }
 
     await refreshUser()
