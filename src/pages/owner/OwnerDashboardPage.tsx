@@ -6,7 +6,6 @@ import {
   ArrowUpRight, ChevronLeft,
 } from 'lucide-react'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
-import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
 
@@ -352,7 +351,6 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
 // ── Page ───────────────────────────────────────────────────────
 
 const OwnerDashboardPage = () => {
-  const { user } = useAuth()
   const { data: shops, isLoading, isError } = useOwnerShops()
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null)
 

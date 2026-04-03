@@ -342,7 +342,7 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
 
   const { mutate: approveApplication, isPending: isApproving } = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('approve_owner_application', {
+      const { error } = await (supabase as any).rpc('approve_owner_application', {
         p_request_id: application.id,
       }) as unknown as { error: { message: string } | null }
       if (error) throw new Error(error.message)

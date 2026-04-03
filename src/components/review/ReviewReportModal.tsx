@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flag, X, Send, CheckCircle2 } from 'lucide-react'
+import { X, Send, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useUiStore } from '@/store/uiStore'
 import { useAuth } from '@/hooks/useAuth'

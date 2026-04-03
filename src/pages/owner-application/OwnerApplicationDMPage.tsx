@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router'
+import { useParams, Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Send, Check, X, Store, Clock, MessageCircle } from 'lucide-react'
+import { ChevronLeft, Send, Check, X, Store, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -76,10 +76,9 @@ const STATUS_CONFIG = {
 interface MessageBubbleProps {
   message: DmMessage
   isSelf: boolean
-  isAdmin: boolean
 }
 
-const MessageBubble = ({ message, isSelf, isAdmin }: MessageBubbleProps) => {
+const MessageBubble = ({ message, isSelf }: MessageBubbleProps) => {
   const senderIsAdmin = message.users?.role === 'admin'
   const name = senderIsAdmin ? '運営スタッフ' : (message.users?.display_name ?? 'ユーザー')
 
@@ -171,7 +170,6 @@ const AdminActionBar = ({ status, onApprove, onReject, isProcessing }: AdminActi
 
 const OwnerApplicationDMPage = () => {
   const { requestId } = useParams<{ requestId: string }>()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -201,7 +199,8 @@ const OwnerApplicationDMPage = () => {
 
   const { mutate: approveApplication, isPending: isApproving } = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('approve_owner_application', {
+      if (!requestId) throw new Error('Request ID is required')
+      const { error } = await (supabase as any).rpc('approve_owner_application', {
         p_request_id: requestId,
       }) as unknown as { error: { message: string } | null }
       if (error) throw new Error(error.message)
@@ -215,6 +214,7 @@ const OwnerApplicationDMPage = () => {
 
   const { mutate: rejectApplication, isPending: isRejecting } = useMutation({
     mutationFn: async () => {
+      if (!requestId) throw new Error('Request ID is required')
       const { error } = await supabase
         .from('shop_listing_requests')
         .update({ status: 'rejected' } as never)
@@ -345,7 +345,6 @@ const OwnerApplicationDMPage = () => {
                   key={msg.id}
                   message={msg}
                   isSelf={msg.sender_id === user?.id}
-                  isAdmin={isAdmin}
                 />
               ))}
               <div ref={bottomRef} />
