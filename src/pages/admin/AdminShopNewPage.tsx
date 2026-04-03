@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { useAuth } from '@/hooks/useAuth'
+import { useUiStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -70,6 +71,7 @@ const AdminShopNewPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const { addToast } = useUiStore()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
@@ -176,6 +178,10 @@ const AdminShopNewPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
+      addToast({
+        title: '店舗を登録しました',
+        variant: 'default',
+      })
       navigate('/admin/shops')
     },
   })

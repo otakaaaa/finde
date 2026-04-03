@@ -4,12 +4,13 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, X, Tag } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, X, Tag } from 'lucide-react'
 import { Link } from 'react-router'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useShop } from '@/hooks/useShop'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
+import { useUiStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -159,7 +160,7 @@ const AdminShopEditPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [showSuccess, setShowSuccess] = useState(false)
+  const { addToast } = useUiStore()
   const [uploading, setUploading] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
 
@@ -257,8 +258,10 @@ const AdminShopEditPage = () => {
       { ...values, shopId: id },
       {
         onSuccess: () => {
-          setShowSuccess(true)
-          setTimeout(() => setShowSuccess(false), 4000)
+          addToast({
+            title: '変更を保存しました',
+            variant: 'default',
+          })
         },
       },
     )
@@ -336,14 +339,6 @@ const AdminShopEditPage = () => {
       {/* ── Form ─────────────────────────────────── */}
       <div className="bg-background">
         <div className="mx-auto max-w-3xl px-4 py-10 md:px-16 md:py-14">
-
-          {/* Success banner */}
-          {showSuccess && (
-            <div className="wish-card-enter mb-8 flex items-center gap-3 border border-emerald-200 bg-emerald-50 px-4 py-3">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-              <p className="text-xs font-bold text-emerald-700">変更を保存しました</p>
-            </div>
-          )}
 
           {/* Error banner */}
           {error && (
