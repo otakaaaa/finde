@@ -216,7 +216,7 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
 
               <div className="space-y-2">
                 <ActionCard
-                  to={`/owner/shops/${shop.id}`}
+                  to={`/owner/shops/${shop.id}/edit`}
                   icon={<Edit3 className="h-4 w-4" />}
                   index="01"
                   title="店舗情報を編集"
@@ -256,7 +256,7 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                       {shop.description}
                     </p>
                     <Link
-                      to={`/owner/shops/${shop.id}`}
+                      to={`/owner/shops/${shop.id}/edit`}
                       className="mt-3 flex items-center gap-1 text-[10px] font-bold text-primary/60 transition-colors hover:text-primary"
                     >
                       編集する <ChevronRight className="h-3 w-3" />

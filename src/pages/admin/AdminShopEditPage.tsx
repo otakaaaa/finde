@@ -1,136 +1,126 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router'
-import { useForm, Controller } from 'react-hook-form'
+import { useEffect } from 'react'
+import { useParams, useNavigate, Link } from 'react-router'
+import { useForm, Controller, useWatch, type Path } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, X, Tag } from 'lucide-react'
-import { Link } from 'react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, Tag, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useShop } from '@/hooks/useShop'
-import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useUiStore } from '@/store/uiStore'
+import { SectionLabel, Field, inputClass, selectClass } from '@/components/shop/ShopFormUI'
+import { ShopPhotoSection } from '@/components/shop/ShopPhotoSection'
+import {
+  ShopBusinessHoursSection,
+  businessHoursSchema,
+  toFormEntry,
+  toBusinessHours,
+  DAYS,
+  type DayKey,
+} from '@/components/shop/ShopBusinessHoursSection'
 import { cn } from '@/lib/utils'
-import type { Area, Category, PriceRange } from '@/types'
+import type { Area, PriceRange, BusinessHours } from '@/types'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
-const BUCKET = 'shop-photos'
-const getPhotoUrl = (storagePath: string) =>
-  `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`
-
-interface PhotoRow {
-  id: string
-  storagePath: string
-  order: number
-}
-
-const useShopPhotos = (shopId: string) =>
-  useQuery({
-    queryKey: ['shop-photos', shopId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('shop_photos')
-        .select('id, storage_path, order')
-        .eq('shop_id', shopId)
-        .order('order', { ascending: true }) as unknown as { data: { id: string; storage_path: string; order: number }[] | null; error: { message: string } | null }
-      if (error) throw new Error(error.message)
-      return (data ?? []).map((p): PhotoRow => ({ id: p.id, storagePath: p.storage_path, order: p.order }))
-    },
-    enabled: !!shopId,
-  })
+// ── Schema ────────────────────────────────────────────────────────
 
 const shopEditSchema = z.object({
-  name: z.string().min(1, '店舗名を入力してください').max(100),
-  description: z.string().max(2000).optional(),
-  areaId: z.number({ required_error: 'エリアを選択してください' }),
+  name:         z.string().min(1, '店舗名を入力してください').max(100),
+  description:  z.string().max(2000).optional(),
+  areaId:       z.number({ required_error: 'エリアを選択してください' }),
   priceRangeId: z.number().optional(),
-  categoryIds: z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
-  phone: z.string().max(20).optional(),
-  websiteUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
+  phone:        z.string().max(20).optional(),
+  websiteUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   instagramUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  twitterUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  status: z.enum(['public', 'private', 'pending']),
+  twitterUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  status:       z.enum(['public', 'private', 'pending']),
+  businessHours: businessHoursSchema,
 })
 
 type ShopEditFormValues = z.infer<typeof shopEditSchema>
 
-const STATUS_OPTIONS: { value: ShopEditFormValues['status']; label: string; sublabel: string; badgeClass: string }[] = [
-  { value: 'public', label: '公開', sublabel: '一般公開中', badgeClass: 'border-emerald-300 bg-emerald-50 text-emerald-700' },
+// ── Status options ────────────────────────────────────────────────
+
+const STATUS_OPTIONS: {
+  value: ShopEditFormValues['status']
+  label: string
+  sublabel: string
+  badgeClass: string
+}[] = [
+  { value: 'public',  label: '公開',  sublabel: '一般公開中',  badgeClass: 'border-emerald-300 bg-emerald-50 text-emerald-700' },
   { value: 'pending', label: '審査中', sublabel: '審査待ち状態', badgeClass: 'border-amber-300 bg-amber-50 text-amber-700' },
   { value: 'private', label: '非公開', sublabel: '非公開で保存', badgeClass: 'border-border bg-muted text-muted-foreground' },
 ]
 
-interface SectionLabelProps {
-  num: string
-  title: string
-  required?: boolean
-  optional?: boolean
+// ── Helper ────────────────────────────────────────────────────────
+
+function shopToFormValues(shop: {
+  name: string
+  description: string | null
+  area: Area | null
+  priceRange: PriceRange | null
+  categories: { id: number }[]
+  phone: string | null
+  websiteUrl: string | null
+  instagramUrl: string | null
+  twitterUrl: string | null
+  status: ShopEditFormValues['status']
+  businessHours: BusinessHours | null
+}): ShopEditFormValues {
+  const bh = shop.businessHours
+  return {
+    name:         shop.name,
+    description:  shop.description ?? '',
+    areaId:       shop.area?.id ?? ('' as unknown as number),
+    priceRangeId: shop.priceRange?.id,
+    categoryIds:  shop.categories.map((c) => c.id),
+    phone:        shop.phone ?? '',
+    websiteUrl:   shop.websiteUrl ?? '',
+    instagramUrl: shop.instagramUrl ?? '',
+    twitterUrl:   shop.twitterUrl ?? '',
+    status:       shop.status,
+    businessHours: {
+      mon: toFormEntry(bh?.mon ?? null),
+      tue: toFormEntry(bh?.tue ?? null),
+      wed: toFormEntry(bh?.wed ?? null),
+      thu: toFormEntry(bh?.thu ?? null),
+      fri: toFormEntry(bh?.fri ?? null),
+      sat: toFormEntry(bh?.sat ?? null),
+      sun: toFormEntry(bh?.sun ?? null),
+    },
+  }
 }
 
-const SectionLabel = ({ num, title, required, optional }: SectionLabelProps) => (
-  <div className="mb-4 flex items-baseline gap-3">
-    <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">{num}</span>
-    <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">{title}</span>
-    {required && <span className="text-[10px] font-bold text-primary">REQUIRED</span>}
-    {optional && <span className="text-[10px] font-medium text-muted-foreground/40">optional</span>}
-  </div>
-)
-
-const inputClass = cn(
-  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
-  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
-)
-
-const selectClass = cn(
-  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
-  'focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none',
-)
-
-const inputWithIconClass = cn(
-  'h-10 w-full rounded-sm border border-border bg-white pl-9 pr-3 text-sm text-foreground',
-  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
-)
-
-const useMasterData = () =>
-  useQuery({
-    queryKey: ['master-data'],
-    queryFn: async () => {
-      const [areas, categories, priceRanges] = await Promise.all([
-        supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{ data: Area[] | null; error: unknown }>,
-        supabase.from('categories').select('id, code, name').order('id') as unknown as Promise<{ data: Category[] | null; error: unknown }>,
-        supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{ data: ({ id: number; label: string; min_price: number | null; max_price: number | null })[] | null; error: unknown }>,
-      ])
-      return {
-        areas: areas.data ?? [],
-        categories: categories.data ?? [],
-        priceRanges: (priceRanges.data ?? []).map((p) => ({
-          id: p.id,
-          label: p.label,
-          minPrice: p.min_price,
-          maxPrice: p.max_price,
-        })) as PriceRange[],
-      }
-    },
-    staleTime: Infinity,
-  })
+// ── Mutation ─────────────────────────────────────────────────────
 
 const useAdminUpdateShop = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ shopId, categoryIds, ...fields }: ShopEditFormValues & { shopId: string }) => {
+    mutationFn: async ({
+      shopId,
+      categoryIds,
+      businessHours,
+      ...fields
+    }: ShopEditFormValues & { shopId: string }) => {
+      const closedDays = DAYS
+        .filter((d) => !businessHours[d.key].enabled)
+        .map((d) => d.key)
+
       const { error: shopError } = await supabase
         .from('shops')
         .update({
-          name: fields.name,
-          description: fields.description || null,
-          area_id: fields.areaId,
+          name:           fields.name,
+          description:    fields.description || null,
+          area_id:        fields.areaId,
           price_range_id: fields.priceRangeId ?? null,
-          phone: fields.phone || null,
-          website_url: fields.websiteUrl || null,
-          instagram_url: fields.instagramUrl || null,
-          twitter_url: fields.twitterUrl || null,
-          status: fields.status,
+          phone:          fields.phone || null,
+          website_url:    fields.websiteUrl || null,
+          instagram_url:  fields.instagramUrl || null,
+          twitter_url:    fields.twitterUrl || null,
+          status:         fields.status,
+          business_hours: toBusinessHours(businessHours),
+          closed_days:    closedDays,
         } as never)
         .eq('id', shopId) as unknown as { error: { message: string } | null }
 
@@ -145,7 +135,9 @@ const useAdminUpdateShop = () => {
 
       const { error: insError } = await supabase
         .from('shop_categories')
-        .insert(categoryIds.map((id) => ({ shop_id: shopId, category_id: id })) as never) as unknown as { error: { message: string } | null }
+        .insert(categoryIds.map((id) => ({ shop_id: shopId, category_id: id })) as never) as unknown as {
+          error: { message: string } | null
+        }
 
       if (insError) throw new Error(insError.message)
     },
@@ -156,91 +148,37 @@ const useAdminUpdateShop = () => {
   })
 }
 
+// ── Page ─────────────────────────────────────────────────────────
+
 const AdminShopEditPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { addToast } = useUiStore()
-  const [uploading, setUploading] = useState(false)
-  const [photoError, setPhotoError] = useState<string | null>(null)
-
-  const { data: photos = [] } = useShopPhotos(id ?? '')
-
-  const { mutate: deletePhoto, isPending: isDeleting } = useMutation({
-    mutationFn: async ({ photoId, storagePath }: { photoId: string; storagePath: string }) => {
-      const { error: storageError } = await supabase.storage.from(BUCKET).remove([storagePath])
-      if (storageError) throw new Error(storageError.message)
-      const { error: dbError } = await supabase
-        .from('shop_photos')
-        .delete()
-        .eq('id', photoId) as unknown as { error: { message: string } | null }
-      if (dbError) throw new Error(dbError.message)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shop-photos', id] })
-      queryClient.invalidateQueries({ queryKey: ['shop', id] })
-    },
-  })
-
-  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (files.length === 0 || !id) return
-    setUploading(true)
-    setPhotoError(null)
-    try {
-      await validateAllowedImageFiles(files)
-
-      const maxOrder = photos.length > 0 ? Math.max(...photos.map((p) => p.order)) : -1
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-        const path = `${id}/${crypto.randomUUID()}.${ext}`
-        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
-        if (storageErr) throw new Error(storageErr.message)
-        const { error: dbErr } = await supabase
-          .from('shop_photos')
-          .insert({ shop_id: id, storage_path: path, order: maxOrder + 1 + i } as never) as unknown as { error: { message: string } | null }
-        if (dbErr) {
-          await supabase.storage.from(BUCKET).remove([path])
-          throw new Error(dbErr.message)
-        }
-      }
-      queryClient.invalidateQueries({ queryKey: ['shop-photos', id] })
-      queryClient.invalidateQueries({ queryKey: ['shop', id] })
-    } catch (err) {
-      setPhotoError(err instanceof Error ? err.message : '画像のアップロードに失敗しました')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const { data: shop, isLoading: shopLoading } = useShop(id ?? '')
-  const { data: masterData } = useMasterData()
+  const { data: masterData } = useShopMasterData()
   const { mutate, isPending, error } = useAdminUpdateShop()
 
-  const { register, handleSubmit, watch, setValue, control, reset, formState: { errors } } = useForm<ShopEditFormValues>({
-
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    control,
+    reset,
+    formState: { errors, isDirty },
+  } = useForm<ShopEditFormValues>({
     resolver: zodResolver(shopEditSchema),
     defaultValues: { categoryIds: [], status: 'public' },
   })
 
+  const businessHours      = useWatch({ control, name: 'businessHours' })
   const selectedCategories = watch('categoryIds')
-  const watchedStatus = watch('status')
+  const watchedStatus      = watch('status')
 
   useEffect(() => {
     if (!shop) return
-    reset({
-      name: shop.name,
-      description: shop.description ?? '',
-      areaId: shop.area?.id,
-      priceRangeId: shop.priceRange?.id,
-      categoryIds: shop.categories.map((c) => c.id),
-      phone: shop.phone ?? '',
-      websiteUrl: shop.websiteUrl ?? '',
-      instagramUrl: shop.instagramUrl ?? '',
-      twitterUrl: shop.twitterUrl ?? '',
-      status: shop.status,
-    })
+    reset(shopToFormValues(shop))
   }, [shop, reset])
 
   const toggleCategory = (catId: number) => {
@@ -258,10 +196,7 @@ const AdminShopEditPage = () => {
       { ...values, shopId: id },
       {
         onSuccess: () => {
-          addToast({
-            title: '変更を保存しました',
-            variant: 'default',
-          })
+          addToast({ title: '変更を保存しました', variant: 'default', position: 'bottom-right' })
         },
       },
     )
@@ -291,7 +226,7 @@ const AdminShopEditPage = () => {
 
   return (
     <div>
-      {/* ── Page header ──────────────────────────── */}
+      {/* ── Page header */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
@@ -301,7 +236,6 @@ const AdminShopEditPage = () => {
             EDIT
           </span>
         </div>
-
         <div className="relative mx-auto max-w-3xl">
           <div className="pb-6">
             <button
@@ -312,9 +246,7 @@ const AdminShopEditPage = () => {
               <ChevronLeft className="h-3 w-3" />
               店舗管理
             </button>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-              — Admin
-            </p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Admin</p>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
@@ -336,43 +268,33 @@ const AdminShopEditPage = () => {
         </div>
       </section>
 
-      {/* ── Form ─────────────────────────────────── */}
+      {/* ── Form */}
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-10 md:px-16 md:py-14">
+        <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-14">
 
-          {/* Error banner */}
           {error && (
             <div className="mb-8 border border-red-200 bg-red-50 px-4 py-3">
               <p className="text-xs font-medium text-red-700">{(error as Error).message}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_220px] lg:gap-14">
+            <div className="space-y-12">
 
-            {/* ── 01 基本情報 ────────────────────── */}
-            <section>
+            {/* 01 基本情報 */}
+            <section className="wish-card-enter" style={{ animationDelay: '0ms' }}>
               <SectionLabel num="01" title="基本情報" required />
               <div className="space-y-4">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    店舗名
-                  </label>
+                <Field label="店舗名" error={errors.name?.message}>
                   <input
                     type="text"
                     placeholder="例: ○○古着店"
                     className={cn(inputClass, errors.name && 'border-red-400')}
                     {...register('name')}
                   />
-                  {errors.name && (
-                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    店舗説明
-                    <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
-                  </label>
+                </Field>
+                <Field label="店舗説明" optional>
                   <textarea
                     rows={4}
                     placeholder="店舗の特徴、取り扱いブランド、雰囲気など…"
@@ -383,18 +305,15 @@ const AdminShopEditPage = () => {
                     )}
                     {...register('description')}
                   />
-                </div>
+                </Field>
               </div>
             </section>
 
-            {/* ── 02 エリア ──────────────────────── */}
-            <section>
-              <SectionLabel num="02" title="エリア" required />
+            {/* 02 エリア・価格帯 */}
+            <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
+              <SectionLabel num="02" title="エリア / 価格帯" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    エリア
-                  </label>
+                <Field label="エリア" error={errors.areaId?.message}>
                   <select
                     className={cn(selectClass, errors.areaId && 'border-red-400')}
                     {...register('areaId', { valueAsNumber: true })}
@@ -404,16 +323,8 @@ const AdminShopEditPage = () => {
                       <option key={area.id} value={area.id}>{area.city}</option>
                     ))}
                   </select>
-                  {errors.areaId && (
-                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.areaId.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    価格帯
-                    <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
-                  </label>
+                </Field>
+                <Field label="価格帯" optional>
                   <select
                     className={selectClass}
                     {...register('priceRangeId', { valueAsNumber: true })}
@@ -423,12 +334,12 @@ const AdminShopEditPage = () => {
                       <option key={pr.id} value={pr.id}>{pr.label}</option>
                     ))}
                   </select>
-                </div>
+                </Field>
               </div>
             </section>
 
-            {/* ── 03 カテゴリ ──────────────────────── */}
-            <section>
+            {/* 03 カテゴリ */}
+            <section className="wish-card-enter" style={{ animationDelay: '80ms' }}>
               <SectionLabel num="03" title="カテゴリ" required />
               <div className="flex flex-wrap gap-2">
                 {masterData?.categories.map((cat) => (
@@ -452,90 +363,70 @@ const AdminShopEditPage = () => {
               )}
             </section>
 
-            {/* ── 04 連絡先 ───────────────────────── */}
-            <section>
-              <SectionLabel num="04" title="連絡先" optional />
+            {/* 04 写真 */}
+            {id && <ShopPhotoSection shopId={id} num="04" animationDelay="100ms" />}
+
+            {/* 05 連絡先 */}
+            <section className="wish-card-enter" style={{ animationDelay: '120ms' }}>
+              <SectionLabel num="05" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    電話番号
-                  </label>
+                <Field label="電話番号" optional>
                   <div className="relative">
                     <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="tel"
                       placeholder="03-0000-0000"
-                      className={inputWithIconClass}
+                      className={cn(inputClass, 'pl-9')}
                       {...register('phone')}
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    公式サイト
-                  </label>
+                </Field>
+                <Field label="公式サイト" optional error={errors.websiteUrl?.message}>
                   <div className="relative">
                     <Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="url"
                       placeholder="https://example.com"
-                      className={cn(inputWithIconClass, errors.websiteUrl && 'border-red-400')}
+                      className={cn(inputClass, 'pl-9', errors.websiteUrl && 'border-red-400')}
                       {...register('websiteUrl')}
                     />
                   </div>
-                  {errors.websiteUrl && (
-                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.websiteUrl.message}</p>
-                  )}
-                </div>
+                </Field>
               </div>
             </section>
 
-            {/* ── 05 SNS ────────────────────────── */}
-            <section>
-              <SectionLabel num="05" title="SNS" optional />
+            {/* 06 SNS */}
+            <section className="wish-card-enter" style={{ animationDelay: '160ms' }}>
+              <SectionLabel num="06" title="SNS" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    Instagram
-                  </label>
+                <Field label="Instagram" optional error={errors.instagramUrl?.message}>
                   <div className="relative">
                     <Instagram className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="url"
                       placeholder="https://instagram.com/..."
-                      className={cn(inputWithIconClass, errors.instagramUrl && 'border-red-400')}
+                      className={cn(inputClass, 'pl-9', errors.instagramUrl && 'border-red-400')}
                       {...register('instagramUrl')}
                     />
                   </div>
-                  {errors.instagramUrl && (
-                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.instagramUrl.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    X
-                  </label>
+                </Field>
+                <Field label="X" optional error={errors.twitterUrl?.message}>
                   <div className="relative">
                     <Twitter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="url"
                       placeholder="https://x.com/..."
-                      className={cn(inputWithIconClass, errors.twitterUrl && 'border-red-400')}
+                      className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
                       {...register('twitterUrl')}
                     />
                   </div>
-                  {errors.twitterUrl && (
-                    <p className="mt-1 text-[10px] font-medium text-red-500">{errors.twitterUrl.message}</p>
-                  )}
-                </div>
+                </Field>
               </div>
             </section>
 
-            {/* ── 06 ステータス ────────────────────────── */}
-            <section>
-              <SectionLabel num="06" title="ステータス" />
+            {/* 07 ステータス */}
+            <section className="wish-card-enter" style={{ animationDelay: '180ms' }}>
+              <SectionLabel num="07" title="ステータス" />
               <Controller
                 name="status"
                 control={control}
@@ -572,107 +463,119 @@ const AdminShopEditPage = () => {
               />
             </section>
 
-            {/* ── 07 写真 ────────────────────────── */}
-            <section className="space-y-4">
-              <SectionLabel num="07" title="写真" optional />
+            {/* 08 営業時間 */}
+            <ShopBusinessHoursSection
+              num="08"
+              businessHours={businessHours}
+              register={register}
+              onToggle={(dayKey: DayKey) =>
+                setValue(
+                  `businessHours.${dayKey}.enabled` as Path<ShopEditFormValues>,
+                  !(businessHours?.[dayKey]?.enabled ?? false),
+                  { shouldDirty: true },
+                )
+              }
+              animationDelay="200ms"
+            />
 
-              <ShopPhotoUploadInput
-                onChange={handlePhotoFileChange}
-                disabled={uploading || isDeleting}
-                uploading={uploading}
-              />
+            </div>{/* end main form */}
 
-              {/* Error */}
-              {photoError && (
-                <p className="text-[10px] font-medium text-red-500">{photoError}</p>
-              )}
+            {/* ── Sidebar */}
+            <aside className="lg:sticky lg:top-8 lg:self-start">
+              <div className="space-y-4">
 
-              {/* Photo grid */}
-              {photos.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {photos.map((photo, i) => (
-                    <div key={photo.id} className="group relative aspect-square overflow-hidden bg-muted">
-                      <img src={getPhotoUrl(photo.storagePath)} alt="" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => deletePhoto({ photoId: photo.id, storagePath: photo.storagePath })}
-                        disabled={uploading || isDeleting}
-                        className={cn(
-                          'absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full',
-                          'bg-foreground/70 text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-40',
-                        )}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      {i === 0 && (
-                        <span className="absolute bottom-1 left-1 rounded-sm bg-primary/80 px-1 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-white">
-                          Main
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <p className="text-[10px] text-muted-foreground/40">
-                JPEG / PNG / WebP · 最大10枚
-              </p>
-            </section>
-
-            {/* ── ブランド管理 ─────────────────── */}
-            <div className="border-t border-border pt-8">
-              <Link
-                to={`/admin/shops/${id}/brands`}
-                className={cn(
-                  'flex w-full items-center gap-3 border border-border bg-white px-4 py-3.5 transition-colors',
-                  'hover:border-primary/20 hover:bg-primary/[0.02] editorial-shadow',
-                )}
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground">
-                  <Tag className="h-3.5 w-3.5" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-headline text-[12px] font-black uppercase tracking-[0.15em] text-foreground/80">
-                    ブランド管理
+                {/* Save status card */}
+                <div className="border border-border bg-white px-4 py-3 editorial-shadow">
+                  <p className="mb-2 font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+                    Status
                   </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground/50">この店舗に紐付くブランドを編集する</p>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 rotate-180 text-muted-foreground/20" />
-              </Link>
-            </div>
-
-            {/* ── Submit ───────────────────────────── */}
-            <div className="border-t border-border pt-8">
-              <div className="flex items-center gap-3">
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className={cn(
-                    'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
-                    'hover:opacity-90 disabled:opacity-40',
-                  )}
-                >
-                  {isPending ? (
-                    <span className="flex items-center gap-2">
-                      <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      保存中...
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      isDirty ? 'animate-pulse bg-amber-400' : 'bg-emerald-400',
+                    )} />
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {isDirty ? '未保存の変更があります' : '最新の状態です'}
                     </span>
-                  ) : (
-                    '保存する'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/admin/shops')}
-                  className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  キャンセル
-                </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isPending || !isDirty}
+                    className={cn(
+                      'flex w-full items-center justify-center gap-2 bg-primary',
+                      'font-headline text-[10px] font-black uppercase tracking-[0.3em] text-white',
+                      'py-3 transition-opacity hover:opacity-90 disabled:opacity-40',
+                    )}
+                  >
+                    {isPending ? (
+                      <>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        保存中…
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-3.5 w-3.5" />
+                        変更を保存
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Quick links */}
+                <div className="border border-border bg-white editorial-shadow">
+                  <Link
+                    to={`/admin/shops/${id}/brands`}
+                    className="flex items-center gap-3 border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/30"
+                  >
+                    <Tag className="h-3.5 w-3.5 text-muted-foreground/40" />
+                    <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
+                      ブランド管理
+                    </span>
+                  </Link>
+                  <a
+                    href={`/shops/${id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30"
+                  >
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground/40" />
+                    <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
+                      公開ページ
+                    </span>
+                  </a>
+                </div>
+
               </div>
-            </div>
+            </aside>
+
+          </div>{/* end grid */}
+
+          {/* Mobile submit */}
+          <div className="mt-12 border-t border-border pt-8 lg:hidden">
+            <button
+              type="submit"
+              disabled={isPending || !isDirty}
+              className={cn(
+                'flex items-center gap-2 bg-primary px-6 py-2.5',
+                'font-headline text-[10px] font-black uppercase tracking-[0.3em] text-white',
+                'transition-opacity hover:opacity-90 disabled:opacity-40',
+              )}
+            >
+              {isPending ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  保存中…
+                </>
+              ) : (
+                <>
+                  <Save className="h-3.5 w-3.5" />
+                  変更を保存
+                </>
+              )}
+            </button>
+          </div>
 
           </form>
-
         </div>
       </div>
     </div>
