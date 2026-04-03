@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, Store, User, CreditCard, Calendar, TrendingUp, AlertCircle } from 'lucide-react'
+import { ChevronLeft, Store, User, CreditCard, Calendar, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 

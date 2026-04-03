@@ -28,11 +28,11 @@ const useShopPhotos = (shopId: string) =>
   useQuery({
     queryKey: ['shop-photos', shopId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('shop_photos')
         .select('id, shop_id, storage_path, order, created_at')
         .eq('shop_id', shopId)
-        .order('order', { ascending: true }) as unknown as Promise<{ data: PhotoRow[] | null; error: { message: string } | null }>
+        .order('order', { ascending: true }) as unknown as Promise<{ data: PhotoRow[] | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
       return (data ?? []).map((p): ShopPhoto => ({
         id: p.id,

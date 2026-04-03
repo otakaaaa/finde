@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
-import { useAuthActions } from '@/hooks/useAuthActions'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
 
