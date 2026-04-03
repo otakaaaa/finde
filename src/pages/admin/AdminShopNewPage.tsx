@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Globe, Instagram, Twitter, Phone, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -71,6 +72,8 @@ const AdminShopNewPage = () => {
   const { user } = useAuth()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
 
   // Generate / revoke object URLs when pendingFiles changes
   useEffect(() => {
@@ -82,7 +85,17 @@ const AdminShopNewPage = () => {
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (files.length === 0) return
-    setPendingFiles((prev) => [...prev, ...files])
+    setUploadingPhotos(true)
+    setPhotoError(null)
+
+    try {
+      await validateAllowedImageFiles(files)
+      setPendingFiles((prev) => [...prev, ...files])
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : '画像の検証に失敗しました')
+    } finally {
+      setUploadingPhotos(false)
+    }
   }
 
   const removeFile = (index: number) => {
@@ -459,7 +472,15 @@ const AdminShopNewPage = () => {
                 <h2 className="font-headline text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/50">Photos</h2>
               </div>
 
-              <ShopPhotoUploadInput onChange={handleFileSelect}/>
+              <ShopPhotoUploadInput
+                onChange={handleFileSelect}
+                disabled={uploadingPhotos}
+                uploading={uploadingPhotos}
+              />
+
+              {photoError && (
+                <p className="text-[10px] font-medium text-red-500">{photoError}</p>
+              )}
 
               {/* Preview grid */}
               {previewUrls.length > 0 && (

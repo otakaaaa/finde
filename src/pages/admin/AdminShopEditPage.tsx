@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Globe, Instagram, Twitter, Phone, ExternalLink, CheckCircle2, X, Tag } from 'lucide-react'
 import { Link } from 'react-router'
 import { supabase } from '@/lib/supabase'
+import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useShop } from '@/hooks/useShop'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { cn } from '@/lib/utils'
@@ -186,6 +187,8 @@ const AdminShopEditPage = () => {
     setUploading(true)
     setPhotoError(null)
     try {
+      await validateAllowedImageFiles(files)
+
       const maxOrder = photos.length > 0 ? Math.max(...photos.map((p) => p.order)) : -1
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
