@@ -1,17 +1,22 @@
 import { create } from 'zustand'
 import type { ShopFilters } from '@/types'
 
+export type ToastPosition = 'top-center' | 'top-right' | 'bottom-center' | 'bottom-right'
+
 export interface Toast {
   id: string
   title: string
   description?: string
   variant: 'default' | 'destructive'
+  position: ToastPosition
 }
+
+export type ToastInput = Omit<Toast, 'id' | 'position'> & { position?: ToastPosition }
 
 interface UiState {
   // Toast
   toasts: Toast[]
-  addToast: (toast: Omit<Toast, 'id'>) => void
+  addToast: (toast: ToastInput) => void
   removeToast: (id: string) => void
 
   // Shop filters
@@ -43,7 +48,10 @@ export const useUiStore = create<UiState>((set) => ({
   toasts: [],
   addToast: (toast) =>
     set((state) => ({
-      toasts: [...state.toasts, { ...toast, id: crypto.randomUUID() }],
+      toasts: [
+        ...state.toasts,
+        { ...toast, id: crypto.randomUUID(), position: toast.position ?? 'top-center' },
+      ],
     })),
   removeToast: (id) =>
     set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),

@@ -36,6 +36,7 @@ const fetchUser = async (id: string) => {
 
 export const useAuth = (): AuthState => {
   const { session, user, loading, setSession, setUser, setLoading } = useAuthStore()
+  const { addToast } = useUiStore()
 
   useEffect(() => {
     // Only set up the listener once (when loading is still true = first mount)
@@ -55,9 +56,10 @@ export const useAuth = (): AuthState => {
           fetchUser(session.user.id)
           if (event === 'SIGNED_IN' && localStorage.getItem('pending_login_toast') === 'true') {
             localStorage.removeItem('pending_login_toast')
-            useUiStore.getState().addToast({
+            addToast({
               title: 'ログインしました',
               variant: 'default',
+              position: 'bottom-right',
             })
           }
         } else {

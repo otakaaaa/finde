@@ -2,9 +2,16 @@ import { useEffect } from 'react'
 import { CheckCircle2, AlertCircle, X } from 'lucide-react'
 import { useUiStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
-import type { Toast } from '@/store/uiStore'
+import type { Toast, ToastPosition } from '@/store/uiStore'
 
 const DURATION = 4000
+
+const TOAST_STACK_CLASSNAME: Record<ToastPosition, string> = {
+  'top-center': 'left-1/2 top-4 -translate-x-1/2 items-center sm:top-6',
+  'top-right': 'right-4 top-4 items-end sm:right-6 sm:top-6',
+  'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 items-center sm:bottom-6',
+  'bottom-right': 'bottom-4 right-4 items-end sm:bottom-6 sm:right-6',
+}
 
 // ── Single toast item ──────────────────────────────────────────
 
@@ -77,16 +84,32 @@ export const ToastStack = () => {
 
   if (toasts.length === 0) return null
 
+  const positions: ToastPosition[] = ['top-center', 'top-right', 'bottom-center', 'bottom-right']
+
   return (
-    <div
-      className="pointer-events-none fixed bottom-4 right-4 z-[200] flex flex-col items-end gap-2 sm:bottom-6 sm:right-6"
-      aria-live="polite"
-    >
-      {toasts.map((toast) => (
-        <div key={toast.id} className="pointer-events-auto">
-          <ToastItem toast={toast} onRemove={removeToast} />
-        </div>
-      ))}
-    </div>
+    <>
+      {positions.map((position) => {
+        const groupedToasts = toasts.filter((toast) => toast.position === position)
+
+        if (groupedToasts.length === 0) return null
+
+        return (
+          <div
+            key={position}
+            className={cn(
+              'pointer-events-none fixed z-[200] flex flex-col gap-2',
+              TOAST_STACK_CLASSNAME[position],
+            )}
+            aria-live="polite"
+          >
+            {groupedToasts.map((toast) => (
+              <div key={toast.id} className="pointer-events-auto">
+                <ToastItem toast={toast} onRemove={removeToast} />
+              </div>
+            ))}
+          </div>
+        )
+      })}
+    </>
   )
 }
