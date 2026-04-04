@@ -122,7 +122,7 @@ export const Header = () => {
               <NavLink item={{ to: '/admin', label: 'ADMIN', exact: true }} />
             )}
             {user?.role === 'shop_owner' && (
-              <NavLink item={{ to: '/owner/dashboard', label: 'OWNER' }} />
+              <NavLink item={{ to: '/owner', label: 'OWNER' }} />
             )}
 
             {/* Divider */}
@@ -222,7 +222,7 @@ export const Header = () => {
             ...PUBLIC_NAV,
             ...(user ? USER_NAV : []),
             ...(user?.role === 'admin' ? [{ to: '/admin', label: 'ADMIN', exact: true as const }] : []),
-            ...(user?.role === 'shop_owner' ? [{ to: '/owner/dashboard', label: 'OWNER' }] : []),
+            ...(user?.role === 'shop_owner' ? [{ to: '/owner', label: 'OWNER' }] : []),
           ].map((item, i) => (
             <Link
               key={item.to}

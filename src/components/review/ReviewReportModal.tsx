@@ -108,7 +108,7 @@ export const ReviewReportModal = () => {
                 — Report
               </p>
               <h2 className="font-headline text-2xl font-black leading-none tracking-tight text-foreground">
-                REVIEW REPORT
+                レビュー通報
               </h2>
               <p className="mt-2.5 text-[11px] leading-[1.7] text-muted-foreground/60">
                 問題のある内容を報告してください。<br />

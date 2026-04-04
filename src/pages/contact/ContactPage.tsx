@@ -202,7 +202,7 @@ const ContactPage = () => {
               — Support
             </p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              CONTACT US
+              お問い合わせ
             </h1>
             <p className="mt-4 max-w-sm text-[11px] leading-[1.8] text-white/40">
               ご不明な点やご要望はお気軽にお問い合わせください。<br />
@@ -368,12 +368,12 @@ const ContactPage = () => {
                   {submitting ? (
                     <>
                       <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      SENDING...
+                      送信中...
                     </>
                   ) : (
                     <>
                       <Send className="h-3.5 w-3.5" />
-                      SEND MESSAGE
+                      送信する
                     </>
                   )}
                 </button>

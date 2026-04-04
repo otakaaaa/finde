@@ -224,13 +224,13 @@ const AdminShopNewPage = () => {
               className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
               <ChevronLeft className="h-3 w-3" />
-              Shop Management
+              店舗管理
             </button>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
               — Admin
             </p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              NEW SHOP
+              店舗新規登録
             </h1>
           </div>
         </div>
@@ -248,9 +248,9 @@ const AdminShopNewPage = () => {
 
           <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-12">
 
-            {/* ── 01 BASIC INFO ────────────────────── */}
+            {/* ── 01 基本情報 ────────────────────── */}
             <section>
-              <SectionLabel num="01" title="BASIC INFO" required />
+              <SectionLabel num="01" title="基本情報" required />
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -286,9 +286,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* ── 02 LOCATION ──────────────────────── */}
+            {/* ── 02 エリア ──────────────────────── */}
             <section>
-              <SectionLabel num="02" title="LOCATION" required />
+              <SectionLabel num="02" title="エリア" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -326,9 +326,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* ── 03 CATEGORY ──────────────────────── */}
+            {/* ── 03 カテゴリ ──────────────────────── */}
             <section>
-              <SectionLabel num="03" title="CATEGORY" required />
+              <SectionLabel num="03" title="カテゴリ" required />
               <div className="flex flex-wrap gap-2">
                 {masterData?.categories.map((cat) => (
                   <button
@@ -351,9 +351,9 @@ const AdminShopNewPage = () => {
               )}
             </section>
 
-            {/* ── 04 CONTACT ───────────────────────── */}
+            {/* ── 04 連絡先 ───────────────────────── */}
             <section>
-              <SectionLabel num="04" title="CONTACT" optional />
+              <SectionLabel num="04" title="連絡先" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -390,9 +390,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* ── 05 SOCIAL ────────────────────────── */}
+            {/* ── 05 SNS ────────────────────────── */}
             <section>
-              <SectionLabel num="05" title="SOCIAL" optional />
+              <SectionLabel num="05" title="SNS" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -432,9 +432,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* ── 06 STATUS ────────────────────────── */}
+            {/* ── 06 ステータス ────────────────────────── */}
             <section>
-              <SectionLabel num="06" title="STATUS" />
+              <SectionLabel num="06" title="ステータス" />
               <Controller
                 name="status"
                 control={control}
@@ -471,11 +471,11 @@ const AdminShopNewPage = () => {
               />
             </section>
 
-            {/* ── 07 PHOTOS ────────────────────────── */}
+            {/* ── 07 写真 ────────────────────────── */}
             <section className="space-y-4">
               <div className="flex items-baseline gap-3">
                 <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/25">07</span>
-                <h2 className="font-headline text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/50">Photos</h2>
+                <h2 className="font-headline text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/50">写真</h2>
               </div>
 
               <ShopPhotoUploadInput
@@ -533,10 +533,10 @@ const AdminShopNewPage = () => {
                   {isPending ? (
                     <span className="flex items-center gap-2">
                       <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      SAVING...
+                      登録中...
                     </span>
                   ) : (
-                    'REGISTER SHOP'
+                    '登録する'
                   )}
                 </button>
                 <button
@@ -544,7 +544,7 @@ const AdminShopNewPage = () => {
                   onClick={() => navigate('/admin/shops')}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Cancel
+                  キャンセル
                 </button>
               </div>
             </div>

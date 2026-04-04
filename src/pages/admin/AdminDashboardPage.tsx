@@ -223,10 +223,10 @@ const AdminDashboardPage = () => {
         <div className="relative mx-auto max-w-5xl">
           <div className="pb-6">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-              — Control Panel
+              — ADMIN
             </p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              DASHBOARD
+              ダッシュボード
             </h1>
           </div>
         </div>

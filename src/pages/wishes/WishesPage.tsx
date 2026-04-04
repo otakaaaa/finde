@@ -205,10 +205,10 @@ const WishesPage = () => {
           <div className="flex items-end justify-between pb-6">
             <div>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — My List
+                — WISHES
               </p>
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                WISH LIST
+                ウィッシュリスト
               </h1>
             </div>
 

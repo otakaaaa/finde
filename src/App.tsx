@@ -126,7 +126,7 @@ const App = () => (
 
             {/* Owner */}
             <Route
-              path="/owner/dashboard"
+              path="/owner"
               element={<ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute>}
             />
             <Route

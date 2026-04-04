@@ -5,7 +5,7 @@ import type { UserRole } from '@/types'
 
 const ROLE_REDIRECT: Record<UserRole, string> = {
   admin: '/admin',
-  shop_owner: '/owner/dashboard',
+  shop_owner: '/owner',
   user: '/',
 }
 

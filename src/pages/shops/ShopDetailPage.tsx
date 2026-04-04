@@ -144,7 +144,7 @@ const ShopDetailPage = () => {
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/60 transition-colors hover:text-white"
           >
             <ChevronLeft className="h-3 w-3" />
-            All Shops
+            店舗一覧
           </Link>
         </div>
 
@@ -378,7 +378,7 @@ const ShopDetailPage = () => {
                 }}
                 className="flex h-9 shrink-0 items-center gap-2 border border-primary px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-primary transition-all hover:bg-primary hover:text-primary-foreground"
               >
-                {myReview ? 'Edit Review' : 'Write Review'}
+                {myReview ? 'レビューを編集する' : 'レビューを書く'}
               </button>
             )}
           </div>
@@ -386,7 +386,7 @@ const ShopDetailPage = () => {
           {showReviewForm && (
             <div className="mb-8 border border-border p-6">
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                — {myReview ? 'Edit Review' : 'New Review'}
+                — {myReview ? 'レビューを編集する' : 'レビューを書く'}
               </p>
               <ReviewForm
                 shopId={shop.id}
@@ -397,7 +397,7 @@ const ShopDetailPage = () => {
                 onClick={() => setShowReviewForm(false)}
                 className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
               >
-                Cancel
+                キャンセル
               </button>
             </div>
           )}

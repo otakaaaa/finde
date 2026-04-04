@@ -120,10 +120,10 @@ const FavoritesPage = () => {
           <div className="flex items-end justify-between pb-6">
             <div>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — My Collection
+                — MYPAGE
               </p>
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                FAVORITES
+                お気に入り店舗
               </h1>
             </div>
 

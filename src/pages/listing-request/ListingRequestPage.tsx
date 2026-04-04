@@ -178,10 +178,10 @@ const ListingRequestPage = () => {
                 Back
               </button>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — Listing Request
+                — MYPAGE
               </p>
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                SHOP<br className="sm:hidden" /> APPLICATION
+                店舗掲載申請
               </h1>
             </div>
           </div>
@@ -259,9 +259,9 @@ const ListingRequestPage = () => {
 
               <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-12">
 
-                {/* ── 01 SHOP INFO ─────────────────── */}
+                {/* ── 01 基本情報 ─────────────────── */}
                 <section>
-                  <SectionLabel num="01" title="SHOP INFO" required />
+                  <SectionLabel num="01" title="基本情報" required />
                   <div className="space-y-4">
                     <div>
                       <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -293,9 +293,9 @@ const ListingRequestPage = () => {
                   </div>
                 </section>
 
-                {/* ── 02 CATEGORY ──────────────────── */}
+                {/* ── 02 カテゴリ ──────────────────── */}
                 <section>
-                  <SectionLabel num="02" title="CATEGORY" required />
+                  <SectionLabel num="02" title="カテゴリ" required />
                   <div className="flex flex-wrap gap-2">
                     {categories?.map((cat) => (
                       <button
@@ -318,9 +318,9 @@ const ListingRequestPage = () => {
                   )}
                 </section>
 
-                {/* ── 03 ONLINE ────────────────────── */}
+                {/* ── 03 SNS ────────────────────── */}
                 <section>
-                  <SectionLabel num="03" title="ONLINE" optional />
+                  <SectionLabel num="03" title="SNS" optional />
                   <div>
                     <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                       公式サイトURL
@@ -337,9 +337,9 @@ const ListingRequestPage = () => {
                   </div>
                 </section>
 
-                {/* ── 04 NOTE ──────────────────────── */}
+                {/* ── 04 メモ ──────────────────────── */}
                 <section>
-                  <SectionLabel num="04" title="NOTE" optional />
+                  <SectionLabel num="04" title="メモ" optional />
                   <textarea
                     rows={4}
                     placeholder="店舗についての補足情報など…"
@@ -366,10 +366,10 @@ const ListingRequestPage = () => {
                       {isPending ? (
                         <span className="flex items-center gap-2">
                           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          SENDING...
+                          送信中...
                         </span>
                       ) : (
-                        'SUBMIT APPLICATION'
+                        '申請する'
                       )}
                     </button>
                     <button
@@ -377,7 +377,7 @@ const ListingRequestPage = () => {
                       onClick={() => navigate(-1)}
                       className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      Cancel
+                      キャンセル
                     </button>
                   </div>
                 </div>

@@ -238,11 +238,11 @@ const AdminContactsPage = () => {
               className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
               <ChevronLeft className="h-3 w-3" />
-              Dashboard
+              ダッシュボード
             </Link>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Admin</p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              CONTACTS
+              お問い合わせ
             </h1>
           </div>
         </div>

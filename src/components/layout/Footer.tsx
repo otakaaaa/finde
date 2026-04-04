@@ -68,8 +68,8 @@ export const Footer = () => (
             </div>
 
             {/* Tagline */}
-            <p className="max-w-[200px] text-[11px] leading-relaxed text-white/35">
-              古着・ヴィンテージ・セレクトショップの探し方が変わる。
+            <p className="max-w-[164px] text-[11px] leading-relaxed text-white/35">
+              古着・セレクトショップの探し方が変わる。
             </p>
           </div>
 
@@ -118,7 +118,7 @@ export const Footer = () => (
           © 2026 FUKUNAVI
         </span>
         <span className="font-headline text-[9px] font-bold uppercase tracking-[0.2em] text-white/15">
-          古着 · ヴィンテージ · セレクト
+          古着 · セレクト ・ ユニセックス
         </span>
       </div>
 

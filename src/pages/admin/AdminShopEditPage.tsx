@@ -310,7 +310,7 @@ const AdminShopEditPage = () => {
               className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
               <ChevronLeft className="h-3 w-3" />
-              Shop Management
+              店舗管理
             </button>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
               — Admin
@@ -318,7 +318,7 @@ const AdminShopEditPage = () => {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                  EDIT SHOP
+                  店舗編集
                 </h1>
                 <p className="mt-2 truncate text-sm font-medium text-white/50">{shop.name}</p>
               </div>
@@ -349,9 +349,9 @@ const AdminShopEditPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
 
-            {/* ── 01 BASIC INFO ────────────────────── */}
+            {/* ── 01 基本情報 ────────────────────── */}
             <section>
-              <SectionLabel num="01" title="BASIC INFO" required />
+              <SectionLabel num="01" title="基本情報" required />
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -387,9 +387,9 @@ const AdminShopEditPage = () => {
               </div>
             </section>
 
-            {/* ── 02 LOCATION ──────────────────────── */}
+            {/* ── 02 エリア ──────────────────────── */}
             <section>
-              <SectionLabel num="02" title="LOCATION" required />
+              <SectionLabel num="02" title="エリア" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -427,9 +427,9 @@ const AdminShopEditPage = () => {
               </div>
             </section>
 
-            {/* ── 03 CATEGORY ──────────────────────── */}
+            {/* ── 03 カテゴリ ──────────────────────── */}
             <section>
-              <SectionLabel num="03" title="CATEGORY" required />
+              <SectionLabel num="03" title="カテゴリ" required />
               <div className="flex flex-wrap gap-2">
                 {masterData?.categories.map((cat) => (
                   <button
@@ -452,9 +452,9 @@ const AdminShopEditPage = () => {
               )}
             </section>
 
-            {/* ── 04 CONTACT ───────────────────────── */}
+            {/* ── 04 連絡先 ───────────────────────── */}
             <section>
-              <SectionLabel num="04" title="CONTACT" optional />
+              <SectionLabel num="04" title="連絡先" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -491,9 +491,9 @@ const AdminShopEditPage = () => {
               </div>
             </section>
 
-            {/* ── 05 SOCIAL ────────────────────────── */}
+            {/* ── 05 SNS ────────────────────────── */}
             <section>
-              <SectionLabel num="05" title="SOCIAL" optional />
+              <SectionLabel num="05" title="SNS" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
@@ -533,9 +533,9 @@ const AdminShopEditPage = () => {
               </div>
             </section>
 
-            {/* ── 06 STATUS ────────────────────────── */}
+            {/* ── 06 ステータス ────────────────────────── */}
             <section>
-              <SectionLabel num="06" title="STATUS" />
+              <SectionLabel num="06" title="ステータス" />
               <Controller
                 name="status"
                 control={control}
@@ -572,9 +572,9 @@ const AdminShopEditPage = () => {
               />
             </section>
 
-            {/* ── 07 PHOTOS ────────────────────────── */}
+            {/* ── 07 写真 ────────────────────────── */}
             <section className="space-y-4">
-              <SectionLabel num="07" title="PHOTOS" optional />
+              <SectionLabel num="07" title="写真" optional />
 
               <ShopPhotoUploadInput
                 onChange={handlePhotoFileChange}
@@ -619,7 +619,7 @@ const AdminShopEditPage = () => {
               </p>
             </section>
 
-            {/* ── Brand Management ─────────────────── */}
+            {/* ── ブランド管理 ─────────────────── */}
             <div className="border-t border-border pt-8">
               <Link
                 to={`/admin/shops/${id}/brands`}
@@ -655,10 +655,10 @@ const AdminShopEditPage = () => {
                   {isPending ? (
                     <span className="flex items-center gap-2">
                       <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      SAVING...
+                      保存中...
                     </span>
                   ) : (
-                    'SAVE CHANGES'
+                    '保存する'
                   )}
                 </button>
                 <button
@@ -666,7 +666,7 @@ const AdminShopEditPage = () => {
                   onClick={() => navigate('/admin/shops')}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Cancel
+                  キャンセル
                 </button>
               </div>
             </div>

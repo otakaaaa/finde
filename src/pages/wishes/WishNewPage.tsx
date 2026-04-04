@@ -189,13 +189,13 @@ const WishNewPage = () => {
                 className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
               >
                 <ChevronLeft className="h-3 w-3" />
-                Back to List
+                一覧へ戻る
               </button>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — My List
+                — WISHES
               </p>
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                NEW WISH
+                ウィッシュ新規登録
               </h1>
             </div>
           </div>
@@ -213,9 +213,9 @@ const WishNewPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
 
-            {/* ── 01 TYPE ──────────────────────────── */}
+            {/* ── 01 タイプ ──────────────────────────── */}
             <section>
-              <SectionLabel num="01" title="TYPE" required />
+              <SectionLabel num="01" title="タイプ" required />
               <Controller
                 name="type"
                 control={control}
@@ -267,9 +267,9 @@ const WishNewPage = () => {
               />
             </section>
 
-            {/* ── 02 CORE ──────────────────────────── */}
+            {/* ── 02 基本情報 ──────────────────────────── */}
             <section>
-              <SectionLabel num="02" title="CORE FIELDS" required />
+              <SectionLabel num="02" title="基本情報" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {/* Category */}
                 <div>
@@ -336,9 +336,9 @@ const WishNewPage = () => {
               </div>
             </section>
 
-            {/* ── 03 CONDITION & URGENCY ───────────── */}
+            {/* ── 03 コンディション & 優先度 ───────────── */}
             <section>
-              <SectionLabel num="03" title="CONDITION & URGENCY" optional />
+              <SectionLabel num="03" title="コンディション & 優先度" optional />
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Condition */}
                 <div>
@@ -409,9 +409,9 @@ const WishNewPage = () => {
               </div>
             </section>
 
-            {/* ── 04 SIZE & TAGS ───────────────────── */}
+            {/* ── 04 サイズ & タグ ───────────────────── */}
             <section>
-              <SectionLabel num="04" title="SIZE & TAGS" optional />
+              <SectionLabel num="04" title="サイズ & タグ" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Size */}
                 <div>
@@ -443,9 +443,9 @@ const WishNewPage = () => {
               </div>
             </section>
 
-            {/* ── 05 NOTE ──────────────────────────── */}
+            {/* ── 05 メモ ──────────────────────────── */}
             <section>
-              <SectionLabel num="05" title="NOTE" optional />
+              <SectionLabel num="05" title="メモ" optional />
               <textarea
                 rows={4}
                 placeholder="探しているアイテムの詳細、こだわり条件など…"
@@ -461,9 +461,9 @@ const WishNewPage = () => {
               )}
             </section>
 
-            {/* ── 06 OPTIONS ───────────────────────── */}
+            {/* ── 06 オプション ───────────────────────── */}
             <section>
-              <SectionLabel num="06" title="OPTIONS" />
+              <SectionLabel num="06" title="オプション" />
               <div className="flex flex-col gap-3 sm:flex-row">
                 {/* isPublic */}
                 <Controller
@@ -547,10 +547,10 @@ const WishNewPage = () => {
                   {isPending ? (
                     <span className="flex items-center gap-2">
                       <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      SAVING...
+                      登録中...
                     </span>
                   ) : (
-                    'SAVE WISH'
+                    '登録する'
                   )}
                 </button>
                 <button
@@ -558,7 +558,7 @@ const WishNewPage = () => {
                   onClick={() => navigate('/wishes')}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Cancel
+                  キャンセル
                 </button>
               </div>
             </div>
