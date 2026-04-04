@@ -98,6 +98,12 @@ export const useAuthActions = () => {
     setLoading(true)
     setError(null)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setError('ログインしてください')
+        return false
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) { setError(error.message); return false }
       navigate('/')
