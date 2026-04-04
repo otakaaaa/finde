@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Twitter, Store, ChevronRight,
-  ArrowUpRight, ChevronLeft,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
 import { cn } from '@/lib/utils'
