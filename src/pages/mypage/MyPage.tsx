@@ -427,7 +427,7 @@ const MyPage = () => {
               <div className="space-y-2">
                 {user.role === 'shop_owner' && (
                   <Link
-                    to="/owner/dashboard"
+                    to="/owner"
                     className="wish-card-enter group flex items-center gap-4 border border-primary/20 bg-primary/[0.03] px-5 py-4 transition-all hover:border-primary/40"
                     style={{ animationDelay: '220ms' }}
                   >

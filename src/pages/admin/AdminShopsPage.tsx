@@ -237,7 +237,7 @@ const AdminShopsPage = () => {
               className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60 w-fit"
             >
               <ChevronLeft className="h-3 w-3" />
-              Dashboard
+              ダッシュボード
             </Link>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -245,7 +245,7 @@ const AdminShopsPage = () => {
                   — Admin
                 </p>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                  SHOP MANAGEMENT
+                  店舗管理
                 </h1>
               </div>
 
@@ -340,11 +340,11 @@ const AdminShopsPage = () => {
                   店舗名 / エリア
                 </span>
                 <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-                  Status
+                  ステータス
                 </span>
               </div>
               <span className="w-32 shrink-0 text-right font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-                Actions
+                操作
               </span>
             </div>
           )}
@@ -391,14 +391,14 @@ const AdminShopsPage = () => {
           {!isLoading && filtered.length > 0 && (
             <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
               <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">
-                {String(filtered.length).padStart(3, '0')} RESULTS
+                {String(filtered.length).padStart(3, '0')} 件
               </span>
               {search && (
                 <button
                   onClick={() => setSearch('')}
                   className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 transition-colors hover:text-primary"
                 >
-                  Clear filter
+                  絞り込みをリセット
                 </button>
               )}
             </div>

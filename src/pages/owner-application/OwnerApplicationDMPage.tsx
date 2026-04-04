@@ -405,7 +405,7 @@ const OwnerApplicationDMPage = () => {
           </p>
           {application?.status === 'approved' && !isAdmin && (
             <Link
-              to="/owner/dashboard"
+              to="/owner"
               className="mt-2 inline-flex items-center gap-1.5 font-headline text-[10px] font-black uppercase tracking-wider text-emerald-600 hover:text-emerald-700"
             >
               オーナーダッシュボードへ →

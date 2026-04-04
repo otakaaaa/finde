@@ -274,15 +274,15 @@ const WishEditPage = () => {
               className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
               <ChevronLeft className="h-3 w-3" />
-              Back to List
+              一覧へ戻る
             </button>
             <div className="flex items-end justify-between">
               <div>
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                  — My List
+                  — WISHES
                 </p>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                  EDIT WISH
+                  ウィッシュ編集
                 </h1>
               </div>
               <span className="mb-1 font-headline text-[10px] font-black tabular-nums text-white/20">
@@ -304,9 +304,9 @@ const WishEditPage = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
 
-            {/* ── 01 TYPE ──────────────────────────── */}
+            {/* ── 01 タイプ ──────────────────────────── */}
             <section>
-              <SectionLabel num="01" title="TYPE" required />
+              <SectionLabel num="01" title="タイプ" required />
               <Controller
                 name="type"
                 control={control}
@@ -358,9 +358,9 @@ const WishEditPage = () => {
               />
             </section>
 
-            {/* ── 02 CORE ──────────────────────────── */}
+            {/* ── 02 基本情報 ──────────────────────────── */}
             <section>
-              <SectionLabel num="02" title="CORE FIELDS" required />
+              <SectionLabel num="02" title="基本情報" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {/* Category */}
                 <div>
@@ -421,9 +421,9 @@ const WishEditPage = () => {
               </div>
             </section>
 
-            {/* ── 03 CONDITION & URGENCY ───────────── */}
+            {/* ── 03 コンディション & 優先度 ───────────── */}
             <section>
-              <SectionLabel num="03" title="CONDITION & URGENCY" optional />
+              <SectionLabel num="03" title="コンディション & 優先度" optional />
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Condition */}
                 <div>
@@ -494,9 +494,9 @@ const WishEditPage = () => {
               </div>
             </section>
 
-            {/* ── 04 SIZE & TAGS ───────────────────── */}
+            {/* ── 04 サイズ & タグ ───────────────────── */}
             <section>
-              <SectionLabel num="04" title="SIZE & TAGS" optional />
+              <SectionLabel num="04" title="サイズ & タグ" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Size */}
                 <div>
@@ -528,9 +528,9 @@ const WishEditPage = () => {
               </div>
             </section>
 
-            {/* ── 05 NOTE ──────────────────────────── */}
+            {/* ── 05 メモ ──────────────────────────── */}
             <section>
-              <SectionLabel num="05" title="NOTE" optional />
+              <SectionLabel num="05" title="メモ" optional />
               <textarea
                 rows={4}
                 placeholder="探しているアイテムの詳細、こだわり条件など…"
@@ -546,9 +546,9 @@ const WishEditPage = () => {
               )}
             </section>
 
-            {/* ── 06 OPTIONS ───────────────────────── */}
+            {/* ── 06 オプション ───────────────────────── */}
             <section>
-              <SectionLabel num="06" title="OPTIONS" />
+              <SectionLabel num="06" title="オプション" />
               <div className="flex flex-col gap-3 sm:flex-row">
                 {/* isPublic */}
                 <Controller
@@ -618,7 +618,7 @@ const WishEditPage = () => {
               </div>
             </section>
 
-            {/* ── Submit ───────────────────────────── */}
+            {/* ── 送信 ───────────────────────────── */}
             <div className="border-t border-border pt-8">
               <div className="flex items-center gap-3">
                 <button
@@ -632,10 +632,10 @@ const WishEditPage = () => {
                   {isUpdatePending ? (
                     <span className="flex items-center gap-2">
                       <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      SAVING...
+                      更新中...
                     </span>
                   ) : (
-                    'UPDATE WISH'
+                    '更新する'
                   )}
                 </button>
                 <button
@@ -643,7 +643,7 @@ const WishEditPage = () => {
                   onClick={() => navigate('/wishes')}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Cancel
+                  キャンセル
                 </button>
               </div>
             </div>
@@ -686,14 +686,14 @@ const WishEditPage = () => {
                       ) : (
                         <Trash2 className="h-3 w-3" />
                       )}
-                      Delete
+                      削除する
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
                       className="px-4 py-2 text-[11px] font-bold text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      Cancel
+                      キャンセル
                     </button>
                   </div>
                 </div>

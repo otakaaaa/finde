@@ -659,13 +659,13 @@ const AdminApplicationsPage = () => {
               to="/admin"
               className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
             >
-              <ChevronLeft className="h-3 w-3" /> Dashboard
+              <ChevronLeft className="h-3 w-3" /> ダッシュボード
             </Link>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Admin</p>
                 <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                  APPLICATIONS
+                  申請管理
                 </h1>
               </div>
               {totalPending > 0 && (
@@ -730,10 +730,9 @@ const AdminApplicationsPage = () => {
             )}
             {!listingLoading && !listingError && (listingRequests?.length ?? 0) === 0 && (
               <div className="flex flex-col items-center gap-2 py-20 text-center">
-                <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-                  No Applications
-                </span>
-                <p className="text-xs text-muted-foreground/50">該当する申請がありません</p>
+                <p className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
+                  該当する申請がありません
+                </p>
               </div>
             )}
             {!listingLoading && (listingRequests?.length ?? 0) > 0 && (
@@ -779,8 +778,8 @@ const AdminApplicationsPage = () => {
                 )}
                 {!ownerLoading && (ownerApplications?.length ?? 0) === 0 && (
                   <div className="flex flex-col items-center gap-2 py-16 text-center">
-                    <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-                      No Applications
+                    <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
+                      該当する申請がありません
                     </span>
                   </div>
                 )}

@@ -113,7 +113,7 @@ const SubmittedScreen = ({ requestId, onBack }: SubmittedScreenProps) => (
         </span>
       </div>
       <div className="relative mx-auto max-w-3xl pb-6">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Owner Application</p>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— MYPAGE</p>
         <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
           SUBMITTED
         </h1>
@@ -363,10 +363,10 @@ const OwnerApplicationNewPage = () => {
               Back
             </button>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-              — Owner Application
+              — MYPAGE
             </p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              OWNER<br className="sm:hidden" /> APPLICATION
+              オーナー申請
             </h1>
           </div>
         </div>
@@ -756,10 +756,10 @@ const OwnerApplicationNewPage = () => {
                       {isPending ? (
                         <span className="flex items-center gap-2">
                           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          SENDING...
+                          送信中...
                         </span>
                       ) : (
-                        'SUBMIT APPLICATION'
+                        '申請する'
                       )}
                     </button>
                     <button
@@ -767,7 +767,7 @@ const OwnerApplicationNewPage = () => {
                       onClick={() => navigate(-1)}
                       className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      Cancel
+                      キャンセル
                     </button>
                   </div>
                 </div>

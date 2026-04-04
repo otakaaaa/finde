@@ -123,10 +123,10 @@ const ShopsPage = () => {
           <div className="flex items-end justify-between pb-6">
             <div>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — Archive
+                — SHOPS
               </p>
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-                ALL SHOPS
+                店舗一覧
               </h1>
             </div>
             {shops.length > 0 && !isLoading && (
