@@ -43,7 +43,7 @@ const ResetPasswordPage = () => {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setValidationError(null)
 
