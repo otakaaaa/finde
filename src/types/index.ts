@@ -95,6 +95,8 @@ export interface Shop {
   namePending: string | null
   description: string | null
   prefectureId: number | null
+  city: string | null
+  address: string | null
   area: Area | null
   priceRange: PriceRange | null
   phone: string | null

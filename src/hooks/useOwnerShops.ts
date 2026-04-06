@@ -23,6 +23,8 @@ interface OwnerShopRow {
     created_at: string
     updated_at: string
     prefecture_id: number | null
+    city: string | null
+    address: string | null
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
   }
@@ -44,7 +46,7 @@ export const useOwnerShops = () => {
             id, name, name_pending, description, phone, website_url,
             instagram_url, twitter_url, business_hours, closed_days,
             status, review_count, average_rating, favorite_count,
-            prefecture_id, created_at, updated_at,
+            prefecture_id, city, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
             price_ranges ( id, label, min_price, max_price )
           )
@@ -59,6 +61,8 @@ export const useOwnerShops = () => {
         namePending: s.name_pending,
         description: s.description,
         prefectureId: s.prefecture_id,
+        city: s.city,
+        address: s.address,
         area: s.areas,
         priceRange: s.price_ranges
           ? { id: s.price_ranges.id, label: s.price_ranges.label, minPrice: s.price_ranges.min_price, maxPrice: s.price_ranges.max_price }
@@ -90,6 +94,8 @@ interface ShopUpdateInput {
   name?: string
   description?: string
   prefectureId?: number
+  city?: string
+  address?: string
   priceRangeId?: number | null
   categoryIds?: number[]
   phone?: string
@@ -112,6 +118,8 @@ export const useUpdateShop = () => {
           ...(updates.name !== undefined && { name: updates.name }),
           description: updates.description,
           ...(updates.prefectureId !== undefined && { prefecture_id: updates.prefectureId }),
+          city: updates.city || null,
+          address: updates.address || null,
           ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
           phone: updates.phone || null,
           website_url: updates.websiteUrl || null,

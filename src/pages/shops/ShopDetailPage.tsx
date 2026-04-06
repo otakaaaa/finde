@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
 import { MapPin, Phone, Globe, Instagram, Twitter, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
 import { useShop } from '@/hooks/useShop'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
@@ -94,6 +95,7 @@ const ShopDetailPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: shop, isLoading, isError } = useShop(id ?? '')
+  const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
   const { data: reviews } = useReviews(id ?? '')
@@ -173,11 +175,12 @@ const ShopDetailPage = () => {
             <h1 className="font-headline text-3xl font-black leading-none text-white md:text-5xl lg:text-6xl">
               {shop.name}
             </h1>
-            {shop.area && (
+            {(shop.prefectureId != null || shop.city) && (
               <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-white/50">
                 <MapPin className="h-3 w-3" />
                 <span>
-                  {shop.area.prefecture}&ensp;{shop.area.city}
+                  {masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name}
+                  {shop.city && <>&ensp;{shop.city}</>}
                 </span>
               </div>
             )}
@@ -304,6 +307,24 @@ const ShopDetailPage = () => {
                   <span className="tabular-nums">{shop.favoriteCount}</span>
                 </button>
               </div>
+
+              {/* Address */}
+              {(shop.prefectureId != null || shop.city || shop.address) && (
+                <div className="border-b border-border px-5 py-4">
+                  <PanelLabel>Address</PanelLabel>
+                  <div className="mt-1.5 space-y-0.5">
+                    {(shop.prefectureId != null || shop.city) && (
+                      <p className="text-xs font-medium">
+                        {masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name}
+                        {shop.city && <>&nbsp;{shop.city}</>}
+                      </p>
+                    )}
+                    {shop.address && (
+                      <p className="text-xs text-muted-foreground">{shop.address}</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Price range */}
               {shop.priceRange && (

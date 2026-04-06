@@ -20,6 +20,8 @@ const shopSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000).optional(),
   prefectureId: z.number({ required_error: '都道府県を選択してください', invalid_type_error: '都道府県を選択してください' }),
+  city:         z.string().max(50).optional(),
+  address:      z.string().max(200).optional(),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   phone:        z.string().max(20).optional(),
@@ -89,6 +91,8 @@ const AdminShopNewPage = () => {
           name:           values.name,
           description:    values.description || null,
           prefecture_id:  values.prefectureId,
+          city:           values.city || null,
+          address:        values.address || null,
           price_range_id: values.priceRangeId ?? null,
           phone:          values.phone || null,
           website_url:    values.websiteUrl || null,
@@ -223,21 +227,46 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* 02 都道府県・価格帯 */}
+            {/* 02 住所 */}
             <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
-              <SectionLabel num="02" title="都道府県 / 価格帯" required />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="都道府県" error={errors.prefectureId?.message}>
-                  <select
-                    className={cn(selectClass, errors.prefectureId && 'border-red-400')}
-                    {...register('prefectureId', { valueAsNumber: true })}
-                  >
-                    <option value="">選択してください</option>
-                    {masterData?.prefectures.map((pref) => (
-                      <option key={pref.id} value={pref.id}>{pref.name}</option>
-                    ))}
-                  </select>
+              <SectionLabel num="02" title="住所" required />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="都道府県" error={errors.prefectureId?.message}>
+                    <select
+                      className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                      {...register('prefectureId', { valueAsNumber: true })}
+                    >
+                      <option value="">選択してください</option>
+                      {masterData?.prefectures.map((pref) => (
+                        <option key={pref.id} value={pref.id}>{pref.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="市区町村" optional>
+                    <input
+                      type="text"
+                      placeholder="例: 渋谷区"
+                      className={inputClass}
+                      {...register('city')}
+                    />
+                  </Field>
+                </div>
+                <Field label="番地・建物名" optional>
+                  <input
+                    type="text"
+                    placeholder="例: 道玄坂1-1-1 ○○ビル2F"
+                    className={inputClass}
+                    {...register('address')}
+                  />
                 </Field>
+              </div>
+            </section>
+
+            {/* 03 価格帯 */}
+            <section className="wish-card-enter" style={{ animationDelay: '60ms' }}>
+              <SectionLabel num="03" title="価格帯" optional />
+              <div className="sm:w-1/2">
                 <Field label="価格帯" optional>
                   <select
                     className={selectClass}
@@ -252,9 +281,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* 03 カテゴリ */}
+            {/* 04 カテゴリ */}
             <section className="wish-card-enter" style={{ animationDelay: '80ms' }}>
-              <SectionLabel num="03" title="カテゴリ" required />
+              <SectionLabel num="04" title="カテゴリ" required />
               <div className="flex flex-wrap gap-2">
                 {masterData?.categories.map((cat) => (
                   <button
@@ -277,9 +306,9 @@ const AdminShopNewPage = () => {
               )}
             </section>
 
-            {/* 04 写真 */}
+            {/* 05 写真 */}
             <section className="wish-card-enter space-y-4" style={{ animationDelay: '100ms' }}>
-              <SectionLabel num="04" title="写真" optional />
+              <SectionLabel num="05" title="写真" optional />
 
               <ShopPhotoUploadInput
                 onChange={handleFileSelect}
@@ -321,9 +350,9 @@ const AdminShopNewPage = () => {
               </p>
             </section>
 
-            {/* 05 連絡先 */}
+            {/* 06 連絡先 */}
             <section className="wish-card-enter" style={{ animationDelay: '120ms' }}>
-              <SectionLabel num="05" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
+              <SectionLabel num="06" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="電話番号" optional>
                   <div className="relative">
@@ -350,9 +379,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* 06 SNS */}
+            {/* 07 SNS */}
             <section className="wish-card-enter" style={{ animationDelay: '160ms' }}>
-              <SectionLabel num="06" title="SNS" optional />
+              <SectionLabel num="07" title="SNS" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Instagram" optional error={errors.instagramUrl?.message}>
                   <div className="relative">
@@ -379,9 +408,9 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* 07 ステータス */}
+            {/* 08 ステータス */}
             <section className="wish-card-enter" style={{ animationDelay: '180ms' }}>
-              <SectionLabel num="07" title="ステータス" />
+              <SectionLabel num="08" title="ステータス" />
               <Controller
                 name="status"
                 control={control}

@@ -28,6 +28,8 @@ const shopEditSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000, '2000文字以内').optional(),
   prefectureId: z.number({ required_error: '都道府県を選択してください' }),
+  city:         z.string().max(50).optional(),
+  address:      z.string().max(200).optional(),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   phone:        z.string().max(20).optional(),
@@ -45,6 +47,8 @@ function shopToFormValues(shop: {
   name: string
   description: string | null
   prefectureId: number | null
+  city: string | null
+  address: string | null
   priceRange: PriceRange | null
   categories: { id: number }[]
   phone: string | null
@@ -58,6 +62,8 @@ function shopToFormValues(shop: {
     name:         shop.name,
     description:  shop.description ?? '',
     prefectureId: shop.prefectureId ?? ('' as unknown as number),
+    city:         shop.city ?? '',
+    address:      shop.address ?? '',
     priceRangeId: shop.priceRange?.id,
     categoryIds:  shop.categories.map((c) => c.id),
     phone:        shop.phone ?? '',
@@ -128,6 +134,8 @@ const OwnerShopEditPage = () => {
         name:          values.name,
         description:   values.description,
         prefectureId:  values.prefectureId,
+        city:          values.city,
+        address:       values.address,
         priceRangeId:  values.priceRangeId ?? null,
         categoryIds:   values.categoryIds,
         phone:         values.phone,
@@ -255,21 +263,46 @@ const OwnerShopEditPage = () => {
                     </div>
                   </section>
 
-                  {/* 02 エリア・価格帯 */}
+                  {/* 02 住所 */}
                   <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
-                    <SectionLabel num="02" title="都道府県 / 価格帯" required />
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Field label="都道府県" error={errors.prefectureId?.message}>
-                        <select
-                          className={cn(selectClass, errors.prefectureId && 'border-red-400')}
-                          {...register('prefectureId', { valueAsNumber: true })}
-                        >
-                          <option value="">選択してください</option>
-                          {masterData?.prefectures.map((pref) => (
-                            <option key={pref.id} value={pref.id}>{pref.name}</option>
-                          ))}
-                        </select>
+                    <SectionLabel num="02" title="住所" required />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="都道府県" error={errors.prefectureId?.message}>
+                          <select
+                            className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                            {...register('prefectureId', { valueAsNumber: true })}
+                          >
+                            <option value="">選択してください</option>
+                            {masterData?.prefectures.map((pref) => (
+                              <option key={pref.id} value={pref.id}>{pref.name}</option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="市区町村" optional>
+                          <input
+                            type="text"
+                            placeholder="例: 渋谷区"
+                            className={inputClass}
+                            {...register('city')}
+                          />
+                        </Field>
+                      </div>
+                      <Field label="番地・建物名" optional>
+                        <input
+                          type="text"
+                          placeholder="例: 道玄坂1-1-1 ○○ビル2F"
+                          className={inputClass}
+                          {...register('address')}
+                        />
                       </Field>
+                    </div>
+                  </section>
+
+                  {/* 03 価格帯 */}
+                  <section className="wish-card-enter" style={{ animationDelay: '60ms' }}>
+                    <SectionLabel num="03" title="価格帯" optional />
+                    <div className="sm:w-1/2">
                       <Field label="価格帯" optional>
                         <select
                           className={selectClass}
@@ -284,9 +317,9 @@ const OwnerShopEditPage = () => {
                     </div>
                   </section>
 
-                  {/* 03 カテゴリ */}
+                  {/* 04 カテゴリ */}
                   <section className="wish-card-enter" style={{ animationDelay: '80ms' }}>
-                    <SectionLabel num="03" title="カテゴリ" required />
+                    <SectionLabel num="04" title="カテゴリ" required />
                     <div className="flex flex-wrap gap-2">
                       {masterData?.categories.map((cat) => (
                         <button
@@ -309,12 +342,12 @@ const OwnerShopEditPage = () => {
                     )}
                   </section>
 
-                  {/* 04 写真 */}
-                  {id && <ShopPhotoSection shopId={id} num="04" animationDelay="100ms" />}
+                  {/* 05 写真 */}
+                  {id && <ShopPhotoSection shopId={id} num="05" animationDelay="100ms" />}
 
-                  {/* 05 連絡先 */}
+                  {/* 06 連絡先 */}
                   <section className="wish-card-enter" style={{ animationDelay: '120ms' }}>
-                    <SectionLabel num="05" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
+                    <SectionLabel num="06" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <Field label="電話番号" optional>
                         <input
@@ -338,9 +371,9 @@ const OwnerShopEditPage = () => {
                     </div>
                   </section>
 
-                  {/* 06 SNS */}
+                  {/* 07 SNS */}
                   <section className="wish-card-enter" style={{ animationDelay: '160ms' }}>
-                    <SectionLabel num="06" title="SNS" optional />
+                    <SectionLabel num="07" title="SNS" optional />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <Field label="Instagram" optional error={errors.instagramUrl?.message}>
                         <div className="relative">
@@ -367,9 +400,9 @@ const OwnerShopEditPage = () => {
                     </div>
                   </section>
 
-                  {/* 07 営業時間 */}
+                  {/* 08 営業時間 */}
                   <ShopBusinessHoursSection
-                    num="07"
+                    num="08"
                     businessHours={businessHours}
                     register={register}
                     onToggle={(dayKey: DayKey) =>
