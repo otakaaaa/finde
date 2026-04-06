@@ -325,8 +325,6 @@ src/
 │   ├── shops/
 │   │   ├── ShopsPage.tsx          # 一覧
 │   │   └── ShopDetailPage.tsx     # 詳細
-│   ├── search/
-│   │   └── SearchPage.tsx
 │   ├── wishes/
 │   │   ├── WishesPage.tsx         # 自分のウィッシュ一覧
 │   │   └── WishNewPage.tsx        # 登録 + レコメンド結果
@@ -396,7 +394,6 @@ src/
 /                          トップ（未ログイン可）
 /shops                     店舗一覧（未ログイン可）
 /shops/:id                 店舗詳細（未ログイン可）
-/search?q=...              検索結果（未ログイン可）
 /auth/login                ログイン
 /auth/register             新規登録
 /auth/link-account         アカウント統合確認（OAuth衝突時）

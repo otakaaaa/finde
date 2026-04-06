@@ -9,7 +9,6 @@ import { OWNER_FEATURE_ENABLED } from '@/config/features'
 const TopPage = lazy(() => import('@/pages/top/TopPage'))
 const ShopsPage = lazy(() => import('@/pages/shops/ShopsPage'))
 const ShopDetailPage = lazy(() => import('@/pages/shops/ShopDetailPage'))
-const SearchPage = lazy(() => import('@/pages/search/SearchPage'))
 
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
@@ -79,7 +78,6 @@ const App = () => (
             <Route path="/" element={<TopPage />} />
             <Route path="/shops" element={<ShopsPage />} />
             <Route path="/shops/:id" element={<ShopDetailPage />} />
-            <Route path="/search" element={<SearchPage />} />
             <Route path="/brands" element={<BrandSearchPage />} />
             <Route path="/contact" element={<ContactPage />} />
 
