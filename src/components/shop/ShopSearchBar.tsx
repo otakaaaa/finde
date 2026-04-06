@@ -15,7 +15,7 @@ export const ShopSearchBar = ({ initialQuery = '', className }: ShopSearchBarPro
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`)
+      navigate(`/shops?q=${encodeURIComponent(query.trim())}`)
     }
   }
 
