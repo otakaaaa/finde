@@ -20,14 +20,14 @@ import {
   type DayKey,
 } from '@/components/shop/ShopBusinessHoursSection'
 import { cn } from '@/lib/utils'
-import type { Area, PriceRange, BusinessHours } from '@/types'
+import type { PriceRange, BusinessHours } from '@/types'
 
 // ── Schema ────────────────────────────────────────────────────────
 
 const shopEditSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000).optional(),
-  areaId:       z.number({ required_error: 'エリアを選択してください' }),
+  prefectureId: z.number({ required_error: '都道府県を選択してください' }),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   phone:        z.string().max(20).optional(),
@@ -58,7 +58,7 @@ const STATUS_OPTIONS: {
 function shopToFormValues(shop: {
   name: string
   description: string | null
-  area: Area | null
+  prefectureId: number | null
   priceRange: PriceRange | null
   categories: { id: number }[]
   phone: string | null
@@ -72,7 +72,7 @@ function shopToFormValues(shop: {
   return {
     name:         shop.name,
     description:  shop.description ?? '',
-    areaId:       shop.area?.id ?? ('' as unknown as number),
+    prefectureId: shop.prefectureId ?? ('' as unknown as number),
     priceRangeId: shop.priceRange?.id,
     categoryIds:  shop.categories.map((c) => c.id),
     phone:        shop.phone ?? '',
@@ -112,7 +112,7 @@ const useAdminUpdateShop = () => {
         .update({
           name:           fields.name,
           description:    fields.description || null,
-          area_id:        fields.areaId,
+          prefecture_id:  fields.prefectureId,
           price_range_id: fields.priceRangeId ?? null,
           phone:          fields.phone || null,
           website_url:    fields.websiteUrl || null,
@@ -309,18 +309,18 @@ const AdminShopEditPage = () => {
               </div>
             </section>
 
-            {/* 02 エリア・価格帯 */}
+            {/* 02 都道府県・価格帯 */}
             <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
-              <SectionLabel num="02" title="エリア / 価格帯" required />
+              <SectionLabel num="02" title="都道府県 / 価格帯" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="エリア" error={errors.areaId?.message}>
+                <Field label="都道府県" error={errors.prefectureId?.message}>
                   <select
-                    className={cn(selectClass, errors.areaId && 'border-red-400')}
-                    {...register('areaId', { valueAsNumber: true })}
+                    className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                    {...register('prefectureId', { valueAsNumber: true })}
                   >
                     <option value="">選択してください</option>
-                    {masterData?.areas.map((area) => (
-                      <option key={area.id} value={area.id}>{area.city}</option>
+                    {masterData?.prefectures.map((pref) => (
+                      <option key={pref.id} value={pref.id}>{pref.name}</option>
                     ))}
                   </select>
                 </Field>

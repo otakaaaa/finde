@@ -19,7 +19,7 @@ const BUCKET = 'shop-photos'
 const shopSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000).optional(),
-  areaId:       z.number({ required_error: 'エリアを選択してください', invalid_type_error: 'エリアを選択してください' }),
+  prefectureId: z.number({ required_error: '都道府県を選択してください', invalid_type_error: '都道府県を選択してください' }),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   phone:        z.string().max(20).optional(),
@@ -88,7 +88,7 @@ const AdminShopNewPage = () => {
         .insert({
           name:           values.name,
           description:    values.description || null,
-          area_id:        values.areaId,
+          prefecture_id:  values.prefectureId,
           price_range_id: values.priceRangeId ?? null,
           phone:          values.phone || null,
           website_url:    values.websiteUrl || null,
@@ -223,18 +223,18 @@ const AdminShopNewPage = () => {
               </div>
             </section>
 
-            {/* 02 エリア・価格帯 */}
+            {/* 02 都道府県・価格帯 */}
             <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
-              <SectionLabel num="02" title="エリア / 価格帯" required />
+              <SectionLabel num="02" title="都道府県 / 価格帯" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="エリア" error={errors.areaId?.message}>
+                <Field label="都道府県" error={errors.prefectureId?.message}>
                   <select
-                    className={cn(selectClass, errors.areaId && 'border-red-400')}
-                    {...register('areaId', { valueAsNumber: true })}
+                    className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                    {...register('prefectureId', { valueAsNumber: true })}
                   >
                     <option value="">選択してください</option>
-                    {masterData?.areas.map((area) => (
-                      <option key={area.id} value={area.id}>{area.city}</option>
+                    {masterData?.prefectures.map((pref) => (
+                      <option key={pref.id} value={pref.id}>{pref.name}</option>
                     ))}
                   </select>
                 </Field>
