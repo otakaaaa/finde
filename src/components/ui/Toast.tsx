@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { CheckCircle2, AlertCircle, X } from 'lucide-react'
+import { Check, AlertCircle, X } from 'lucide-react'
 import { useUiStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
 import type { Toast, ToastPosition } from '@/store/uiStore'
@@ -31,26 +31,29 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
   return (
     <div
       className={cn(
-        'toast-enter relative overflow-hidden border-l-[3px] bg-foreground editorial-shadow',
-        'flex w-[300px] items-start gap-3 px-4 py-3.5 sm:w-[340px]',
-        isDestructive ? 'border-l-red-500' : 'border-l-emerald-400',
+        'wish-card-enter relative overflow-hidden border-l-[3px] bg-white editorial-shadow',
+        'flex w-[300px] items-center gap-3 px-5 py-3.5 sm:w-[340px]',
+        isDestructive ? 'border-l-red-400' : 'border-l-emerald-400',
       )}
       role="alert"
     >
       {/* Icon */}
       {isDestructive ? (
-        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
+        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
       ) : (
-        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+        <Check className="h-4 w-4 shrink-0 text-emerald-500" />
       )}
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <p className="font-headline text-[12px] font-black tracking-wide text-white/90">
+        <p className={cn(
+          'text-[12px] font-medium',
+          isDestructive ? 'text-red-700' : 'text-emerald-700',
+        )}>
           {toast.title}
         </p>
         {toast.description && (
-          <p className="mt-0.5 text-[10px] leading-relaxed text-white/45">
+          <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground/60">
             {toast.description}
           </p>
         )}
@@ -59,7 +62,7 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
       {/* Close */}
       <button
         onClick={() => onRemove(toast.id)}
-        className="mt-0.5 shrink-0 text-white/20 transition-colors hover:text-white/60"
+        className="shrink-0 text-muted-foreground/30 transition-colors hover:text-muted-foreground/70"
         aria-label="閉じる"
       >
         <X className="h-3 w-3" />
@@ -69,7 +72,7 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
       <div
         className={cn(
           'absolute bottom-0 left-0 h-[2px] w-full origin-left',
-          isDestructive ? 'bg-red-500' : 'bg-emerald-400',
+          isDestructive ? 'bg-red-400' : 'bg-emerald-400',
         )}
         style={{ animation: `toast-progress ${DURATION}ms linear forwards` }}
       />

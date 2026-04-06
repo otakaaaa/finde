@@ -31,7 +31,7 @@ const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
 
 // Owner pages
 const OwnerDashboardPage = lazy(() => import('@/pages/owner/OwnerDashboardPage'))
-const ShopEditPage = lazy(() => import('@/pages/owner/ShopEditPage'))
+const OwnerShopEditPage = lazy(() => import('@/pages/owner/OwnerShopEditPage'))
 const BrandsManagePage = lazy(() => import('@/pages/owner/BrandsManagePage'))
 
 // Admin pages
@@ -130,8 +130,8 @@ const App = () => (
               element={<ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute>}
             />
             <Route
-              path="/owner/shops/:id"
-              element={<ProtectedRoute requiredRole="shop_owner"><ShopEditPage /></ProtectedRoute>}
+              path="/owner/shops/:id/edit"
+              element={<ProtectedRoute requiredRole="shop_owner"><OwnerShopEditPage /></ProtectedRoute>}
             />
             <Route
               path="/owner/shops/:id/brands"

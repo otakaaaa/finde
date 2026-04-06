@@ -85,7 +85,11 @@ export const useOwnerShops = () => {
 
 interface ShopUpdateInput {
   shopId: string
+  name?: string
   description?: string
+  areaId?: number
+  priceRangeId?: number | null
+  categoryIds?: number[]
   phone?: string
   websiteUrl?: string
   instagramUrl?: string
@@ -99,11 +103,14 @@ export const useUpdateShop = () => {
   const { user } = useAuth()
 
   return useMutation({
-    mutationFn: async ({ shopId, ...updates }: ShopUpdateInput) => {
+    mutationFn: async ({ shopId, categoryIds, ...updates }: ShopUpdateInput) => {
       const { error } = await supabase
         .from('shops')
         .update({
+          ...(updates.name !== undefined && { name: updates.name }),
           description: updates.description,
+          ...(updates.areaId !== undefined && { area_id: updates.areaId }),
+          ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
           phone: updates.phone || null,
           website_url: updates.websiteUrl || null,
           instagram_url: updates.instagramUrl || null,
@@ -114,6 +121,23 @@ export const useUpdateShop = () => {
         .eq('id', shopId) as unknown as { data: unknown; error: { message: string } | null }
 
       if (error) throw new Error(error.message)
+
+      if (categoryIds !== undefined) {
+        const { error: delError } = await supabase
+          .from('shop_categories')
+          .delete()
+          .eq('shop_id', shopId) as unknown as { error: { message: string } | null }
+
+        if (delError) throw new Error(delError.message)
+
+        if (categoryIds.length > 0) {
+          const { error: insError } = await supabase
+            .from('shop_categories')
+            .insert(categoryIds.map((id) => ({ shop_id: shopId, category_id: id })) as never) as unknown as { error: { message: string } | null }
+
+          if (insError) throw new Error(insError.message)
+        }
+      }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['owner-shops', user?.id] })

@@ -70,7 +70,7 @@ const BrandsManagePage = () => {
   const { id: shopId } = useParams<{ id: string }>()
   const { pathname } = useLocation()
   const isAdmin = pathname.startsWith('/admin')
-  const backTo = isAdmin ? `/admin/shops/${shopId}/edit` : `/owner/shops/${shopId}`
+  const backTo = isAdmin ? `/admin/shops/${shopId}/edit` : `/owner/shops/${shopId}/edit`
   const backLabel = isAdmin ? '店舗編集へ戻る' : '店舗編集へ戻る'
   const { user } = useAuth()
   const queryClient = useQueryClient()
