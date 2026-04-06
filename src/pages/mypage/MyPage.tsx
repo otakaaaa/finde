@@ -9,6 +9,7 @@ import { useMyWishes } from '@/hooks/useWishes'
 import { useFavoriteShops } from '@/hooks/useFavorites'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 
 const ROLE_LABEL: Record<string, string> = {
   user: 'MEMBER',
@@ -358,14 +359,16 @@ const MyPage = () => {
               sublabel="知っている店舗を登録する"
               animDelay={110}
             />
-            <NavItem
-              to="/owner-application/new"
-              icon={<MessageCircle className="h-3.5 w-3.5" />}
-              index="04"
-              label="オーナー申請"
-              sublabel="自分の店舗としてオーナー権限を申請する"
-              animDelay={165}
-            />
+            {OWNER_FEATURE_ENABLED &&
+              <NavItem
+                to="/owner-application/new"
+                icon={<MessageCircle className="h-3.5 w-3.5" />}
+                index="04"
+                label="オーナー申請"
+                sublabel="自分の店舗としてオーナー権限を申請する"
+                animDelay={165}
+              />
+            }
           </div>
 
           {/* Owner application DM links — show for non-owners with pending/approved applications */}
