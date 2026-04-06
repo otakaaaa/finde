@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 
 // Public pages
 const TopPage = lazy(() => import('@/pages/top/TopPage'))
@@ -117,25 +118,25 @@ const App = () => (
             />
             <Route
               path="/owner-application/new"
-              element={<ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute>}
+              element={OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/owner-application/:requestId"
-              element={<ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute>}
+              element={OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
 
             {/* Owner */}
             <Route
               path="/owner"
-              element={<ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute>}
+              element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/owner/shops/:id/edit"
-              element={<ProtectedRoute requiredRole="shop_owner"><OwnerShopEditPage /></ProtectedRoute>}
+              element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerShopEditPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/owner/shops/:id/brands"
-              element={<ProtectedRoute requiredRole="shop_owner"><BrandsManagePage /></ProtectedRoute>}
+              element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><BrandsManagePage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
 
             {/* Admin */}

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 
 interface NavItem {
   to: string
@@ -121,7 +122,7 @@ export const Header = () => {
             {user?.role === 'admin' && (
               <NavLink item={{ to: '/admin', label: 'ADMIN', exact: true }} />
             )}
-            {user?.role === 'shop_owner' && (
+            {OWNER_FEATURE_ENABLED && user?.role === 'shop_owner' && (
               <NavLink item={{ to: '/owner', label: 'OWNER' }} />
             )}
 
@@ -222,7 +223,7 @@ export const Header = () => {
             ...PUBLIC_NAV,
             ...(user ? USER_NAV : []),
             ...(user?.role === 'admin' ? [{ to: '/admin', label: 'ADMIN', exact: true as const }] : []),
-            ...(user?.role === 'shop_owner' ? [{ to: '/owner', label: 'OWNER' }] : []),
+            ...(OWNER_FEATURE_ENABLED && user?.role === 'shop_owner' ? [{ to: '/owner', label: 'OWNER' }] : []),
           ].map((item, i) => (
             <Link
               key={item.to}
