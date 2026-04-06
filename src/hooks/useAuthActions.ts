@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/types'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 
 const ROLE_REDIRECT: Record<UserRole, string> = {
   admin: '/admin',
-  shop_owner: '/owner',
+  shop_owner: OWNER_FEATURE_ENABLED ? '/owner' : '/',
   user: '/',
 }
 

@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 
 const listingRequestSchema = z.object({
   shopName: z.string().min(1, '店舗名を入力してください').max(100),
@@ -207,18 +208,20 @@ const ListingRequestPage = () => {
                   フクナビに掲載したい店舗を申請してください。<br />
                   スタッフが確認後、掲載いたします。
                 </p>
-                <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
-                  <p className="text-[10px] leading-relaxed text-muted-foreground/60">
-                    店舗のオーナー・スタッフの方は
-                    <Link
-                      to="/owner-application/new"
-                      className="mx-0.5 font-bold text-primary underline-offset-2 hover:underline"
-                    >
-                      オーナー申請
-                    </Link>
-                    からご申請ください。ダッシュボードから店舗情報を管理できます。
-                  </p>
-                </div>
+                {OWNER_FEATURE_ENABLED && 
+                  <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
+                    <p className="text-[10px] leading-relaxed text-muted-foreground/60">
+                      店舗のオーナー・スタッフの方は
+                      <Link
+                        to="/owner-application/new"
+                        className="mx-0.5 font-bold text-primary underline-offset-2 hover:underline"
+                      >
+                        オーナー申請
+                      </Link>
+                      からご申請ください。ダッシュボードから店舗情報を管理できます。
+                    </p>
+                  </div>
+                }
               </div>
 
               {/* Process steps */}
