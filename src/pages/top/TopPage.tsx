@@ -24,38 +24,20 @@ const CATEGORY_ICONS: Record<CategoryCode, ReactNode> = {
   vintage: <Sparkles className="h-5 w-5" />,
 }
 
-const CITY_ROMAJI: Record<string, string> = {
-  '渋谷': 'Shibuya',
-  '新宿': 'Shinjuku',
-  '港': 'Minato',
-  '中目黒': 'Nakameguro',
-  '代官山': 'Daikanyama',
-  '三軒茶屋': 'Sangenjaya',
-  '恵比寿': 'Ebisu',
-  '吉祥寺': 'Kichijoji',
-  '下北沢': 'Shimokitazawa',
-  '原宿': 'Harajuku',
-  '表参道': 'Omotesando',
-  '銀座': 'Ginza',
-  '六本木': 'Roppongi',
-  '池袋': 'Ikebukuro',
-  '上野': 'Ueno',
-  '秋葉原': 'Akihabara',
-  '浅草': 'Asakusa',
-  '品川': 'Shinagawa',
-  '大阪': 'Osaka',
-  '梅田': 'Umeda',
-  '心斎橋': 'Shinsaibashi',
-  '難波': 'Namba',
-  '名古屋': 'Nagoya',
-  '福岡': 'Fukuoka',
-  '天神': 'Tenjin',
-  '京都': 'Kyoto',
-  '神戸': 'Kobe',
-  '横浜': 'Yokohama',
-  '札幌': 'Sapporo',
-  '仙台': 'Sendai',
-  '広島': 'Hiroshima',
+const PREFECTURE_ROMAJI: Record<string, string> = {
+  '東京都':   'Tokyo',
+  '大阪府':   'Osaka',
+  '神奈川県': 'Kanagawa',
+  '愛知県':   'Aichi',
+  '福岡県':   'Fukuoka',
+  '北海道':   'Hokkaido',
+  '宮城県':   'Miyagi',
+  '京都府':   'Kyoto',
+  '兵庫県':   'Hyogo',
+  '埼玉県':   'Saitama',
+  '千葉県':   'Chiba',
+  '広島県':   'Hiroshima',
+  '沖縄県':   'Okinawa',
 }
 
 const useAreas = () =>
@@ -215,8 +197,8 @@ const TopPage = () => {
     navigate('/shops')
   }
 
-  const goWithArea = (areaId: number) => {
-    setShopFilters({ sort: 'popular', areaId })
+  const goWithPrefecture = (prefecture: string) => {
+    setShopFilters({ sort: 'popular', prefecture })
     navigate('/shops')
   }
 
@@ -304,7 +286,7 @@ const TopPage = () => {
             <div>
               <p className="max-w-xs text-sm leading-relaxed text-white/60">
                 全国のセレクトショップ・古着屋を、<br />
-                エリアやカテゴリから探せる。
+                エリアやブランドから探せる。
               </p>
             </div>
             <div className="w-full max-w-lg">
@@ -509,41 +491,44 @@ const TopPage = () => {
         </section>
       )}
 
-      {/* ── Areas ────────────────────────────────────────── */}
-      {areas && areas.length > 0 && (
-        <section className="bg-white py-24 border-b border-border">
-          <div className="mx-auto max-w-6xl px-8 md:px-16">
-            <div className="mb-12">
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
-                — Location
-              </span>
-              <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
-                エリアで探す
-              </h2>
-            </div>
+      {/* ── Prefectures ──────────────────────────────────── */}
+      {areas && areas.length > 0 && (() => {
+        const prefectures = [...new Set(areas.map((a) => a.prefecture))]
+        return (
+          <section className="bg-white py-24 border-b border-border">
+            <div className="mx-auto max-w-6xl px-8 md:px-16">
+              <div className="mb-12">
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+                  — Location
+                </span>
+                <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
+                  都道府県から探す
+                </h2>
+              </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {areas.slice(0, 8).map((area) => (
-                <button
-                  key={area.id}
-                  onClick={() => goWithArea(area.id)}
-                  className="group relative overflow-hidden border border-border bg-background p-5 text-left transition-all duration-200 hover:border-primary hover:bg-primary"
-                >
-                  <div className="relative z-10">
-                    <div className="font-headline text-lg font-bold transition-colors group-hover:text-primary-foreground">
-                      {area.city}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {prefectures.map((pref) => (
+                  <button
+                    key={pref}
+                    onClick={() => goWithPrefecture(pref)}
+                    className="group relative overflow-hidden border border-border bg-background p-5 text-left transition-all duration-200 hover:border-primary hover:bg-primary"
+                  >
+                    <div className="relative z-10">
+                      <div className="font-headline text-lg font-bold transition-colors group-hover:text-primary-foreground">
+                        {pref}
+                      </div>
+                      <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground transition-colors group-hover:text-primary-foreground/60">
+                        {PREFECTURE_ROMAJI[pref] ?? ''}
+                      </div>
                     </div>
-                    <div className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground transition-colors group-hover:text-primary-foreground/60">
-                      {CITY_ROMAJI[area.city] ?? area.prefecture}
-                    </div>
-                  </div>
-                  <ArrowUpRight className="absolute bottom-4 right-4 h-4 w-4 text-border opacity-0 transition-all group-hover:text-primary-foreground/50 group-hover:opacity-100" />
-                </button>
-              ))}
+                    <ArrowUpRight className="absolute bottom-4 right-4 h-4 w-4 text-border opacity-0 transition-all group-hover:text-primary-foreground/50 group-hover:opacity-100" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )
+      })()}
 
       {/* ── CTA ──────────────────────────────────────────── */}
       {!user && (

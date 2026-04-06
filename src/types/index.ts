@@ -107,7 +107,7 @@ export interface Shop {
 }
 
 export interface ShopFilters {
-  areaId?: number
+  prefecture?: string
   categoryId?: number
   priceRangeId?: number
   tagIds?: number[]

@@ -67,18 +67,18 @@ export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
         ))}
       </select>
 
-      {/* Area */}
+      {/* Prefecture */}
       <select
-        value={filters.areaId ?? ''}
+        value={filters.prefecture ?? ''}
         onChange={(e) =>
-          update({ areaId: e.target.value ? Number(e.target.value) : undefined })
+          update({ prefecture: e.target.value || undefined })
         }
         className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        <option value="">エリア: すべて</option>
-        {data?.areas.map((area) => (
-          <option key={area.id} value={area.id}>
-            {area.city}
+        <option value="">都道府県: すべて</option>
+        {[...new Set(data?.areas.map((a) => a.prefecture) ?? [])].map((pref) => (
+          <option key={pref} value={pref}>
+            {pref}
           </option>
         ))}
       </select>

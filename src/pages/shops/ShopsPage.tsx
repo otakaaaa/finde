@@ -101,7 +101,7 @@ const ShopsPage = () => {
   const shops = data?.pages.flatMap((p) => p.items) ?? []
   const activeSort = shopFilters.sort ?? 'popular'
   const hasActiveFilters =
-    shopFilters.areaId != null ||
+    shopFilters.prefecture != null ||
     shopFilters.categoryId != null ||
     shopFilters.priceRangeId != null ||
     shopFilters.brandId != null
@@ -163,14 +163,14 @@ const ShopsPage = () => {
             <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
 
             <FilterSelect
-              value={shopFilters.areaId?.toString() ?? ''}
-              onChange={(v) => update({ areaId: v ? Number(v) : undefined })}
-              placeholder="エリア"
-              isActive={shopFilters.areaId != null}
+              value={shopFilters.prefecture ?? ''}
+              onChange={(v) => update({ prefecture: v || undefined })}
+              placeholder="都道府県"
+              isActive={shopFilters.prefecture != null}
             >
-              {master?.areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.city}
+              {[...new Set(master?.areas.map((a) => a.prefecture) ?? [])].map((pref) => (
+                <option key={pref} value={pref}>
+                  {pref}
                 </option>
               ))}
             </FilterSelect>

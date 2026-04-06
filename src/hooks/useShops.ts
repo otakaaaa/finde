@@ -121,7 +121,7 @@ const fetchShops = async ({
     .eq('status', 'public')
     .limit(PAGE_SIZE + 1)
 
-  if (filters.areaId) query = query.eq('area_id', filters.areaId)
+  if (filters.prefecture) query = query.eq('areas.prefecture', filters.prefecture)
   if (filters.priceRangeId) query = query.eq('price_range_id', filters.priceRangeId)
   if (filters.query) query = query.ilike('name', `%${filters.query}%`)
   if (filteredShopIds !== null) query = query.in('id', filteredShopIds)
