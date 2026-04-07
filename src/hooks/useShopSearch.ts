@@ -24,6 +24,9 @@ const mapSearchResult = (row: SearchResultRow): Shop => ({
   name: row.name,
   namePending: null,
   description: row.description,
+  prefectureId: null,
+  cityId: null,
+  address: null,
   area: row.areas
     ? { id: row.areas.id, prefecture: row.areas.prefecture, city: row.areas.city, slug: row.areas.slug }
     : null,
