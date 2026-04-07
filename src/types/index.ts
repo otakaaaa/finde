@@ -43,6 +43,12 @@ export interface Prefecture {
   slug: string
 }
 
+export interface City {
+  id: number
+  prefectureId: number
+  name: string
+}
+
 export interface PriceRange {
   id: number
   label: string
@@ -95,7 +101,7 @@ export interface Shop {
   namePending: string | null
   description: string | null
   prefectureId: number | null
-  city: string | null
+  cityId: number | null
   address: string | null
   area: Area | null
   priceRange: PriceRange | null
@@ -119,6 +125,7 @@ export interface Shop {
 
 export interface ShopFilters {
   prefectureId?: number
+  cityId?: number
   categoryId?: number
   priceRangeId?: number
   tagIds?: number[]

@@ -23,7 +23,7 @@ interface OwnerShopRow {
     created_at: string
     updated_at: string
     prefecture_id: number | null
-    city: string | null
+    city_id: number | null
     address: string | null
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
@@ -46,7 +46,7 @@ export const useOwnerShops = () => {
             id, name, name_pending, description, phone, website_url,
             instagram_url, twitter_url, business_hours, closed_days,
             status, review_count, average_rating, favorite_count,
-            prefecture_id, city, address, created_at, updated_at,
+            prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
             price_ranges ( id, label, min_price, max_price )
           )
@@ -61,7 +61,7 @@ export const useOwnerShops = () => {
         namePending: s.name_pending,
         description: s.description,
         prefectureId: s.prefecture_id,
-        city: s.city,
+        cityId: s.city_id,
         address: s.address,
         area: s.areas,
         priceRange: s.price_ranges
@@ -94,7 +94,7 @@ interface ShopUpdateInput {
   name?: string
   description?: string
   prefectureId?: number
-  city?: string
+  cityId?: number | null
   address?: string
   priceRangeId?: number | null
   categoryIds?: number[]
@@ -118,7 +118,7 @@ export const useUpdateShop = () => {
           ...(updates.name !== undefined && { name: updates.name }),
           description: updates.description,
           ...(updates.prefectureId !== undefined && { prefecture_id: updates.prefectureId }),
-          city: updates.city || null,
+          ...(updates.cityId !== undefined && { city_id: updates.cityId ?? null }),
           address: updates.address || null,
           ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
           phone: updates.phone || null,

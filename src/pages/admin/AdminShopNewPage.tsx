@@ -20,7 +20,7 @@ const shopSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000).optional(),
   prefectureId: z.number({ required_error: '都道府県を選択してください', invalid_type_error: '都道府県を選択してください' }),
-  city:         z.string().max(50).optional(),
+  cityId:       z.number().optional(),
   address:      z.string().max(200).optional(),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
@@ -91,7 +91,7 @@ const AdminShopNewPage = () => {
           name:           values.name,
           description:    values.description || null,
           prefecture_id:  values.prefectureId,
-          city:           values.city || null,
+          city_id:        values.cityId ?? null,
           address:        values.address || null,
           price_range_id: values.priceRangeId ?? null,
           phone:          values.phone || null,
@@ -146,8 +146,10 @@ const AdminShopNewPage = () => {
     defaultValues: { categoryIds: [], status: 'public' },
   })
 
-  const selectedCategories = watch('categoryIds')
-  const watchedStatus = watch('status')
+  const selectedCategories  = watch('categoryIds')
+  const watchedStatus       = watch('status')
+  const watchedPrefectureId = watch('prefectureId')
+  const citiesForPrefecture = masterData?.cities.filter((c) => c.prefectureId === watchedPrefectureId) ?? []
 
   const toggleCategory = (id: number) => {
     const current = selectedCategories ?? []
@@ -244,15 +246,19 @@ const AdminShopNewPage = () => {
                     </select>
                   </Field>
                   <Field label="市区町村" optional>
-                    <input
-                      type="text"
-                      placeholder="例: 渋谷区"
-                      className={inputClass}
-                      {...register('city')}
-                    />
+                    <select
+                      className={selectClass}
+                      disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
+                      {...register('cityId', { valueAsNumber: true })}
+                    >
+                      <option value="">選択してください</option>
+                      {citiesForPrefecture.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
                   </Field>
                 </div>
-                <Field label="番地・建物名" optional>
+                <Field label="町名・番地・建物名" optional>
                   <input
                     type="text"
                     placeholder="例: 道玄坂1-1-1 ○○ビル2F"

@@ -22,7 +22,7 @@ interface ShopRow {
   created_at: string
   updated_at: string
   prefecture_id: number | null
-  city: string | null
+  city_id: number | null
   address: string | null
   areas: Area | null
   price_ranges: PriceRange | null
@@ -38,7 +38,7 @@ const mapShopRow = (row: ShopRow): Shop => ({
   namePending: row.name_pending,
   description: row.description,
   prefectureId: row.prefecture_id,
-  city: row.city,
+  cityId: row.city_id,
   address: row.address,
   area: row.areas,
   priceRange: row.price_ranges,
@@ -116,7 +116,7 @@ const fetchShops = async ({
       id, name, name_pending, description, phone, website_url,
       instagram_url, twitter_url, business_hours, closed_days,
       status, review_count, average_rating, favorite_count,
-      prefecture_id, city, address, created_at, updated_at,
+      prefecture_id, city_id, address, created_at, updated_at,
       areas ( id, prefecture, city, slug ),
       price_ranges ( id, label, min_price, max_price ),
       shop_categories ( categories ( id, code, name ) ),
@@ -128,6 +128,7 @@ const fetchShops = async ({
     .limit(PAGE_SIZE + 1)
 
   if (filters.prefectureId) query = query.eq('prefecture_id', filters.prefectureId)
+  if (filters.cityId) query = query.eq('city_id', filters.cityId)
   if (filters.priceRangeId) query = query.eq('price_range_id', filters.priceRangeId)
   if (filters.query) query = query.ilike('name', `%${filters.query}%`)
   if (filteredShopIds !== null) query = query.in('id', filteredShopIds)

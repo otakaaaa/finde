@@ -28,7 +28,7 @@ const shopEditSchema = z.object({
   name:         z.string().min(1, '店舗名を入力してください').max(100),
   description:  z.string().max(2000, '2000文字以内').optional(),
   prefectureId: z.number({ required_error: '都道府県を選択してください' }),
-  city:         z.string().max(50).optional(),
+  cityId:       z.number().optional(),
   address:      z.string().max(200).optional(),
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
@@ -47,7 +47,7 @@ function shopToFormValues(shop: {
   name: string
   description: string | null
   prefectureId: number | null
-  city: string | null
+  cityId: number | null
   address: string | null
   priceRange: PriceRange | null
   categories: { id: number }[]
@@ -62,7 +62,7 @@ function shopToFormValues(shop: {
     name:         shop.name,
     description:  shop.description ?? '',
     prefectureId: shop.prefectureId ?? ('' as unknown as number),
-    city:         shop.city ?? '',
+    cityId:       shop.cityId ?? undefined,
     address:      shop.address ?? '',
     priceRangeId: shop.priceRange?.id,
     categoryIds:  shop.categories.map((c) => c.id),
@@ -105,9 +105,11 @@ const OwnerShopEditPage = () => {
     defaultValues: { categoryIds: [] },
   })
 
-  const businessHours = useWatch({ control, name: 'businessHours' })
-  const description = watch('description')
-  const selectedCategories = watch('categoryIds')
+  const businessHours       = useWatch({ control, name: 'businessHours' })
+  const description         = watch('description')
+  const selectedCategories  = watch('categoryIds')
+  const watchedPrefectureId = watch('prefectureId')
+  const citiesForPrefecture = masterData?.cities.filter((c) => c.prefectureId === watchedPrefectureId) ?? []
 
   useEffect(() => {
     if (shop) reset(shopToFormValues(shop))
@@ -134,7 +136,7 @@ const OwnerShopEditPage = () => {
         name:          values.name,
         description:   values.description,
         prefectureId:  values.prefectureId,
-        city:          values.city,
+        cityId:        values.cityId ?? null,
         address:       values.address,
         priceRangeId:  values.priceRangeId ?? null,
         categoryIds:   values.categoryIds,
@@ -280,15 +282,19 @@ const OwnerShopEditPage = () => {
                           </select>
                         </Field>
                         <Field label="市区町村" optional>
-                          <input
-                            type="text"
-                            placeholder="例: 渋谷区"
-                            className={inputClass}
-                            {...register('city')}
-                          />
+                          <select
+                            className={selectClass}
+                            disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
+                            {...register('cityId', { valueAsNumber: true })}
+                          >
+                            <option value="">選択してください</option>
+                            {citiesForPrefecture.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
                         </Field>
                       </div>
-                      <Field label="番地・建物名" optional>
+                      <Field label="町名・番地・建物名" optional>
                         <input
                           type="text"
                           placeholder="例: 道玄坂1-1-1 ○○ビル2F"

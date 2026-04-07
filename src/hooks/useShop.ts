@@ -20,7 +20,7 @@ interface ShopDetailRow {
   created_at: string
   updated_at: string
   prefecture_id: number | null
-  city: string | null
+  city_id: number | null
   address: string | null
   areas: { id: number; prefecture: string; city: string; slug: string } | null
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
@@ -36,7 +36,7 @@ const mapShopDetail = (row: ShopDetailRow): Shop => ({
   namePending: row.name_pending,
   description: row.description,
   prefectureId: row.prefecture_id,
-  city: row.city,
+  cityId: row.city_id,
   address: row.address,
   area: row.areas
     ? { id: row.areas.id, prefecture: row.areas.prefecture, city: row.areas.city, slug: row.areas.slug }
@@ -93,7 +93,7 @@ export const useShop = (id: string) => {
           id, name, name_pending, description, phone, website_url,
           instagram_url, twitter_url, business_hours, closed_days,
           status, review_count, average_rating, favorite_count,
-          prefecture_id, city, address, created_at, updated_at,
+          prefecture_id, city_id, address, created_at, updated_at,
           areas ( id, prefecture, city, slug ),
           price_ranges ( id, label, min_price, max_price ),
           shop_categories ( categories ( id, code, name ) ),

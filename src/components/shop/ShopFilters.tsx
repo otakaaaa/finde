@@ -37,9 +37,10 @@ export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
       {/* Prefecture */}
       <select
         value={filters.prefectureId ?? ''}
-        onChange={(e) =>
-          update({ prefectureId: e.target.value ? Number(e.target.value) : undefined })
-        }
+        onChange={(e) => {
+          const prefectureId = e.target.value ? Number(e.target.value) : undefined
+          update({ prefectureId, cityId: undefined })
+        }}
         className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <option value="">都道府県: すべて</option>
@@ -49,6 +50,24 @@ export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
           </option>
         ))}
       </select>
+
+      {/* City */}
+      {filters.prefectureId && (
+        <select
+          value={filters.cityId ?? ''}
+          onChange={(e) =>
+            update({ cityId: e.target.value ? Number(e.target.value) : undefined })
+          }
+          className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">市区町村: すべて</option>
+          {data?.cities
+            .filter((c) => c.prefectureId === filters.prefectureId)
+            .map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+        </select>
+      )}
 
       {/* Category */}
       <select

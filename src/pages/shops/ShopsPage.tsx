@@ -64,6 +64,7 @@ const ShopsPage = () => {
   const activeSort = shopFilters.sort ?? 'popular'
   const hasActiveFilters =
     shopFilters.prefectureId != null ||
+    shopFilters.cityId != null ||
     shopFilters.categoryId != null ||
     shopFilters.priceRangeId != null ||
     shopFilters.brandId != null
