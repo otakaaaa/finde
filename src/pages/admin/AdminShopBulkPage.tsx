@@ -403,13 +403,13 @@ const AdminShopBulkPage = () => {
                 </table>
               </div>
               <div className="border-t border-border px-4 py-2 flex gap-4">
-                <span className="flex items-center gap-1.5 text-[9px] font-bold text-primary/70">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-                  REQUIRED
+                <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  必須
                 </span>
-                <span className="flex items-center gap-1.5 text-[9px] font-medium text-muted-foreground/40">
-                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                  OPTIONAL
+                <span className="inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground/40">
+                  <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
+                  任意
                 </span>
                 <span className="ml-auto text-[9px] text-muted-foreground/40">
                   status: public / pending / private
