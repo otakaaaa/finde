@@ -257,14 +257,22 @@ const TermsPage = () => {
 
             {/* Footer */}
             <div className="py-12">
-              <p className="text-[10px] leading-relaxed text-muted-foreground/40">
-                本規約（{version.label}）は{version.effectiveDate}より施行されます。<br />
-                ご不明な点がございましたら、
-                <a href="/contact" className="underline underline-offset-2 hover:text-muted-foreground/70">
-                  お問い合わせフォーム
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-[10px] leading-relaxed text-muted-foreground/40">
+                  本規約（{version.label}）は{version.effectiveDate}より施行されます。<br />
+                  ご不明な点がございましたら、
+                  <a href="/contact" className="underline underline-offset-2 hover:text-muted-foreground/70">
+                    お問い合わせフォーム
+                  </a>
+                  よりご連絡ください。
+                </p>
+                <a
+                  href="/privacy"
+                  className="shrink-0 text-[10px] text-muted-foreground/30 underline underline-offset-2 hover:text-muted-foreground/60"
+                >
+                  プライバシーポリシーを確認 →
                 </a>
-                よりご連絡ください。
-              </p>
+              </div>
             </div>
 
           </main>

@@ -281,7 +281,7 @@ const PrivacyPolicyPage = () => {
                 ref={(el) => { sectionRefs.current[section.id] = el }}
                 className="py-12 first:pt-0"
               >
-                <div className="mb-8 flex items-start gap-4">
+                <div className="mb-8 flex items-center gap-4">
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/30 text-muted-foreground/50">
                     {SECTION_ICONS[section.icon]}
                   </div>
