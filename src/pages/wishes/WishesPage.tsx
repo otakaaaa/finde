@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil } from 'lucide-react'
 import { useMyWishes, useDeleteWish } from '@/hooks/useWishes'
@@ -41,8 +42,13 @@ const CONDITION_LABEL: Record<NonNullable<Wish['condition']>, string> = {
 
 const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
   const { mutate: deleteWish, isPending } = useDeleteWish()
+  const [showConfirm, setShowConfirm] = useState(false)
   const typeConf = TYPE_CONFIG[wish.type]
   const urgencyConf = wish.urgency ? URGENCY_CONFIG[wish.urgency] : null
+
+  const handleDeleteConfirm = () => {
+    deleteWish(wish.id, { onSettled: () => setShowConfirm(false) })
+  }
 
   return (
     <div
@@ -52,6 +58,42 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
       )}
       style={{ animationDelay: `${index * 55}ms` }}
     >
+
+      {/* Confirm delete overlay */}
+      {showConfirm && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-white/95 px-6 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="mb-2 flex items-center justify-center">
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </div>
+            <p className="font-headline text-[13px] font-black leading-snug tracking-tight text-foreground">
+              このウィッシュを削除しますか？
+            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground/50">
+              削除後は元に戻せません
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowConfirm(false)}
+              disabled={isPending}
+              className="border border-border px-4 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-foreground/20 disabled:opacity-40"
+            >
+              キャンセル
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              disabled={isPending}
+              className="flex items-center gap-1.5 bg-red-500 px-4 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-40"
+            >
+              {isPending && (
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              )}
+              削除する
+            </button>
+          </div>
+        </div>
+      )}
       {/* Card watermark */}
       <div className="pointer-events-none absolute right-1 top-0 select-none overflow-hidden">
         <span
@@ -88,7 +130,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
               <Pencil className="h-3.5 w-3.5" />
             </Link>
             <button
-              onClick={() => deleteWish(wish.id)}
+              onClick={() => setShowConfirm(true)}
               disabled={isPending}
               className="text-muted-foreground/30 transition-colors hover:text-red-500 disabled:opacity-30 group-hover:text-muted-foreground/50"
               title="削除"
