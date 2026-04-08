@@ -1,44 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useUiStore } from '@/store/uiStore'
 import { ShopCard } from '@/components/shop/ShopCard'
 import { cn } from '@/lib/utils'
 import { ChevronDown, Tag, X } from 'lucide-react'
-import type { ShopFilters, Area, Category, PriceRange } from '@/types'
-
-interface MasterData {
-  areas: Area[]
-  categories: Category[]
-  priceRanges: PriceRange[]
-}
-
-const fetchMasterData = async (): Promise<MasterData> => {
-  const [areasRes, catsRes, pricesRes] = await Promise.all([
-    supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{
-      data: Area[] | null
-      error: { message: string } | null
-    }>,
-    supabase.from('categories').select('id, code, name').order('id') as unknown as Promise<{
-      data: Category[] | null
-      error: { message: string } | null
-    }>,
-    supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{
-      data: (Omit<PriceRange, 'minPrice' | 'maxPrice'> & { min_price: number | null; max_price: number | null })[] | null
-      error: { message: string } | null
-    }>,
-  ])
-  return {
-    areas: areasRes.data ?? [],
-    categories: catsRes.data ?? [],
-    priceRanges: (pricesRes.data ?? []).map((p) => ({
-      id: p.id,
-      label: p.label,
-      minPrice: p.min_price,
-      maxPrice: p.max_price,
-    })),
-  }
-}
+import type { ShopFilters } from '@/types'
 
 const SORT_OPTIONS: { value: NonNullable<ShopFilters['sort']>; label: string }[] = [
   { value: 'popular', label: '人気順' },
@@ -92,16 +58,13 @@ const ShopsPage = () => {
     isLoading,
     isError,
   } = useShops(shopFilters)
-  const { data: master } = useQuery({
-    queryKey: ['master-data'],
-    queryFn: fetchMasterData,
-    staleTime: Infinity,
-  })
+  const { data: master } = useShopMasterData()
 
   const shops = data?.pages.flatMap((p) => p.items) ?? []
   const activeSort = shopFilters.sort ?? 'popular'
   const hasActiveFilters =
-    shopFilters.areaId != null ||
+    shopFilters.prefectureId != null ||
+    shopFilters.cityId != null ||
     shopFilters.categoryId != null ||
     shopFilters.priceRangeId != null ||
     shopFilters.brandId != null
@@ -163,14 +126,14 @@ const ShopsPage = () => {
             <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
 
             <FilterSelect
-              value={shopFilters.areaId?.toString() ?? ''}
-              onChange={(v) => update({ areaId: v ? Number(v) : undefined })}
-              placeholder="エリア"
-              isActive={shopFilters.areaId != null}
+              value={shopFilters.prefectureId?.toString() ?? ''}
+              onChange={(v) => update({ prefectureId: v ? Number(v) : undefined })}
+              placeholder="都道府県"
+              isActive={shopFilters.prefectureId != null}
             >
-              {master?.areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.city}
+              {master?.prefectures?.map((pref) => (
+                <option key={pref.id} value={pref.id}>
+                  {pref.name}
                 </option>
               ))}
             </FilterSelect>

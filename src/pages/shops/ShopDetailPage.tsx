@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
 import { MapPin, Phone, Globe, Instagram, Twitter, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
 import { useShop } from '@/hooks/useShop'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
@@ -94,6 +95,7 @@ const ShopDetailPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: shop, isLoading, isError } = useShop(id ?? '')
+  const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
   const { data: reviews } = useReviews(id ?? '')
@@ -173,11 +175,14 @@ const ShopDetailPage = () => {
             <h1 className="font-headline text-3xl font-black leading-none text-white md:text-5xl lg:text-6xl">
               {shop.name}
             </h1>
-            {shop.area && (
+            {(shop.prefectureId != null || shop.cityId != null) && (
               <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-white/50">
                 <MapPin className="h-3 w-3" />
                 <span>
-                  {shop.area.prefecture}&ensp;{shop.area.city}
+                  {masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name}
+                  {shop.cityId != null && (
+                    <>&ensp;{masterData?.cities.find((c) => c.id === shop.cityId)?.name}</>
+                  )}
                 </span>
               </div>
             )}
@@ -238,10 +243,10 @@ const ShopDetailPage = () => {
               </button>
             </div>
 
-            {/* Description */}
+            {/* 詳細 */}
             {shop.description && (
               <section className="mb-10">
-                <SectionLabel>About</SectionLabel>
+                <SectionLabel>詳細</SectionLabel>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-[1.9] text-foreground/80">
                   {shop.description}
                 </p>
@@ -305,17 +310,37 @@ const ShopDetailPage = () => {
                 </button>
               </div>
 
-              {/* Price range */}
+              {/* 住所 */}
+              {(shop.prefectureId != null || shop.cityId != null || shop.address) && (
+                <div className="border-b border-border px-5 py-4">
+                  <PanelLabel>住所</PanelLabel>
+                  <div className="mt-1.5 space-y-0.5">
+                    {(shop.prefectureId != null || shop.cityId != null) && (
+                      <p className="text-xs font-medium">
+                        {masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name}
+                        {shop.cityId != null && (
+                          <>&nbsp;{masterData?.cities.find((c) => c.id === shop.cityId)?.name}</>
+                        )}
+                      </p>
+                    )}
+                    {shop.address && (
+                      <p className="text-xs text-muted-foreground">{shop.address}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 価格帯 */}
               {shop.priceRange && (
                 <div className="border-b border-border px-5 py-4">
-                  <PanelLabel>Price Range</PanelLabel>
+                  <PanelLabel>価格帯</PanelLabel>
                   <p className="mt-1 font-headline text-sm font-bold">{shop.priceRange.label}</p>
                 </div>
               )}
 
-              {/* Business hours */}
+              {/* 営業時間 */}
               <div className="border-b border-border px-5 py-4">
-                <PanelLabel>Hours</PanelLabel>
+                <PanelLabel>営業時間</PanelLabel>
                 <div className="mt-3">
                   <BusinessHoursGrid hours={shop.businessHours} closedDays={shop.closedDays} />
                 </div>
@@ -358,7 +383,7 @@ const ShopDetailPage = () => {
         <section className="mt-16 border-t border-border pt-12">
           <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <SectionLabel>Reviews</SectionLabel>
+              <SectionLabel>レビュー</SectionLabel>
               <p className="mt-1 font-headline text-2xl font-black leading-none">
                 {shop.reviewCount > 0 ? (
                   <>

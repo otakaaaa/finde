@@ -1,38 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import type { ShopFilters, Area, Category, PriceRange } from '@/types'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
+import type { ShopFilters } from '@/types'
 
 interface ShopFiltersProps {
   filters: ShopFilters
   onChange: (filters: ShopFilters) => void
-}
-
-const fetchMasterData = async () => {
-  const [areas, categories, priceRanges] = await Promise.all([
-    supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{
-      data: Area[] | null
-      error: { message: string } | null
-    }>,
-    supabase.from('categories').select('id, code, name').order('id') as unknown as Promise<{
-      data: Category[] | null
-      error: { message: string } | null
-    }>,
-    supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{
-      data: (Omit<PriceRange, 'minPrice' | 'maxPrice'> & { min_price: number | null; max_price: number | null })[] | null
-      error: { message: string } | null
-    }>,
-  ])
-
-  return {
-    areas: areas.data ?? [],
-    categories: categories.data ?? [],
-    priceRanges: (priceRanges.data ?? []).map((p) => ({
-      id: p.id,
-      label: p.label,
-      minPrice: p.min_price,
-      maxPrice: p.max_price,
-    })) as PriceRange[],
-  }
 }
 
 const SORT_OPTIONS: { value: ShopFilters['sort']; label: string }[] = [
@@ -42,11 +13,7 @@ const SORT_OPTIONS: { value: ShopFilters['sort']; label: string }[] = [
 ]
 
 export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
-  const { data } = useQuery({
-    queryKey: ['master-data'],
-    queryFn: fetchMasterData,
-    staleTime: Infinity,
-  })
+  const { data } = useShopMasterData()
 
   const update = (partial: Partial<ShopFilters>) => {
     onChange({ ...filters, ...partial })
@@ -67,21 +34,40 @@ export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
         ))}
       </select>
 
-      {/* Area */}
+      {/* Prefecture */}
       <select
-        value={filters.areaId ?? ''}
-        onChange={(e) =>
-          update({ areaId: e.target.value ? Number(e.target.value) : undefined })
-        }
+        value={filters.prefectureId ?? ''}
+        onChange={(e) => {
+          const prefectureId = e.target.value ? Number(e.target.value) : undefined
+          update({ prefectureId, cityId: undefined })
+        }}
         className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        <option value="">エリア: すべて</option>
-        {data?.areas.map((area) => (
-          <option key={area.id} value={area.id}>
-            {area.city}
+        <option value="">都道府県: すべて</option>
+        {data?.prefectures?.map((pref) => (
+          <option key={pref.id} value={pref.id}>
+            {pref.name}
           </option>
         ))}
       </select>
+
+      {/* City */}
+      {filters.prefectureId && (
+        <select
+          value={filters.cityId ?? ''}
+          onChange={(e) =>
+            update({ cityId: e.target.value ? Number(e.target.value) : undefined })
+          }
+          className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">市区町村: すべて</option>
+          {data?.cities
+            .filter((c) => c.prefectureId === filters.prefectureId)
+            .map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+        </select>
+      )}
 
       {/* Category */}
       <select

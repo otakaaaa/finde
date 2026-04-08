@@ -35,6 +35,20 @@ export interface Area {
   slug: string
 }
 
+export interface Prefecture {
+  id: number
+  name: string
+  nameEn: string
+  region: string
+  slug: string
+}
+
+export interface City {
+  id: number
+  prefectureId: number
+  name: string
+}
+
 export interface PriceRange {
   id: number
   label: string
@@ -86,6 +100,9 @@ export interface Shop {
   name: string
   namePending: string | null
   description: string | null
+  prefectureId: number | null
+  cityId: number | null
+  address: string | null
   area: Area | null
   priceRange: PriceRange | null
   phone: string | null
@@ -107,7 +124,8 @@ export interface Shop {
 }
 
 export interface ShopFilters {
-  areaId?: number
+  prefectureId?: number
+  cityId?: number
   categoryId?: number
   priceRangeId?: number
   tagIds?: number[]

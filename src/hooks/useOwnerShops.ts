@@ -22,6 +22,9 @@ interface OwnerShopRow {
     favorite_count: number
     created_at: string
     updated_at: string
+    prefecture_id: number | null
+    city_id: number | null
+    address: string | null
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
   }
@@ -43,7 +46,7 @@ export const useOwnerShops = () => {
             id, name, name_pending, description, phone, website_url,
             instagram_url, twitter_url, business_hours, closed_days,
             status, review_count, average_rating, favorite_count,
-            created_at, updated_at,
+            prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
             price_ranges ( id, label, min_price, max_price )
           )
@@ -57,6 +60,9 @@ export const useOwnerShops = () => {
         name: s.name,
         namePending: s.name_pending,
         description: s.description,
+        prefectureId: s.prefecture_id,
+        cityId: s.city_id,
+        address: s.address,
         area: s.areas,
         priceRange: s.price_ranges
           ? { id: s.price_ranges.id, label: s.price_ranges.label, minPrice: s.price_ranges.min_price, maxPrice: s.price_ranges.max_price }
@@ -87,7 +93,9 @@ interface ShopUpdateInput {
   shopId: string
   name?: string
   description?: string
-  areaId?: number
+  prefectureId?: number
+  cityId?: number | null
+  address?: string
   priceRangeId?: number | null
   categoryIds?: number[]
   phone?: string
@@ -109,7 +117,9 @@ export const useUpdateShop = () => {
         .update({
           ...(updates.name !== undefined && { name: updates.name }),
           description: updates.description,
-          ...(updates.areaId !== undefined && { area_id: updates.areaId }),
+          ...(updates.prefectureId !== undefined && { prefecture_id: updates.prefectureId }),
+          ...(updates.cityId !== undefined && { city_id: updates.cityId ?? null }),
+          address: updates.address || null,
           ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
           phone: updates.phone || null,
           website_url: updates.websiteUrl || null,
