@@ -4,7 +4,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, X } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Phone, X } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
@@ -402,7 +403,7 @@ const AdminShopNewPage = () => {
                 </Field>
                 <Field label="X" optional error={errors.twitterUrl?.message}>
                   <div className="relative">
-                    <Twitter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <XLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
                     <input
                       type="url"
                       placeholder="https://x.com/..."

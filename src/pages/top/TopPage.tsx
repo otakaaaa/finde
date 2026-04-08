@@ -506,7 +506,7 @@ const TopPage = () => {
                 </h2>
               </div>
               <span className="mb-1 font-headline text-[10px] font-black tabular-nums text-muted-foreground/20">
-                47 PREFECTURES
+                47 都道府県
               </span>
             </div>
 

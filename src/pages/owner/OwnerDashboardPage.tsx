@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
-  Phone, Globe, Instagram, Twitter, Store, ChevronRight,
+  Phone, Globe, Instagram, Store, ChevronRight,
   ArrowUpRight,
 } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
@@ -305,7 +306,7 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   href={shop.instagramUrl ?? undefined}
                 />
                 <InfoRow
-                  icon={<Twitter className="h-3.5 w-3.5" />}
+                  icon={<XLogo className="h-3.5 w-3.5" />}
                   label="X"
                   value={shop.twitterUrl}
                   href={shop.twitterUrl ?? undefined}
