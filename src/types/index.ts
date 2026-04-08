@@ -109,6 +109,7 @@ export interface Shop {
   websiteUrl: string | null
   instagramUrl: string | null
   twitterUrl: string | null
+  tiktokUrl: string | null
   businessHours: BusinessHours | null
   closedDays: string[]
   status: ShopStatus

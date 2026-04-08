@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Globe, Instagram, Phone, ExternalLink, Tag, Save } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
+import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { supabase } from '@/lib/supabase'
 import { useShop } from '@/hooks/useShop'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -37,6 +38,7 @@ const shopEditSchema = z.object({
   websiteUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   instagramUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   twitterUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  tiktokUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   status:       z.enum(['public', 'private', 'pending']),
   businessHours: businessHoursSchema,
 })
@@ -70,6 +72,7 @@ function shopToFormValues(shop: {
   websiteUrl: string | null
   instagramUrl: string | null
   twitterUrl: string | null
+  tiktokUrl: string | null
   status: ShopEditFormValues['status']
   businessHours: BusinessHours | null
 }): ShopEditFormValues {
@@ -86,6 +89,7 @@ function shopToFormValues(shop: {
     websiteUrl:   shop.websiteUrl ?? '',
     instagramUrl: shop.instagramUrl ?? '',
     twitterUrl:   shop.twitterUrl ?? '',
+    tiktokUrl:    shop.tiktokUrl ?? '',
     status:       shop.status,
     businessHours: {
       mon: toFormEntry(bh?.mon ?? null),
@@ -127,6 +131,7 @@ const useAdminUpdateShop = () => {
           website_url:    fields.websiteUrl || null,
           instagram_url:  fields.instagramUrl || null,
           twitter_url:    fields.twitterUrl || null,
+          tiktok_url:     fields.tiktokUrl || null,
           status:         fields.status,
           business_hours: toBusinessHours(businessHours),
           closed_days:    closedDays,
@@ -458,6 +463,17 @@ const AdminShopEditPage = () => {
                       placeholder="https://x.com/..."
                       className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
                       {...register('twitterUrl')}
+                    />
+                  </div>
+                </Field>
+                <Field label="TikTok" optional error={errors.tiktokUrl?.message}>
+                  <div className="relative">
+                    <TikTokLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="url"
+                      placeholder="https://tiktok.com/@..."
+                      className={cn(inputClass, 'pl-9', errors.tiktokUrl && 'border-red-400')}
+                      {...register('tiktokUrl')}
                     />
                   </div>
                 </Field>

@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Globe, Instagram, Phone, Save, Tag } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
+import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useUpdateShop } from '@/hooks/useOwnerShops'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -37,6 +38,7 @@ const shopEditSchema = z.object({
   websiteUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   instagramUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   twitterUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  tiktokUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   businessHours: businessHoursSchema,
 })
 
@@ -56,6 +58,7 @@ function shopToFormValues(shop: {
   websiteUrl: string | null
   instagramUrl: string | null
   twitterUrl: string | null
+  tiktokUrl: string | null
   businessHours: BusinessHours | null
 }): FormValues {
   const bh = shop.businessHours
@@ -71,6 +74,7 @@ function shopToFormValues(shop: {
     websiteUrl:   shop.websiteUrl ?? '',
     instagramUrl: shop.instagramUrl ?? '',
     twitterUrl:   shop.twitterUrl ?? '',
+    tiktokUrl:    shop.tiktokUrl ?? '',
     businessHours: {
       mon: toFormEntry(bh?.mon ?? null),
       tue: toFormEntry(bh?.tue ?? null),
@@ -145,6 +149,7 @@ const OwnerShopEditPage = () => {
         websiteUrl:    values.websiteUrl,
         instagramUrl:  values.instagramUrl,
         twitterUrl:    values.twitterUrl,
+        tiktokUrl:     values.tiktokUrl,
         businessHours: toBusinessHours(values.businessHours),
         closedDays,
       },
@@ -401,6 +406,17 @@ const OwnerShopEditPage = () => {
                             placeholder="https://x.com/yourshop"
                             className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
                             {...register('twitterUrl')}
+                          />
+                        </div>
+                      </Field>
+                      <Field label="TikTok" optional error={errors.tiktokUrl?.message}>
+                        <div className="relative">
+                          <TikTokLogo className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/35" />
+                          <input
+                            type="url"
+                            placeholder="https://tiktok.com/@yourshop"
+                            className={cn(inputClass, 'pl-9', errors.tiktokUrl && 'border-red-400')}
+                            {...register('tiktokUrl')}
                           />
                         </div>
                       </Field>

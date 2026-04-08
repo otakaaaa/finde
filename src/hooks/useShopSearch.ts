@@ -37,6 +37,7 @@ const mapSearchResult = (row: SearchResultRow): Shop => ({
   websiteUrl: null,
   instagramUrl: null,
   twitterUrl: null,
+  tiktokUrl: null,
   businessHours: null,
   closedDays: [],
   status: 'public',

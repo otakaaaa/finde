@@ -13,6 +13,7 @@ interface ShopRow {
   website_url: string | null
   instagram_url: string | null
   twitter_url: string | null
+  tiktok_url: string | null
   business_hours: Shop['businessHours']
   closed_days: string[]
   status: string
@@ -46,6 +47,7 @@ const mapShopRow = (row: ShopRow): Shop => ({
   websiteUrl: row.website_url,
   instagramUrl: row.instagram_url,
   twitterUrl: row.twitter_url,
+  tiktokUrl: row.tiktok_url,
   businessHours: row.business_hours,
   closedDays: row.closed_days ?? [],
   status: row.status as Shop['status'],
@@ -114,7 +116,7 @@ const fetchShops = async ({
     .from('shops')
     .select(`
       id, name, name_pending, description, phone, website_url,
-      instagram_url, twitter_url, business_hours, closed_days,
+      instagram_url, twitter_url, tiktok_url, business_hours, closed_days,
       status, review_count, average_rating, favorite_count,
       prefecture_id, city_id, address, created_at, updated_at,
       areas ( id, prefecture, city, slug ),

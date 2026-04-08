@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
 import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
+import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
@@ -348,7 +349,7 @@ const ShopDetailPage = () => {
               </div>
 
               {/* Links */}
-              {(shop.phone ?? shop.websiteUrl ?? shop.instagramUrl ?? shop.twitterUrl) && (
+              {(shop.phone ?? shop.websiteUrl ?? shop.instagramUrl ?? shop.twitterUrl ?? shop.tiktokUrl) && (
                 <div className="divide-y divide-border">
                   {shop.phone && (
                     <a
@@ -372,6 +373,11 @@ const ShopDetailPage = () => {
                   {shop.twitterUrl && (
                     <ExternalLink href={shop.twitterUrl} icon={<XLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       X
+                    </ExternalLink>
+                  )}
+                  {shop.tiktokUrl && (
+                    <ExternalLink href={shop.tiktokUrl} icon={<TikTokLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                      TikTok
                     </ExternalLink>
                   )}
                 </div>

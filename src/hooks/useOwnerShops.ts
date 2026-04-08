@@ -14,6 +14,7 @@ interface OwnerShopRow {
     website_url: string | null
     instagram_url: string | null
     twitter_url: string | null
+    tiktok_url: string | null
     business_hours: BusinessHours | null
     closed_days: string[]
     status: string
@@ -44,7 +45,7 @@ export const useOwnerShops = () => {
           shop_id,
           shops (
             id, name, name_pending, description, phone, website_url,
-            instagram_url, twitter_url, business_hours, closed_days,
+            instagram_url, twitter_url, tiktok_url, business_hours, closed_days,
             status, review_count, average_rating, favorite_count,
             prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
@@ -71,6 +72,7 @@ export const useOwnerShops = () => {
         websiteUrl: s.website_url,
         instagramUrl: s.instagram_url,
         twitterUrl: s.twitter_url,
+        tiktokUrl: s.tiktok_url,
         businessHours: s.business_hours,
         closedDays: s.closed_days ?? [],
         status: s.status as Shop['status'],
@@ -102,6 +104,7 @@ interface ShopUpdateInput {
   websiteUrl?: string
   instagramUrl?: string
   twitterUrl?: string
+  tiktokUrl?: string
   businessHours?: BusinessHours
   closedDays?: string[]
 }
@@ -125,6 +128,7 @@ export const useUpdateShop = () => {
           website_url: updates.websiteUrl || null,
           instagram_url: updates.instagramUrl || null,
           twitter_url: updates.twitterUrl || null,
+          tiktok_url: updates.tiktokUrl || null,
           business_hours: updates.businessHours ?? null,
           closed_days: updates.closedDays ?? [],
         } as never)
