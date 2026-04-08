@@ -13,17 +13,19 @@ interface StatsData {
   applicationsPending: number
   subscriptionsActive: number
   reviewsFlagged: number
+  contactsPending: number
 }
 
 const useAdminStats = () =>
   useQuery({
     queryKey: ['admin-stats'],
     queryFn: async (): Promise<StatsData> => {
-      const [shopsAll, appsPending, subActive, reviewsFlagged] = await Promise.all([
+      const [shopsAll, appsPending, subActive, reviewsFlagged, contactsPending] = await Promise.all([
         supabase.from('shops').select('status') as unknown as Promise<{ data: { status: string }[] | null; error: unknown }>,
         supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'flagged') as unknown as Promise<{ count: number | null; error: unknown }>,
+        supabase.from('contact_inquiries').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']) as unknown as Promise<{ count: number | null; error: unknown }>,
       ])
 
       const shops = shopsAll.data ?? []
@@ -34,6 +36,7 @@ const useAdminStats = () =>
         applicationsPending: appsPending.count ?? 0,
         subscriptionsActive: subActive.count ?? 0,
         reviewsFlagged: reviewsFlagged.count ?? 0,
+        contactsPending: contactsPending.count ?? 0,
       }
     },
     staleTime: 60 * 1000,
@@ -337,6 +340,7 @@ const AdminDashboardPage = () => {
                   icon={<Mail className="h-4 w-4" />}
                   label="お問い合わせ"
                   sublabel="ユーザーからの問い合わせ対応"
+                  badge={stats?.contactsPending}
                   animDelay={275}
                 />
                 <NavTile
