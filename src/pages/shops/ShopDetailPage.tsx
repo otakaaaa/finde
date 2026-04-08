@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
-import { MapPin, Phone, Globe, Instagram, Twitter, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
+import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
@@ -369,7 +370,7 @@ const ShopDetailPage = () => {
                     </ExternalLink>
                   )}
                   {shop.twitterUrl && (
-                    <ExternalLink href={shop.twitterUrl} icon={<Twitter className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                    <ExternalLink href={shop.twitterUrl} icon={<XLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       X
                     </ExternalLink>
                   )}

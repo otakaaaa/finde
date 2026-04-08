@@ -4,7 +4,8 @@ import { useForm, useWatch, type Path } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Globe, Instagram, Twitter, Phone, Save, Tag } from 'lucide-react'
+import { ChevronLeft, Globe, Instagram, Phone, Save, Tag } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
 import { useShop } from '@/hooks/useShop'
 import { useUpdateShop } from '@/hooks/useOwnerShops'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -394,7 +395,7 @@ const OwnerShopEditPage = () => {
                       </Field>
                       <Field label="X" optional error={errors.twitterUrl?.message}>
                         <div className="relative">
-                          <Twitter className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/35" />
+                          <XLogo className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/35" />
                           <input
                             type="url"
                             placeholder="https://x.com/yourshop"
