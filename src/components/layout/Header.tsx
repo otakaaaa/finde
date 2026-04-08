@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import { NotificationBell } from '@/components/notification/NotificationBell'
 
 interface NavItem {
   to: string
@@ -126,6 +127,9 @@ export const Header = () => {
               <NavLink item={{ to: '/owner', label: 'OWNER' }} />
             )}
 
+            {/* 通知ベル（ログイン中のみ） */}
+            {user && <NotificationBell />}
+
             {/* Divider */}
             <span className="h-4 w-px bg-border" />
 
@@ -166,13 +170,16 @@ export const Header = () => {
           {/* ── Mobile: right side ───────────────── */}
           <div className="flex items-center gap-3 md:hidden">
             {user && (
-              <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
-                )}
-              </div>
+              <>
+                <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
+                  )}
+                </div>
+                <NotificationBell />
+              </>
             )}
             {/* Hamburger */}
             <button
