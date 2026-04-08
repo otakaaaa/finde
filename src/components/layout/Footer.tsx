@@ -16,6 +16,7 @@ const NAV_COLUMNS = [
       { to: '/mypage/favorites', text: 'お気に入り' },
       { to: '/faq', text: 'よくあるご質問' },
       { to: '/contact', text: 'お問い合わせ' },
+      { to: '/about', text: 'このサービスについて' },
     ],
   },
   {

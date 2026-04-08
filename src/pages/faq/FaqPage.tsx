@@ -101,7 +101,7 @@ const FaqPage = () => {
             FAQ
           </span>
         </div>
-        <div className="relative">
+        <div className="relative mx-auto max-w-4xl">
           <div className="pb-8 pt-2">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.5em] text-white/30">
               — Help
@@ -117,7 +117,7 @@ const FaqPage = () => {
       </section>
 
       {/* ── Body ────────────────────────────────────────────── */}
-      <div className="px-4 py-12 md:px-16 md:py-16">
+      <div className="mx-auto max-w-4xl px-4 py-12 md:px-16 md:py-16">
 
         {/* Category filter */}
         <div className="mb-10 flex flex-wrap gap-2">
