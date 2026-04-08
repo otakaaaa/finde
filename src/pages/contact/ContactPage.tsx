@@ -212,6 +212,25 @@ const ContactPage = () => {
         </div>
       </section>
 
+      {/* ── FAQ banner ───────────────────────────── */}
+      <div className="border-b border-border bg-muted/30 px-4 py-4 md:px-16">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+          <p className="text-[11px] text-muted-foreground/60">
+            <span className="mr-1.5 font-bold text-foreground/60">まず確認：</span>
+            よくあるご質問で解決できる場合があります。
+          </p>
+          <a
+            href="/faq"
+            className="shrink-0 inline-flex items-center gap-1.5 border border-border bg-background px-3 py-1.5 text-[10px] font-bold text-foreground/60 transition-colors hover:border-primary/40 hover:text-primary"
+          >
+            よくあるご質問を見る
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3 w-3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h10m-4-4 4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
       {/* ── Form section ─────────────────────────── */}
       <div className="bg-background">
         <div className="mx-auto max-w-3xl px-4 py-12 md:px-16 md:py-16">
