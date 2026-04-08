@@ -58,7 +58,10 @@ const FieldLabel = ({
       {label}
     </label>
     {required && (
-      <span className="text-[9px] font-bold text-red-500/70">required</span>
+      <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        必須
+      </span>
     )}
   </div>
 )

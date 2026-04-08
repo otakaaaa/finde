@@ -93,8 +93,18 @@ const SectionLabel = ({
   <div className="mb-4 flex items-baseline gap-3">
     <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">{num}</span>
     <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">{title}</span>
-    {required && <span className="text-[10px] font-bold text-primary">REQUIRED</span>}
-    {optional && <span className="text-[10px] font-medium text-muted-foreground/40">optional</span>}
+    {required && (
+      <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        必須
+      </span>
+    )}
+    {optional && (
+      <span className="inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground/40">
+        <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
+        任意
+      </span>
+    )}
   </div>
 )
 
@@ -548,7 +558,10 @@ const OwnerApplicationNewPage = () => {
                       <div>
                         <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                           住所
-                          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
+                          <span className="ml-2 inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal text-muted-foreground/40">
+                            <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
+                            任意
+                          </span>
                         </label>
                         <input
                           type="text"
@@ -587,7 +600,10 @@ const OwnerApplicationNewPage = () => {
                       <div>
                         <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                           公式サイト URL
-                          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
+                          <span className="ml-2 inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal text-muted-foreground/40">
+                            <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
+                            任意
+                          </span>
                         </label>
                         <input
                           type="url"
