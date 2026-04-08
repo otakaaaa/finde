@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Globe, Instagram, Phone, X } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
+import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
@@ -29,6 +30,7 @@ const shopSchema = z.object({
   websiteUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   instagramUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   twitterUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  tiktokUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   status:       z.enum(['public', 'private', 'pending']),
 })
 
@@ -99,6 +101,7 @@ const AdminShopNewPage = () => {
           website_url:    values.websiteUrl || null,
           instagram_url:  values.instagramUrl || null,
           twitter_url:    values.twitterUrl || null,
+          tiktok_url:     values.tiktokUrl || null,
           status:         values.status,
           created_by:     user.id,
         } as never)
@@ -409,6 +412,17 @@ const AdminShopNewPage = () => {
                       placeholder="https://x.com/..."
                       className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
                       {...register('twitterUrl')}
+                    />
+                  </div>
+                </Field>
+                <Field label="TikTok" optional error={errors.tiktokUrl?.message}>
+                  <div className="relative">
+                    <TikTokLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                    <input
+                      type="url"
+                      placeholder="https://tiktok.com/@..."
+                      className={cn(inputClass, 'pl-9', errors.tiktokUrl && 'border-red-400')}
+                      {...register('tiktokUrl')}
                     />
                   </div>
                 </Field>
