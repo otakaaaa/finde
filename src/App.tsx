@@ -53,6 +53,9 @@ const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/Own
 // Contact pages
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
 
+// Legal pages
+const TermsPage = lazy(() => import('@/pages/legal/TermsPage'))
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -80,6 +83,7 @@ const App = () => (
             <Route path="/shops/:id" element={<ShopDetailPage />} />
             <Route path="/brands" element={<BrandSearchPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsPage />} />
 
             {/* Auth */}
             <Route path="/auth/login" element={<LoginPage />} />
