@@ -266,6 +266,30 @@ export interface OwnerApplication {
 }
 
 // ============================================================
+// Notification
+// ============================================================
+
+export type NotificationType =
+  | 'wish_match'
+  | 'owner_application_result'
+  | 'admin_new_listing'
+  | 'admin_new_contact'
+  | 'admin_review_report'
+  | 'review_posted'
+
+export interface Notification {
+  id: string
+  userId: string
+  type: NotificationType
+  title: string
+  body: string | null
+  linkUrl: string | null
+  metadata: Record<string, string>
+  isRead: boolean
+  createdAt: string
+}
+
+// ============================================================
 // Pagination
 // ============================================================
 
