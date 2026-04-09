@@ -76,7 +76,7 @@ const useShopSearch = (query: string) =>
 
 const OWNER_PROCESS_STEPS = [
   { num: '01', label: 'オーナー申請の送信',    desc: '店舗情報と本人情報を入力' },
-  { num: '02', label: 'DM で本人確認',         desc: 'スタッフとのやり取りで審査' },
+  { num: '02', label: 'DM で本人確認',         desc: 'フクナビ運営とのやり取りで審査' },
   { num: '03', label: 'オーナー権限の付与',    desc: '承認後にダッシュボード利用可能' },
 ]
 
@@ -141,8 +141,8 @@ const SubmittedScreen = ({ requestId, onBack }: SubmittedScreenProps) => (
             </span>
           </div>
           <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-            スタッフより DM にてご連絡します。<br />
-            DM のやり取りで本人確認を行い、審査完了後にオーナー権限を付与いたします。
+            フクナビ運営より、DMにてご連絡します。<br />
+            DMのやり取りで本人確認を行い、審査完了後にオーナー権限を付与いたします。
           </p>
           <Link
             to={`/owner-application/${requestId}`}
@@ -398,7 +398,7 @@ const OwnerApplicationNewPage = () => {
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   あなたが経営・管理している店舗のオーナー権限を申請します。<br />
-                  スタッフとの DM で本人確認を行い、承認後にダッシュボードから店舗情報を管理できるようになります。
+                  フクナビ運営とのDMで本人確認を行い、承認後にダッシュボードから店舗情報を管理できるようになります。
                 </p>
               </div>
 
@@ -731,7 +731,7 @@ const OwnerApplicationNewPage = () => {
                         />
                       </div>
                       <p className="mt-1 text-[9px] text-muted-foreground/40">
-                        スタッフが店舗アカウントと照合する場合があります
+                        フクナビ運営が店舗アカウントと照合する場合があります
                       </p>
                     </div>
 

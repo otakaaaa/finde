@@ -342,15 +342,16 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
 
   const { mutate: approveApplication, isPending: isApproving } = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).rpc('approve_owner_application', {
-        p_request_id: application.id,
-      }) as unknown as { error: { message: string } | null }
+      const { error } = await (supabase as unknown as { rpc: (fn: string, args: Record<string, string>) => Promise<{ error: { message: string } | null }> })
+        .rpc('approve_listing_request', { p_request_id: application.id })
       if (error) throw new Error(error.message)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-owner-applications'] })
       queryClient.invalidateQueries({ queryKey: ['admin-listing-requests'] })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
   })
 
@@ -494,7 +495,7 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
             {messages.map((msg) => {
               const isSelf = msg.sender_id === user?.id
               const senderIsAdmin = msg.users?.role === 'admin'
-              const name = senderIsAdmin ? '運営スタッフ' : (msg.users?.display_name ?? 'ユーザー')
+              const name = senderIsAdmin ? 'フクナビ運営' : (msg.users?.display_name ?? 'ユーザー')
               return (
                 <div key={msg.id} className={cn('flex flex-col gap-1', isSelf ? 'items-end' : 'items-start')}>
                   <div className="flex items-center gap-1.5">
@@ -607,15 +608,22 @@ const AdminApplicationsPage = () => {
 
   const { mutate: updateListingStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: string }) => {
-      const { error } = await supabase
-        .from('shop_listing_requests')
-        .update({ status } as never)
-        .eq('id', requestId) as unknown as { data: unknown; error: { message: string } | null }
-      if (error) throw new Error(error.message)
+      if (status === 'approved') {
+        const { error } = await (supabase as unknown as { rpc: (fn: string, args: Record<string, string>) => Promise<{ error: { message: string } | null }> })
+          .rpc('approve_listing_request', { p_request_id: requestId })
+        if (error) throw new Error(error.message)
+      } else {
+        const { error } = await supabase
+          .from('shop_listing_requests')
+          .update({ status } as never)
+          .eq('id', requestId) as unknown as { data: unknown; error: { message: string } | null }
+        if (error) throw new Error(error.message)
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-listing-requests'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
     },
   })
 

@@ -243,9 +243,18 @@ export interface ShopListingRequest {
   id: string
   submittedBy: string
   shopName: string
+  description: string | null
+  prefectureId: number | null
+  cityId: number | null
   address: string | null
+  priceRangeId: number | null
   categoryIds: number[]
+  phone: string | null
   websiteUrl: string | null
+  instagramUrl: string | null
+  twitterUrl: string | null
+  tiktokUrl: string | null
+  businessHours: BusinessHours | null
   note: string | null
   isOwnerRequest: boolean
   status: ListingRequestStatus
