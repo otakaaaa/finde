@@ -80,7 +80,7 @@ interface MessageBubbleProps {
 
 const MessageBubble = ({ message, isSelf }: MessageBubbleProps) => {
   const senderIsAdmin = message.users?.role === 'admin'
-  const name = senderIsAdmin ? '運営スタッフ' : (message.users?.display_name ?? 'ユーザー')
+  const name = senderIsAdmin ? 'フクナビ運営' : (message.users?.display_name ?? 'ユーザー')
 
   return (
     <div className={cn('flex flex-col gap-1', isSelf ? 'items-end' : 'items-start')}>
@@ -292,7 +292,7 @@ const OwnerApplicationDMPage = () => {
                 </div>
                 {!isAdmin && (
                   <p className="mt-2 text-[10px] text-white/30">
-                    運営スタッフとのやり取りで本人確認を行います
+                    フクナビ運営とのやり取りで本人確認を行います
                   </p>
                 )}
               </div>
@@ -332,7 +332,7 @@ const OwnerApplicationDMPage = () => {
                 <p className="mt-1 text-[11px] text-muted-foreground/40">
                   {isAdmin
                     ? '申請者にメッセージを送ってください'
-                    : '運営スタッフからのメッセージをお待ちください'}
+                    : 'フクナビ運営からのメッセージをお待ちください'}
                 </p>
               </div>
             </div>

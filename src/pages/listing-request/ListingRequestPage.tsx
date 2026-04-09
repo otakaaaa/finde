@@ -1,62 +1,57 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { ChevronLeft, Store, Check, ArrowRight } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { ChevronLeft, Store, Check, ArrowRight, Globe, Instagram, Phone, X } from 'lucide-react'
+import { XLogo } from '@/components/icons/XLogo'
+import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { supabase } from '@/lib/supabase'
+import { validateAllowedImageFiles } from '@/lib/fileValidation'
+import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { useAuth } from '@/hooks/useAuth'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
+import { SectionLabel, Field, inputClass, selectClass } from '@/components/shop/ShopFormUI'
+import {
+  ShopBusinessHoursSection,
+  businessHoursSchema,
+  toBusinessHours,
+  DEFAULT_HOURS_ENTRY,
+  type DayKey,
+} from '@/components/shop/ShopBusinessHoursSection'
 import { cn } from '@/lib/utils'
-import type { Category } from '@/types'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import type { Path } from 'react-hook-form'
+
+const BUCKET = 'shop-photos'
 
 const listingRequestSchema = z.object({
-  shopName: z.string().min(1, '店舗名を入力してください').max(100),
-  address: z.string().max(200).optional(),
-  categoryIds: z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
-  websiteUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  note: z.string().max(500).optional(),
+  shopName:      z.string().min(1, '店舗名を入力してください').max(100),
+  description:   z.string().max(2000).optional(),
+  prefectureId:  z.number({ required_error: '都道府県を選択してください', invalid_type_error: '都道府県を選択してください' }),
+  cityId:        z.number().optional(),
+  address:       z.string().max(200).optional(),
+  priceRangeId:  z.number().optional(),
+  categoryIds:   z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
+  phone:         z.string().max(20).optional(),
+  websiteUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  instagramUrl:  z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  twitterUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  tiktokUrl:     z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  businessHours: businessHoursSchema,
+  note:          z.string().max(500).optional(),
 })
 
 type ListingRequestFormValues = z.infer<typeof listingRequestSchema>
 
 const PROCESS_STEPS = [
   { num: '01', label: '申請フォームの送信', desc: '店舗情報を入力して送信' },
-  { num: '02', label: 'スタッフによる審査', desc: '通常2〜5営業日' },
+  { num: '02', label: 'フクナビ運営による審査', desc: '通常2〜5営業日' },
   { num: '03', label: '掲載開始のご連絡', desc: 'メールにてお知らせ' },
 ]
 
-interface SectionLabelProps {
-  num: string
-  title: string
-  required?: boolean
-  optional?: boolean
-}
-
-const SectionLabel = ({ num, title, required, optional }: SectionLabelProps) => (
-  <div className="mb-4 flex items-baseline gap-3">
-    <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">{num}</span>
-    <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">{title}</span>
-    {required && (
-      <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
-        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-        必須
-      </span>
-    )}
-    {optional && (
-      <span className="inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground/40">
-        <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
-        任意
-      </span>
-    )}
-  </div>
-)
-
-const inputClass = cn(
-  'h-10 w-full rounded-sm border border-border bg-white px-3 text-sm text-foreground',
-  'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
-)
+// ── Submitted ─────────────────────────────────────────────────
 
 const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
   <div>
@@ -89,7 +84,7 @@ const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
             </span>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            スタッフが内容を確認の上、審査完了後にメールにてご連絡いたします。<br />
+            フクナビ運営が内容を確認の上、審査完了後にメールにてご連絡いたします。<br />
             通常2〜5営業日程度お時間をいただきます。
           </p>
         </div>
@@ -108,49 +103,116 @@ const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
   </div>
 )
 
+// ── Page ──────────────────────────────────────────────────────
+
 const ListingRequestPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { data: masterData } = useShopMasterData()
   const [submitted, setSubmitted] = useState(false)
 
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data } = await supabase.from('categories').select('id, code, name').order('id') as {
-        data: Category[] | null; error: unknown
-      }
-      return data ?? []
-    },
-    staleTime: Infinity,
-  })
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const urls = pendingFiles.map((f) => URL.createObjectURL(f))
+    setPreviewUrls(urls)
+    return () => urls.forEach((u) => URL.revokeObjectURL(u))
+  }, [pendingFiles])
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    setUploadingPhotos(true)
+    setPhotoError(null)
+    try {
+      await validateAllowedImageFiles(files)
+      setPendingFiles((prev) => [...prev, ...files])
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : '画像の検証に失敗しました')
+    } finally {
+      setUploadingPhotos(false)
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: async (values: ListingRequestFormValues) => {
       if (!user) throw new Error('ログインが必要です')
 
-      const { error: insertError } = await supabase
+      // 1. 申請レコードを作成
+      const { data: request, error: insertError } = await supabase
         .from('shop_listing_requests')
         .insert({
-          submitted_by: user.id,
-          shop_name: values.shopName,
-          address: values.address || null,
-          category_ids: values.categoryIds,
-          website_url: values.websiteUrl || null,
-          note: values.note || null,
+          submitted_by:   user.id,
+          shop_name:      values.shopName,
+          description:    values.description || null,
+          prefecture_id:  values.prefectureId,
+          city_id:        values.cityId ?? null,
+          address:        values.address || null,
+          price_range_id: values.priceRangeId ?? null,
+          category_ids:   values.categoryIds,
+          phone:          values.phone || null,
+          website_url:    values.websiteUrl || null,
+          instagram_url:  values.instagramUrl || null,
+          twitter_url:    values.twitterUrl || null,
+          tiktok_url:     values.tiktokUrl || null,
+          business_hours: toBusinessHours(values.businessHours),
+          note:           values.note || null,
           is_owner_request: false,
         } as never)
+        .select('id')
+        .single() as unknown as { data: { id: string } | null; error: { message: string } | null }
 
       if (insertError) throw new Error(insertError.message)
+      if (!request) throw new Error('申請の送信に失敗しました')
+
+      // 2. 写真をアップロード
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i]
+        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+        const path = `listing-requests/${request.id}/${crypto.randomUUID()}.${ext}`
+        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
+        if (storageErr) throw new Error(storageErr.message)
+        const { error: photoErr } = await supabase
+          .from('listing_request_photos')
+          .insert({ request_id: request.id, storage_path: path, order: i } as never) as unknown as {
+            error: { message: string } | null
+          }
+        if (photoErr) {
+          await supabase.storage.from(BUCKET).remove([path])
+          throw new Error(photoErr.message)
+        }
+      }
     },
     onSuccess: () => setSubmitted(true),
   })
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ListingRequestFormValues>({
+  const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<ListingRequestFormValues>({
     resolver: zodResolver(listingRequestSchema),
-    defaultValues: { categoryIds: [] },
+    defaultValues: {
+      categoryIds: [],
+      businessHours: {
+        mon: { ...DEFAULT_HOURS_ENTRY },
+        tue: { ...DEFAULT_HOURS_ENTRY },
+        wed: { ...DEFAULT_HOURS_ENTRY },
+        thu: { ...DEFAULT_HOURS_ENTRY },
+        fri: { ...DEFAULT_HOURS_ENTRY },
+        sat: { ...DEFAULT_HOURS_ENTRY },
+        sun: { ...DEFAULT_HOURS_ENTRY },
+      },
+    },
   })
 
-  const selectedCategories = watch('categoryIds')
+  const selectedCategories  = watch('categoryIds')
+  const watchedPrefectureId = watch('prefectureId')
+  const watchedBusinessHours = useWatch({ control, name: 'businessHours' })
+  const citiesForPrefecture = masterData?.cities.filter((c) => c.prefectureId === watchedPrefectureId) ?? []
 
   const toggleCategory = (id: number) => {
     const current = selectedCategories ?? []
@@ -206,19 +268,18 @@ const ListingRequestPage = () => {
 
             {/* ── Sidebar ──────────────────────────── */}
             <aside className="lg:sticky lg:top-8 lg:self-start">
-              {/* What is this */}
               <div className="mb-8">
                 <div className="mb-3 flex items-center gap-2">
                   <Store className="h-3.5 w-3.5 text-muted-foreground/40" />
                   <span className="font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
-                    About
+                    掲載申請について
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   フクナビに掲載したい店舗を申請してください。<br />
-                  スタッフが確認後、掲載いたします。
+                  フクナビ運営が確認後、掲載いたします。
                 </p>
-                {OWNER_FEATURE_ENABLED && 
+                {OWNER_FEATURE_ENABLED && (
                   <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
                     <p className="text-[10px] leading-relaxed text-muted-foreground/60">
                       店舗のオーナー・スタッフの方は
@@ -231,13 +292,12 @@ const ListingRequestPage = () => {
                       からご申請ください。ダッシュボードから店舗情報を管理できます。
                     </p>
                   </div>
-                }
+                )}
               </div>
 
-              {/* Process steps */}
               <div>
                 <span className="mb-4 block font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
-                  Process
+                  申請の流れ
                 </span>
                 <div className="space-y-0">
                   {PROCESS_STEPS.map((step, i) => (
@@ -272,45 +332,96 @@ const ListingRequestPage = () => {
 
               <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-12">
 
-                {/* ── 01 基本情報 ─────────────────── */}
-                <section>
+                {/* 01 基本情報 */}
+                <section className="wish-card-enter" style={{ animationDelay: '0ms' }}>
                   <SectionLabel num="01" title="基本情報" required />
                   <div className="space-y-4">
-                    <div>
-                      <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                        店舗名
-                      </label>
+                    <Field label="店舗名" error={errors.shopName?.message}>
                       <input
                         type="text"
                         placeholder="例: ○○古着店"
                         className={cn(inputClass, errors.shopName && 'border-red-400')}
                         {...register('shopName')}
                       />
-                      {errors.shopName && (
-                        <p className="mt-1 text-[10px] font-medium text-red-500">{errors.shopName.message}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                        住所
-                        <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/40">optional</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="例: 東京都渋谷区..."
-                        className={inputClass}
-                        {...register('address')}
+                    </Field>
+                    <Field label="店舗説明" optional>
+                      <textarea
+                        rows={4}
+                        placeholder="店舗の特徴、取り扱いブランド、雰囲気など…"
+                        className={cn(
+                          'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
+                          'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+                          'resize-none',
+                        )}
+                        {...register('description')}
                       />
-                    </div>
+                    </Field>
                   </div>
                 </section>
 
-                {/* ── 02 カテゴリ ──────────────────── */}
-                <section>
-                  <SectionLabel num="02" title="カテゴリ" required />
+                {/* 02 住所 */}
+                <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
+                  <SectionLabel num="02" title="住所" required />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <Field label="都道府県" error={errors.prefectureId?.message}>
+                        <select
+                          className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                          {...register('prefectureId', { valueAsNumber: true })}
+                        >
+                          <option value="">選択してください</option>
+                          {masterData?.prefectures.map((pref) => (
+                            <option key={pref.id} value={pref.id}>{pref.name}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="市区町村" optional>
+                        <select
+                          className={selectClass}
+                          disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
+                          {...register('cityId', { valueAsNumber: true })}
+                        >
+                          <option value="">選択してください</option>
+                          {citiesForPrefecture.map((c) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </Field>
+                    </div>
+                    <Field label="町名・番地・建物名" optional>
+                      <input
+                        type="text"
+                        placeholder="例: 道玄坂1-1-1 ○○ビル2F"
+                        className={inputClass}
+                        {...register('address')}
+                      />
+                    </Field>
+                  </div>
+                </section>
+
+                {/* 03 価格帯 */}
+                <section className="wish-card-enter" style={{ animationDelay: '60ms' }}>
+                  <SectionLabel num="03" title="価格帯" optional />
+                  <div className="sm:w-1/2">
+                    <Field label="価格帯" optional>
+                      <select
+                        className={selectClass}
+                        {...register('priceRangeId', { valueAsNumber: true })}
+                      >
+                        <option value="">指定なし</option>
+                        {masterData?.priceRanges.map((pr) => (
+                          <option key={pr.id} value={pr.id}>{pr.label}</option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+                </section>
+
+                {/* 04 カテゴリ */}
+                <section className="wish-card-enter" style={{ animationDelay: '80ms' }}>
+                  <SectionLabel num="04" title="カテゴリ" required />
                   <div className="flex flex-wrap gap-2">
-                    {categories?.map((cat) => (
+                    {masterData?.categories.map((cat) => (
                       <button
                         key={cat.id}
                         type="button"
@@ -331,41 +442,152 @@ const ListingRequestPage = () => {
                   )}
                 </section>
 
-                {/* ── 03 SNS ────────────────────── */}
-                <section>
-                  <SectionLabel num="03" title="SNS" optional />
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                      公式サイトURL
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://example.com"
-                      className={cn(inputClass, errors.websiteUrl && 'border-red-400')}
-                      {...register('websiteUrl')}
-                    />
-                    {errors.websiteUrl && (
-                      <p className="mt-1 text-[10px] font-medium text-red-500">{errors.websiteUrl.message}</p>
-                    )}
+                {/* 05 写真 */}
+                <section className="wish-card-enter space-y-4" style={{ animationDelay: '100ms' }}>
+                  <SectionLabel num="05" title="写真" optional />
+
+                  <ShopPhotoUploadInput
+                    onChange={handleFileSelect}
+                    disabled={uploadingPhotos}
+                    uploading={uploadingPhotos}
+                  />
+
+                  {photoError && (
+                    <p className="text-[10px] font-medium text-red-500">{photoError}</p>
+                  )}
+
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {previewUrls.map((url, i) => (
+                        <div key={url} className="group relative aspect-square overflow-hidden bg-muted">
+                          <img src={url} alt="" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removeFile(i)}
+                            className={cn(
+                              'absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full',
+                              'bg-foreground/70 text-white opacity-0 transition-opacity group-hover:opacity-100',
+                            )}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                          {i === 0 && (
+                            <span className="absolute bottom-1 left-1 rounded-sm bg-primary/80 px-1 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-white">
+                              Main
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-muted-foreground/40">
+                    JPEG / PNG / WebP · 最大10枚
+                  </p>
+                </section>
+
+                {/* 06 連絡先 */}
+                <section className="wish-card-enter" style={{ animationDelay: '120ms' }}>
+                  <SectionLabel num="06" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field label="電話番号" optional>
+                      <div className="relative">
+                        <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                        <input
+                          type="tel"
+                          placeholder="03-0000-0000"
+                          className={cn(inputClass, 'pl-9')}
+                          {...register('phone')}
+                        />
+                      </div>
+                    </Field>
+                    <Field label="公式サイト" optional error={errors.websiteUrl?.message}>
+                      <div className="relative">
+                        <Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                        <input
+                          type="url"
+                          placeholder="https://example.com"
+                          className={cn(inputClass, 'pl-9', errors.websiteUrl && 'border-red-400')}
+                          {...register('websiteUrl')}
+                        />
+                      </div>
+                    </Field>
                   </div>
                 </section>
 
-                {/* ── 04 メモ ──────────────────────── */}
-                <section>
-                  <SectionLabel num="04" title="メモ" optional />
-                  <textarea
-                    rows={4}
-                    placeholder="店舗についての補足情報など…"
-                    className={cn(
-                      'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
-                      'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
-                      'resize-none',
-                    )}
-                    {...register('note')}
-                  />
+                {/* 07 SNS */}
+                <section className="wish-card-enter" style={{ animationDelay: '160ms' }}>
+                  <SectionLabel num="07" title="SNS" optional />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field label="Instagram" optional error={errors.instagramUrl?.message}>
+                      <div className="relative">
+                        <Instagram className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                        <input
+                          type="url"
+                          placeholder="https://instagram.com/..."
+                          className={cn(inputClass, 'pl-9', errors.instagramUrl && 'border-red-400')}
+                          {...register('instagramUrl')}
+                        />
+                      </div>
+                    </Field>
+                    <Field label="X" optional error={errors.twitterUrl?.message}>
+                      <div className="relative">
+                        <XLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                        <input
+                          type="url"
+                          placeholder="https://x.com/..."
+                          className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
+                          {...register('twitterUrl')}
+                        />
+                      </div>
+                    </Field>
+                    <Field label="TikTok" optional error={errors.tiktokUrl?.message}>
+                      <div className="relative">
+                        <TikTokLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
+                        <input
+                          type="url"
+                          placeholder="https://tiktok.com/@..."
+                          className={cn(inputClass, 'pl-9', errors.tiktokUrl && 'border-red-400')}
+                          {...register('tiktokUrl')}
+                        />
+                      </div>
+                    </Field>
+                  </div>
                 </section>
 
-                {/* ── Submit ───────────────────────── */}
+                {/* 08 営業時間 */}
+                <ShopBusinessHoursSection
+                  num="08"
+                  businessHours={watchedBusinessHours}
+                  register={register}
+                  onToggle={(dayKey: DayKey) =>
+                    setValue(
+                      `businessHours.${dayKey}.enabled` as Path<ListingRequestFormValues>,
+                      !(watchedBusinessHours?.[dayKey]?.enabled ?? false),
+                      { shouldDirty: true },
+                    )
+                  }
+                  animationDelay="180ms"
+                />
+
+                {/* 09 補足メモ */}
+                <section className="wish-card-enter" style={{ animationDelay: '200ms' }}>
+                  <SectionLabel num="09" title="補足メモ" optional />
+                  <Field label="フクナビ運営への補足" optional>
+                    <textarea
+                      rows={3}
+                      placeholder="フクナビ運営への補足情報など…"
+                      className={cn(
+                        'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
+                        'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
+                        'resize-none',
+                      )}
+                      {...register('note')}
+                    />
+                  </Field>
+                </section>
+
+                {/* Submit */}
                 <div className="border-t border-border pt-8">
                   <div className="flex items-center gap-3">
                     <button

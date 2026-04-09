@@ -406,7 +406,7 @@ const MyPage = () => {
                           {app.shop_name}
                         </p>
                         <p className="mt-0.5 text-[10px] text-muted-foreground/50">
-                          {isPending ? '審査中 — スタッフとのDM' : app.status === 'approved' ? '承認済' : '却下'}
+                          {isPending ? '審査中 — フクナビ運営とのDM' : app.status === 'approved' ? '承認済' : '却下'}
                         </p>
                       </div>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20" />
