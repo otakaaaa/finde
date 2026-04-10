@@ -11,13 +11,15 @@ import { cn } from '@/lib/utils'
 
 // ── Reply bubbles ──────────────────────────────────────────────
 
-const AdminReplyBubble = ({ reply }: { reply: ContactReply }) => (
-  <div className="flex gap-2.5">
-    <div className="flex flex-col items-center">
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center bg-primary">
-        <Mail className="h-2.5 w-2.5 text-white" />
-      </div>
-      <div className="mt-1 w-px flex-1 bg-sky-200" />
+const AdminReplyBubble = ({ reply, hideIcon }: { reply: ContactReply; hideIcon: boolean }) => (
+  <div className={cn('flex gap-2.5', hideIcon && '-mt-1')}>
+    <div className="flex w-5 flex-col items-center">
+      {!hideIcon && (
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center bg-primary">
+          <Mail className="h-2.5 w-2.5 text-white" />
+        </div>
+      )}
+      <div className={cn('w-px flex-1 bg-sky-200', !hideIcon && 'mt-1')} />
     </div>
     <div className="mb-2 min-w-0 flex-1">
       <div className="mb-1 flex items-center gap-1.5">
@@ -40,8 +42,8 @@ const AdminReplyBubble = ({ reply }: { reply: ContactReply }) => (
   </div>
 )
 
-const UserReplyBubble = ({ reply, isAdmin }: { reply: ContactReply; isAdmin: boolean }) => (
-  <div className="flex gap-2.5">
+const UserReplyBubble = ({ reply, isAdmin, hideIcon }: { reply: ContactReply; isAdmin: boolean; hideIcon: boolean }) => (
+  <div className={cn('flex gap-2.5', hideIcon && '-mt-1')}>
     <div className="mb-2 min-w-0 flex-1 pl-6">
       <div className="mb-1 flex items-center justify-end gap-1.5">
         <span className="text-[9px] text-muted-foreground/30">
@@ -57,11 +59,13 @@ const UserReplyBubble = ({ reply, isAdmin }: { reply: ContactReply; isAdmin: boo
         </p>
       </div>
     </div>
-    <div className="flex flex-col items-center">
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-amber-200 bg-amber-50">
-        <span className="font-headline text-[7px] font-black text-amber-500">ME</span>
-      </div>
-      <div className="mt-1 w-px flex-1 bg-amber-200" />
+    <div className="flex w-5 flex-col items-center">
+      {!hideIcon && (
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-amber-200 bg-amber-50">
+          <span className="font-headline text-[7px] font-black text-amber-500">ME</span>
+        </div>
+      )}
+      <div className={cn('w-px flex-1 bg-amber-200', !hideIcon && 'mt-1')} />
     </div>
   </div>
 )
@@ -88,11 +92,12 @@ const ReplyThread = ({ contactId, isAdmin }: { contactId: string; isAdmin: boole
         やりとり ({replies.length})
       </span>
       <div className="space-y-1">
-        {replies.map((reply: ContactReply) =>
-          reply.is_admin_reply
-            ? <AdminReplyBubble key={reply.id} reply={reply} />
-            : <UserReplyBubble key={reply.id} reply={reply} isAdmin={isAdmin} />
-        )}
+        {replies.map((reply: ContactReply, i: number) => {
+          const hideIcon = i > 0 && replies[i - 1].is_admin_reply === reply.is_admin_reply
+          return reply.is_admin_reply
+            ? <AdminReplyBubble key={reply.id} reply={reply} hideIcon={hideIcon} />
+            : <UserReplyBubble key={reply.id} reply={reply} isAdmin={isAdmin} hideIcon={hideIcon} />
+        })}
       </div>
     </div>
   )
