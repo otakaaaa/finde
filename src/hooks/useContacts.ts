@@ -6,7 +6,7 @@ import type { Contact, ContactReply } from '@/constants/contact'
 export const useMyContacts = () => {
   const { user } = useAuth()
   return useQuery({
-    queryKey: ['my-inquiries', user?.id],
+    queryKey: ['my-contacts', user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase

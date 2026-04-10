@@ -4,13 +4,78 @@ import { ChevronLeft, ChevronDown, Mail, Flag, Send } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { useMyContacts, useContactReplies } from '@/hooks/useInquiries'
+import { useMyContacts, useContactReplies } from '@/hooks/useContacts'
 import { CATEGORY_LABEL, STATUS_CONFIG } from '@/constants/contact'
 import type { Contact, ContactReply } from '@/constants/contact'
 import { formatTimeAgo } from '@/lib/timeago'
 import { cn } from '@/lib/utils'
 
 // ── Reply list ─────────────────────────────────────────────────
+
+const AdminReplyBubble = ({ reply }: { reply: ContactReply }) => (
+  /* 運営: 左寄せ・primary アクセントバー・公式スタンプ感 */
+  <div className="flex gap-3">
+    {/* 左レール */}
+    <div className="flex flex-col items-center">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center bg-primary">
+        <Mail className="h-3 w-3 text-white" />
+      </div>
+      <div className="mt-1 w-px flex-1 bg-sky-200" />
+    </div>
+
+    <div className="mb-3 min-w-0 flex-1">
+      {/* ヘッダー */}
+      <div className="mb-2 flex items-center gap-2">
+        <span className="font-headline text-[9px] font-black uppercase tracking-[0.35em] text-primary/70">
+          フクナビ運営
+        </span>
+        <span className="rounded-sm bg-primary/8 px-1.5 py-0.5 font-headline text-[7px] font-black uppercase tracking-wider text-primary/50">
+          STAFF
+        </span>
+        <span className="ml-auto font-headline text-[9px] tabular-nums text-muted-foreground/30">
+          {formatTimeAgo(reply.created_at)}
+        </span>
+      </div>
+      {/* 本文 */}
+      <div className="border border-sky-200 bg-sky-50 px-4 py-3">
+        <p className="whitespace-pre-wrap text-[12px] leading-[1.9] text-foreground/75">
+          {reply.body}
+        </p>
+      </div>
+    </div>
+  </div>
+)
+
+const UserReplyBubble = ({ reply }: { reply: ContactReply }) => (
+  /* 自分: 右寄せ・左マージン・淡いグレー */
+  <div className="flex gap-3">
+    <div className="min-w-0 flex-1 pl-8">
+      {/* ヘッダー（右寄せ） */}
+      <div className="mb-2 flex items-center justify-end gap-2">
+        <span className="font-headline text-[9px] tabular-nums text-muted-foreground/30">
+          {formatTimeAgo(reply.created_at)}
+        </span>
+        <span className="font-headline text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/40">
+          あなた
+        </span>
+      </div>
+      {/* 本文 */}
+      <div className="border border-amber-200 bg-amber-50 px-4 py-3">
+        <p className="whitespace-pre-wrap text-[12px] leading-[1.9] text-foreground/65">
+          {reply.body}
+        </p>
+      </div>
+    </div>
+
+    {/* 右レール */}
+    <div className="flex flex-col items-center">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center border border-amber-200 bg-amber-50">
+        <span className="font-headline text-[8px] font-black text-amber-500">ME</span>
+      </div>
+      <div className="mt-1 w-px flex-1 bg-amber-200" />
+    </div>
+  </div>
+)
 
 const ReplyList = ({ contactId }: { contactId: string }) => {
   const { data: replies, isLoading } = useContactReplies(contactId)
@@ -27,41 +92,17 @@ const ReplyList = ({ contactId }: { contactId: string }) => {
   if (!replies || replies.length === 0) return null
 
   return (
-    <div className="mt-4 space-y-2">
-      {replies.map((reply: ContactReply) =>
-        reply.is_admin_reply ? (
-          <div key={reply.id} className="rounded-sm border border-primary/10 bg-primary/[0.02] px-4 py-3">
-            <div className="mb-1.5 flex items-center gap-2">
-              <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Mail className="h-2.5 w-2.5 text-primary/60" />
-              </div>
-              <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-primary/50">
-                フクナビ運営
-              </span>
-              <span className="ml-auto text-[9px] text-muted-foreground/35">
-                {formatTimeAgo(reply.created_at)}
-              </span>
-            </div>
-            <p className="whitespace-pre-wrap text-[12px] leading-[1.85] text-foreground/70">
-              {reply.body}
-            </p>
-          </div>
-        ) : (
-          <div key={reply.id} className="rounded-sm border border-border bg-muted/30 px-4 py-3">
-            <div className="mb-1.5 flex items-center gap-2">
-              <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
-                あなた
-              </span>
-              <span className="ml-auto text-[9px] text-muted-foreground/35">
-                {formatTimeAgo(reply.created_at)}
-              </span>
-            </div>
-            <p className="whitespace-pre-wrap text-[12px] leading-[1.85] text-foreground/70">
-              {reply.body}
-            </p>
-          </div>
-        )
-      )}
+    <div className="mt-5 border-t border-border/60 pt-4">
+      <span className="mb-3 block font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/25">
+        やりとり
+      </span>
+      <div className="space-y-1">
+        {replies.map((reply: ContactReply) =>
+          reply.is_admin_reply
+            ? <AdminReplyBubble key={reply.id} reply={reply} />
+            : <UserReplyBubble key={reply.id} reply={reply} />
+        )}
+      </div>
     </div>
   )
 }
@@ -198,7 +239,7 @@ const ContactCard = ({ contact, expanded, onToggle, index }: ContactCardProps) =
 
 // ── Page ───────────────────────────────────────────────────────
 
-const InquiriesPage = () => {
+const ContactsPage = () => {
   const { data: contacts, isLoading, error } = useMyContacts()
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
@@ -214,7 +255,7 @@ const InquiriesPage = () => {
             INBOX
           </span>
         </div>
-        <div className="relative mx-auto max-w-3xl pb-6">
+        <div className="relative mx-auto max-w-5xl pb-6">
           <Link
             to="/mypage"
             className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
@@ -231,7 +272,7 @@ const InquiriesPage = () => {
 
       {/* ── Content ──────────────────────────────── */}
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-8 md:px-16 md:py-10">
+        <div className="mx-auto max-w-5xl px-4 py-8 md:px-16 md:py-10">
 
           {/* Error */}
           {error && (
@@ -252,7 +293,7 @@ const InquiriesPage = () => {
             <div className="flex flex-col items-center gap-2 py-24 text-center">
               <Mail className="mb-2 h-8 w-8 text-muted-foreground/15" />
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/25">
-                No Inquiries
+                No Contacts
               </span>
               <p className="text-xs text-muted-foreground/40">お問い合わせ履歴はありません</p>
               <Link
@@ -285,4 +326,4 @@ const InquiriesPage = () => {
   )
 }
 
-export default InquiriesPage
+export default ContactsPage

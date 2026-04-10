@@ -370,7 +370,7 @@ const MyPage = () => {
               />
             }
             <NavItem
-              to="/mypage/inquiries"
+              to="/mypage/contacts"
               icon={<Mail className="h-3.5 w-3.5" />}
               index="05"
               label="お問い合わせ履歴"

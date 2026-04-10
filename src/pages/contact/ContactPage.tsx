@@ -128,7 +128,7 @@ const ContactPage = () => {
     }
 
     if (user) {
-      queryClient.invalidateQueries({ queryKey: ['my-inquiries', user.id] })
+      queryClient.invalidateQueries({ queryKey: ['my-contacts', user.id] })
     }
     setDoneId(data?.id ?? 'unknown')
   }

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Mail, Search, ChevronDown, Flag, Send } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { useContactReplies } from '@/hooks/useInquiries'
+import { useContactReplies } from '@/hooks/useContacts'
 import { CATEGORY_LABEL, STATUS_CONFIG } from '@/constants/contact'
 import type { Contact, ContactStatus, ContactReply } from '@/constants/contact'
 import { formatTimeAgo } from '@/lib/timeago'
@@ -21,7 +21,7 @@ const STATUS_FILTERS = [
 
 // ── Data hook ──────────────────────────────────────────────────
 
-const useInquiries = (status: string) =>
+const useContacts = (status: string) =>
   useQuery({
     queryKey: ['admin-contacts', status],
     queryFn: async () => {
@@ -92,23 +92,64 @@ const ReplySection = ({ contactId, contactEmail, contactSubject }: ReplySectionP
       {replies && replies.length > 0 && (
         <div className="space-y-2">
           <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-            返信済み ({replies.length})
+            やりとり ({replies.length})
           </span>
-          {replies.map((reply: ContactReply) => (
-            <div key={reply.id} className="rounded-sm border border-primary/10 bg-primary/[0.02] px-3 py-2.5">
-              <div className="mb-1 flex items-center gap-2">
-                <span className="font-headline text-[9px] font-black text-primary/50">
-                  {reply.users?.display_name ?? '管理者'}
-                </span>
-                <span className="text-[9px] text-muted-foreground/35">
-                  {formatTimeAgo(reply.created_at)}
-                </span>
+          {replies.map((reply: ContactReply) =>
+            reply.is_admin_reply ? (
+              /* 管理者返信: sky ─ 左寄せ */
+              <div key={reply.id} className="flex gap-2.5">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center bg-primary">
+                    <Mail className="h-2.5 w-2.5 text-white" />
+                  </div>
+                  <div className="mt-1 w-px flex-1 bg-sky-200" />
+                </div>
+                <div className="mb-2 min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-1.5">
+                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-sky-600/70">
+                      {reply.users?.display_name ?? '管理者'}
+                    </span>
+                    <span className="rounded-sm bg-sky-100 px-1 py-0.5 font-headline text-[7px] font-black uppercase tracking-wider text-sky-500">
+                      STAFF
+                    </span>
+                    <span className="ml-auto text-[9px] text-muted-foreground/30">
+                      {formatTimeAgo(reply.created_at)}
+                    </span>
+                  </div>
+                  <div className="border border-sky-200 bg-sky-50 px-3 py-2.5">
+                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
+                      {reply.body}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
-                {reply.body}
-              </p>
-            </div>
-          ))}
+            ) : (
+              /* ユーザー返信: amber ─ 右寄せ */
+              <div key={reply.id} className="flex gap-2.5">
+                <div className="mb-2 min-w-0 flex-1 pl-6">
+                  <div className="mb-1 flex items-center justify-end gap-1.5">
+                    <span className="text-[9px] text-muted-foreground/30">
+                      {formatTimeAgo(reply.created_at)}
+                    </span>
+                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-amber-600/60">
+                      ユーザー
+                    </span>
+                  </div>
+                  <div className="border border-amber-200 bg-amber-50 px-3 py-2.5">
+                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
+                      {reply.body}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-amber-200 bg-amber-50">
+                    <span className="font-headline text-[7px] font-black text-amber-500">ME</span>
+                  </div>
+                  <div className="mt-1 w-px flex-1 bg-amber-200" />
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
 
@@ -261,7 +302,7 @@ const AdminContactsPage = () => {
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const { data: inquiries, isLoading, error } = useInquiries(statusFilter)
+  const { data: contacts, isLoading, error } = useContacts(statusFilter)
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: ContactStatus }) => {
@@ -274,22 +315,22 @@ const AdminContactsPage = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-contacts'] }),
   })
 
-  const filtered = (inquiries ?? []).filter((i) => {
+  const filtered = (contacts ?? []).filter((c) => {
     if (!search) return true
     const q = search.toLowerCase()
     return (
-      i.subject.toLowerCase().includes(q) ||
-      i.name.toLowerCase().includes(q) ||
-      i.email.toLowerCase().includes(q) ||
-      i.body.toLowerCase().includes(q)
+      c.subject.toLowerCase().includes(q) ||
+      c.name.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.body.toLowerCase().includes(q)
     )
   })
 
   const counts = {
-    all:         inquiries?.length ?? 0,
-    open:        inquiries?.filter((i) => i.status === 'open').length ?? 0,
-    in_progress: inquiries?.filter((i) => i.status === 'in_progress').length ?? 0,
-    closed:      inquiries?.filter((i) => i.status === 'closed').length ?? 0,
+    all:         contacts?.length ?? 0,
+    open:        contacts?.filter((c) => c.status === 'open').length ?? 0,
+    in_progress: contacts?.filter((c) => c.status === 'in_progress').length ?? 0,
+    closed:      contacts?.filter((c) => c.status === 'closed').length ?? 0,
   }
 
   return (
@@ -390,7 +431,7 @@ const AdminContactsPage = () => {
           {!isLoading && !error && filtered.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/25">
-                No Inquiries
+                No Contacts
               </span>
               <p className="text-xs text-muted-foreground/40">お問い合わせはありません</p>
             </div>
