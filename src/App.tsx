@@ -21,6 +21,7 @@ const LinkAccountPage = lazy(() => import('@/pages/auth/LinkAccountPage'))
 // User pages (auth required)
 const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
 const FavoritesPage = lazy(() => import('@/pages/mypage/FavoritesPage'))
+const ContactsPage = lazy(() => import('@/pages/mypage/ContactsPage'))
 const WishesPage = lazy(() => import('@/pages/wishes/WishesPage'))
 const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
@@ -111,6 +112,10 @@ const App = () => (
             <Route
               path="/mypage/favorites"
               element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/mypage/contacts"
+              element={<ProtectedRoute><ContactsPage /></ProtectedRoute>}
             />
             <Route
               path="/wishes"

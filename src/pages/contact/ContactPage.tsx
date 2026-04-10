@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle2, Send, Mail, Flag } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -76,6 +77,7 @@ const inputClass = cn(
 
 const ContactPage = () => {
   const { user, session } = useAuth()
+  const queryClient = useQueryClient()
 
   const [form, setForm] = useState<FormState>({
     name:        user?.displayName ?? '',
@@ -105,7 +107,7 @@ const ContactPage = () => {
     setError(null)
 
     const { data, error: err } = await supabase
-      .from('contact_inquiries')
+      .from('contacts')
       .insert({
         name:         form.name.trim(),
         email:        form.email.trim(),
@@ -125,6 +127,9 @@ const ContactPage = () => {
       return
     }
 
+    if (user) {
+      queryClient.invalidateQueries({ queryKey: ['my-contacts', user.id] })
+    }
     setDoneId(data?.id ?? 'unknown')
   }
 
