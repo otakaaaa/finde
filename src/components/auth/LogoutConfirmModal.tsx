@@ -32,7 +32,7 @@ export const LogoutConfirmModal = () => {
             — Confirm
           </p>
           <h2 className="font-headline text-2xl font-black leading-none tracking-tight text-foreground">
-            SIGN OUT
+            ログアウト
           </h2>
           <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/60">
             ログアウトしてもよろしいですか？<br />
