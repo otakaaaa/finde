@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import { NotificationBell } from '@/components/notification/NotificationBell'
+import { LogOut, User, Heart, LayoutDashboard, Store, ShieldCheck } from 'lucide-react'
 
 interface NavItem {
   to: string
@@ -52,14 +53,33 @@ const NavLink = ({ item, onClick }: { item: NavItem; onClick?: () => void }) => 
 }
 
 export const Header = () => {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const { openLogoutModal } = useUiStore()
+  const desktopProfileRef = useRef<HTMLDivElement>(null)
+  const mobileProfileRef = useRef<HTMLDivElement>(null)
 
-  // Close menu on route change
-  useEffect(() => { setMenuOpen(false) }, [location.pathname])
+  // Close menus on route change
+  useEffect(() => { setMenuOpen(false); setProfileOpen(false) }, [location.pathname])
+
+  // Click-outside to close profile dropdown
+  useEffect(() => {
+    if (!profileOpen) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      const clickedDesktopProfile = desktopProfileRef.current?.contains(target) ?? false
+      const clickedMobileProfile = mobileProfileRef.current?.contains(target) ?? false
+
+      if (!clickedDesktopProfile && !clickedMobileProfile) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [profileOpen])
 
   // Body scroll lock when menu open
   useEffect(() => {
@@ -135,23 +155,114 @@ export const Header = () => {
 
             {/* Auth area */}
             {user ? (
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
+              <div ref={desktopProfileRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen((v) => !v)}
+                  className={cn(
+                    'flex h-7 w-7 shrink-0 overflow-hidden bg-primary font-headline text-[10px] font-black text-white',
+                    'ring-offset-background transition-all duration-150',
+                    profileOpen ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80',
+                  )}
+                  aria-label="プロフィールメニュー"
+                >
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
                   )}
-                </div>
-                <button
-                  onClick={openLogoutModal}
+                </button>
+
+                {/* Profile dropdown */}
+                <div
                   className={cn(
-                    'font-headline text-[10px] font-black uppercase tracking-[0.25em]',
-                    'text-muted-foreground/50 transition-colors hover:text-foreground',
+                    'absolute right-0 top-full z-50 mt-2 w-52 origin-top-right',
+                    'border border-border bg-background editorial-shadow',
+                    'transition-all duration-150',
+                    profileOpen
+                      ? 'pointer-events-auto translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0',
                   )}
                 >
-                  Sign Out
-                </button>
+                  {/* User identity */}
+                  <div className="border-b border-border px-4 py-3">
+                    <p className="truncate font-headline text-[11px] font-black tracking-tight text-foreground/80">
+                      {user.displayName ?? session?.user?.email}
+                    </p>
+                    <p className="mt-0.5 truncate text-[10px] text-muted-foreground/40">{session?.user?.email}</p>
+                    {user.role && user.role !== 'user' && (
+                      <span className="mt-1.5 inline-block rounded-sm bg-primary/10 px-1.5 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-primary">
+                        {user.role}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Nav links */}
+                  <div className="py-1">
+                    <Link
+                      to="/mypage"
+                      className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                    >
+                      <User className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                      <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
+                        マイページ
+                      </span>
+                    </Link>
+                    <Link
+                      to="/wishes"
+                      className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                    >
+                      <Heart className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                      <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
+                        ウィッシュ
+                      </span>
+                    </Link>
+                    <Link
+                      to="/mypage/contacts"
+                      className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                    >
+                      <LayoutDashboard className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                      <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
+                        お問い合わせ
+                      </span>
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                      >
+                        <ShieldCheck className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
+                          管理画面
+                        </span>
+                      </Link>
+                    )}
+                    {OWNER_FEATURE_ENABLED && user.role === 'shop_owner' && (
+                      <Link
+                        to="/owner"
+                        className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                      >
+                        <Store className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
+                          オーナー
+                        </span>
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* ログアウト */}
+                  <div className="border-t border-border py-1">
+                    <button
+                      onClick={() => { setProfileOpen(false); openLogoutModal() }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                    >
+                      <LogOut className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                      <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
+                        ログアウト
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <Link
@@ -171,12 +282,65 @@ export const Header = () => {
           <div className="flex items-center gap-3 md:hidden">
             {user && (
               <>
-                <div className="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
-                  )}
+                <div ref={mobileProfileRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v) }}
+                    className={cn(
+                      'flex h-7 w-7 shrink-0 overflow-hidden bg-primary font-headline text-[10px] font-black text-white',
+                      'ring-offset-background transition-all duration-150',
+                      profileOpen ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80',
+                    )}
+                    aria-label="プロフィールメニュー"
+                  >
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.displayName ?? ''} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center">{userInitial}</span>
+                    )}
+                  </button>
+
+                  {/* Mobile profile dropdown */}
+                  <div
+                    className={cn(
+                      'absolute right-0 top-full z-50 mt-2 w-52 origin-top-right',
+                      'border border-border bg-background editorial-shadow',
+                      'transition-all duration-150',
+                      profileOpen
+                        ? 'pointer-events-auto translate-y-0 opacity-100'
+                        : 'pointer-events-none -translate-y-1 opacity-0',
+                    )}
+                  >
+                    <div className="border-b border-border px-4 py-3">
+                      <p className="truncate font-headline text-[11px] font-black tracking-tight text-foreground/80">
+                        {user.displayName ?? session?.user?.email}
+                      </p>
+                      <p className="mt-0.5 truncate text-[10px] text-muted-foreground/40">{session?.user?.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link to="/mypage" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
+                        <User className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">マイページ</span>
+                      </Link>
+                      <Link to="/wishes" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
+                        <Heart className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">ウィッシュ</span>
+                      </Link>
+                      <Link to="/mypage/contacts" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
+                        <LayoutDashboard className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">お問い合わせ</span>
+                      </Link>
+                    </div>
+                    <div className="border-t border-border py-1">
+                      <button
+                        onClick={() => { setProfileOpen(false); openLogoutModal() }}
+                        className="flex w-full items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
+                      >
+                        <LogOut className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">ログアウト</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <NotificationBell />
               </>
