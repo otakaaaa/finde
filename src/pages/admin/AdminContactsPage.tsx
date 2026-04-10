@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Mail, Search, ChevronDown, Flag, Send } from 'lucide-react'
+import { ChevronLeft, Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/hooks/useAuth'
-import { useContactReplies } from '@/hooks/useContacts'
-import { CATEGORY_LABEL, STATUS_CONFIG } from '@/constants/contact'
-import type { Contact, ContactStatus, ContactReply } from '@/constants/contact'
-import { formatTimeAgo } from '@/lib/timeago'
+import type { Contact, ContactStatus } from '@/constants/contact'
 import { cn } from '@/lib/utils'
+import { ContactCard } from '@/components/contact/ContactCard'
 
 // ── Config ─────────────────────────────────────────────────────
 
@@ -41,258 +38,6 @@ const useContacts = (status: string) =>
       return data ?? []
     },
   })
-
-// ── Reply section ───────────────────────────────────────────────
-
-interface ReplySectionProps {
-  contactId: string
-  contactEmail: string
-  contactSubject: string
-}
-
-const ReplySection = ({ contactId, contactEmail, contactSubject }: ReplySectionProps) => {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const [body, setBody] = useState('')
-  const { data: replies, isLoading } = useContactReplies(contactId)
-
-  const { mutate: sendReply, isPending } = useMutation({
-    mutationFn: async (replyBody: string) => {
-      if (!user) throw new Error('Not authenticated')
-      const { error } = await supabase
-        .from('contact_replies')
-        .insert({ contact_id: contactId, body: replyBody, replied_by: user.id, is_admin_reply: true } as never) as unknown as {
-          error: { message: string } | null
-        }
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: () => {
-      setBody('')
-      queryClient.invalidateQueries({ queryKey: ['contact-replies', contactId] })
-      queryClient.invalidateQueries({ queryKey: ['admin-contacts'] })
-    },
-  })
-
-  const handleSend = () => {
-    const trimmed = body.trim()
-    if (!trimmed) return
-    sendReply(trimmed)
-  }
-
-  return (
-    <div className="mt-4 space-y-3">
-      {/* Existing replies */}
-      {isLoading && (
-        <div className="flex items-center gap-2 py-1">
-          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-          <span className="text-[10px] text-muted-foreground/40">返信を読み込み中...</span>
-        </div>
-      )}
-
-      {replies && replies.length > 0 && (
-        <div className="space-y-2">
-          <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-            やりとり ({replies.length})
-          </span>
-          {replies.map((reply: ContactReply) =>
-            reply.is_admin_reply ? (
-              /* 管理者返信: sky ─ 左寄せ */
-              <div key={reply.id} className="flex gap-2.5">
-                <div className="flex flex-col items-center">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center bg-primary">
-                    <Mail className="h-2.5 w-2.5 text-white" />
-                  </div>
-                  <div className="mt-1 w-px flex-1 bg-sky-200" />
-                </div>
-                <div className="mb-2 min-w-0 flex-1">
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-sky-600/70">
-                      {reply.users?.display_name ?? '管理者'}
-                    </span>
-                    <span className="rounded-sm bg-sky-100 px-1 py-0.5 font-headline text-[7px] font-black uppercase tracking-wider text-sky-500">
-                      STAFF
-                    </span>
-                    <span className="ml-auto text-[9px] text-muted-foreground/30">
-                      {formatTimeAgo(reply.created_at)}
-                    </span>
-                  </div>
-                  <div className="border border-sky-200 bg-sky-50 px-3 py-2.5">
-                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
-                      {reply.body}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* ユーザー返信: amber ─ 右寄せ */
-              <div key={reply.id} className="flex gap-2.5">
-                <div className="mb-2 min-w-0 flex-1 pl-6">
-                  <div className="mb-1 flex items-center justify-end gap-1.5">
-                    <span className="text-[9px] text-muted-foreground/30">
-                      {formatTimeAgo(reply.created_at)}
-                    </span>
-                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-amber-600/60">
-                      ユーザー
-                    </span>
-                  </div>
-                  <div className="border border-amber-200 bg-amber-50 px-3 py-2.5">
-                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
-                      {reply.body}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-amber-200 bg-amber-50">
-                    <span className="font-headline text-[7px] font-black text-amber-500">ME</span>
-                  </div>
-                  <div className="mt-1 w-px flex-1 bg-amber-200" />
-                </div>
-              </div>
-            )
-          )}
-        </div>
-      )}
-
-      {/* Reply form */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/25">
-            返信を送る
-          </span>
-          <a
-            href={`mailto:${contactEmail}?subject=Re: ${encodeURIComponent(contactSubject)}`}
-            className="flex h-6 items-center gap-1 border border-border bg-muted px-2 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground transition-colors hover:bg-foreground hover:text-white"
-          >
-            <Mail className="h-2.5 w-2.5" />
-            メールで返信
-          </a>
-        </div>
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={3}
-          placeholder="返信内容を入力..."
-          className={cn(
-            'w-full resize-none rounded-sm border border-border bg-white px-3 py-2 text-[12px] leading-relaxed',
-            'placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/50',
-          )}
-        />
-        <button
-          onClick={handleSend}
-          disabled={isPending || !body.trim()}
-          className="flex h-8 items-center gap-1.5 bg-primary px-3 font-headline text-[9px] font-black uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-        >
-          {isPending
-            ? <><div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />送信中...</>
-            : <><Send className="h-3 w-3" />返信を保存</>
-          }
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ── Contact card ───────────────────────────────────────────────
-
-interface ContactCardProps {
-  contact: Contact
-  expanded: boolean
-  onToggle: () => void
-  onStatusChange: (id: string, status: ContactStatus) => void
-  isUpdating: boolean
-}
-
-const ContactCard = ({ contact, expanded, onToggle, onStatusChange, isUpdating }: ContactCardProps) => {
-  const conf = STATUS_CONFIG[contact.status]
-
-  return (
-    <div className={cn('wish-card-enter border-l-[3px] bg-white editorial-shadow', conf.borderClass)}>
-      {/* Summary row */}
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-start gap-3 px-4 py-3.5 text-left"
-      >
-        <span className="mt-0.5 shrink-0 font-headline text-[9px] font-black tabular-nums text-muted-foreground/20">
-          {new Date(contact.created_at).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate font-headline text-[13px] font-black tracking-tight text-foreground/80">
-              {contact.subject}
-            </p>
-            <span className={cn(
-              'rounded-sm px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider',
-              conf.badgeClass,
-            )}>
-              {conf.label}
-            </span>
-            {contact.is_noreply && (
-              <span className="flex items-center gap-1 rounded-sm bg-muted px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground/60">
-                <Flag className="h-2.5 w-2.5" />
-                返信不要
-              </span>
-            )}
-          </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-            <span className="text-[10px] text-muted-foreground/50">{contact.name}</span>
-            <span className="text-[10px] text-muted-foreground/40">{contact.email}</span>
-            <span className="text-[10px] text-muted-foreground/35">{CATEGORY_LABEL[contact.category]}</span>
-          </div>
-        </div>
-
-        <ChevronDown className={cn(
-          'mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/25 transition-transform duration-200',
-          expanded && 'rotate-180',
-        )} />
-      </button>
-
-      {/* Expanded body */}
-      {expanded && (
-        <div className="border-t border-border px-4 pb-5 pt-3">
-          <p className="mb-4 whitespace-pre-wrap text-[12px] leading-[1.9] text-foreground/70">
-            {contact.body}
-          </p>
-
-          {/* Status actions */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/25">
-              ステータス変更
-            </span>
-            {(['open', 'in_progress', 'closed'] as ContactStatus[])
-              .filter((s) => s !== contact.status)
-              .map((s) => {
-                const c = STATUS_CONFIG[s]
-                return (
-                  <button
-                    key={s}
-                    onClick={() => onStatusChange(contact.id, s)}
-                    disabled={isUpdating}
-                    className={cn(
-                      'flex h-7 items-center gap-1 rounded-sm px-2.5 font-headline text-[9px] font-black uppercase tracking-wider transition-colors disabled:opacity-40',
-                      c.badgeClass,
-                    )}
-                  >
-                    {c.label}
-                  </button>
-                )
-              })}
-          </div>
-
-          {/* Reply section */}
-          {!contact.is_noreply && (
-            <ReplySection
-              contactId={contact.id}
-              contactEmail={contact.email}
-              contactSubject={contact.subject}
-            />
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 // ── Page ───────────────────────────────────────────────────────
 
@@ -441,15 +186,16 @@ const AdminContactsPage = () => {
           {!isLoading && filtered.length > 0 && (
             <div className="space-y-1.5">
               {filtered.map((contact, i) => (
-                <div key={contact.id} style={{ animationDelay: `${i * 20}ms` }}>
-                  <ContactCard
-                    contact={contact}
-                    expanded={expandedId === contact.id}
-                    onToggle={() => setExpandedId(expandedId === contact.id ? null : contact.id)}
-                    onStatusChange={(id, status) => updateStatus({ id, status })}
-                    isUpdating={isUpdating}
-                  />
-                </div>
+                <ContactCard
+                  key={contact.id}
+                  contact={contact}
+                  expanded={expandedId === contact.id}
+                  onToggle={() => setExpandedId(expandedId === contact.id ? null : contact.id)}
+                  isAdmin={true}
+                  onStatusChange={(id, status) => updateStatus({ id, status })}
+                  isUpdating={isUpdating}
+                  index={i}
+                />
               ))}
             </div>
           )}
