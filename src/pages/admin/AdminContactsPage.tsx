@@ -1,43 +1,16 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronLeft, Mail, Search, ChevronDown, Flag } from 'lucide-react'
+import { ChevronLeft, Mail, Search, ChevronDown, Flag, Send } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { useContactReplies } from '@/hooks/useInquiries'
+import { CATEGORY_LABEL, STATUS_CONFIG } from '@/constants/contact'
+import type { Contact, ContactStatus, ContactReply } from '@/constants/contact'
+import { formatTimeAgo } from '@/lib/timeago'
 import { cn } from '@/lib/utils'
 
-// ── Types ──────────────────────────────────────────────────────
-
-type InquiryStatus = 'open' | 'in_progress' | 'closed'
-type InquiryCategory = 'general' | 'shop_listing' | 'bug_report' | 'account' | 'other'
-
-interface Inquiry {
-  id: string
-  name: string
-  email: string
-  category: InquiryCategory
-  subject: string
-  body: string
-  status: InquiryStatus
-  is_noreply: boolean
-  user_id: string | null
-  created_at: string
-}
-
 // ── Config ─────────────────────────────────────────────────────
-
-const CATEGORY_LABEL: Record<InquiryCategory, string> = {
-  general:      '一般的なご質問',
-  shop_listing: '店舗掲載について',
-  bug_report:   'バグ・不具合',
-  account:      'アカウントについて',
-  other:        'その他',
-}
-
-const STATUS_CONFIG: Record<InquiryStatus, { label: string; borderClass: string; badgeClass: string }> = {
-  open:        { label: '未対応',     borderClass: 'border-l-amber-400',   badgeClass: 'bg-amber-50 text-amber-700' },
-  in_progress: { label: '対応中',     borderClass: 'border-l-sky-400',     badgeClass: 'bg-sky-50 text-sky-700' },
-  closed:      { label: '完了',       borderClass: 'border-l-border',      badgeClass: 'bg-muted text-muted-foreground' },
-}
 
 const STATUS_FILTERS = [
   { value: 'all',         label: 'すべて' },
@@ -53,7 +26,7 @@ const useInquiries = (status: string) =>
     queryKey: ['admin-contacts', status],
     queryFn: async () => {
       let query = supabase
-        .from('contact_inquiries')
+        .from('contacts')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200)
@@ -61,7 +34,7 @@ const useInquiries = (status: string) =>
       if (status !== 'all') query = query.eq('status', status)
 
       const { data, error } = await (query as unknown as Promise<{
-        data: Inquiry[] | null
+        data: Contact[] | null
         error: { message: string } | null
       }>)
       if (error) throw new Error(error.message)
@@ -69,26 +42,130 @@ const useInquiries = (status: string) =>
     },
   })
 
-// ── Sub-components ─────────────────────────────────────────────
+// ── Reply section ───────────────────────────────────────────────
 
-interface InquiryCardProps {
-  inquiry: Inquiry
+interface ReplySectionProps {
+  contactId: string
+  contactEmail: string
+  contactSubject: string
+}
+
+const ReplySection = ({ contactId, contactEmail, contactSubject }: ReplySectionProps) => {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [body, setBody] = useState('')
+  const { data: replies, isLoading } = useContactReplies(contactId)
+
+  const { mutate: sendReply, isPending } = useMutation({
+    mutationFn: async (replyBody: string) => {
+      if (!user) throw new Error('Not authenticated')
+      const { error } = await supabase
+        .from('contact_replies')
+        .insert({ contact_id: contactId, body: replyBody, replied_by: user.id, is_admin_reply: true } as never) as unknown as {
+          error: { message: string } | null
+        }
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      setBody('')
+      queryClient.invalidateQueries({ queryKey: ['contact-replies', contactId] })
+      queryClient.invalidateQueries({ queryKey: ['admin-contacts'] })
+    },
+  })
+
+  const handleSend = () => {
+    const trimmed = body.trim()
+    if (!trimmed) return
+    sendReply(trimmed)
+  }
+
+  return (
+    <div className="mt-4 space-y-3">
+      {/* Existing replies */}
+      {isLoading && (
+        <div className="flex items-center gap-2 py-1">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+          <span className="text-[10px] text-muted-foreground/40">返信を読み込み中...</span>
+        </div>
+      )}
+
+      {replies && replies.length > 0 && (
+        <div className="space-y-2">
+          <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
+            返信済み ({replies.length})
+          </span>
+          {replies.map((reply: ContactReply) => (
+            <div key={reply.id} className="rounded-sm border border-primary/10 bg-primary/[0.02] px-3 py-2.5">
+              <div className="mb-1 flex items-center gap-2">
+                <span className="font-headline text-[9px] font-black text-primary/50">
+                  {reply.users?.display_name ?? '管理者'}
+                </span>
+                <span className="text-[9px] text-muted-foreground/35">
+                  {formatTimeAgo(reply.created_at)}
+                </span>
+              </div>
+              <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">
+                {reply.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reply form */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/25">
+            返信を送る
+          </span>
+          <a
+            href={`mailto:${contactEmail}?subject=Re: ${encodeURIComponent(contactSubject)}`}
+            className="flex h-6 items-center gap-1 border border-border bg-muted px-2 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground transition-colors hover:bg-foreground hover:text-white"
+          >
+            <Mail className="h-2.5 w-2.5" />
+            メールで返信
+          </a>
+        </div>
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={3}
+          placeholder="返信内容を入力..."
+          className={cn(
+            'w-full resize-none rounded-sm border border-border bg-white px-3 py-2 text-[12px] leading-relaxed',
+            'placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/50',
+          )}
+        />
+        <button
+          onClick={handleSend}
+          disabled={isPending || !body.trim()}
+          className="flex h-8 items-center gap-1.5 bg-primary px-3 font-headline text-[9px] font-black uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+        >
+          {isPending
+            ? <><div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />送信中...</>
+            : <><Send className="h-3 w-3" />返信を保存</>
+          }
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Contact card ───────────────────────────────────────────────
+
+interface ContactCardProps {
+  contact: Contact
   expanded: boolean
   onToggle: () => void
-  onStatusChange: (id: string, status: InquiryStatus) => void
+  onStatusChange: (id: string, status: ContactStatus) => void
   isUpdating: boolean
 }
 
-const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }: InquiryCardProps) => {
-  const conf = STATUS_CONFIG[inquiry.status]
+const ContactCard = ({ contact, expanded, onToggle, onStatusChange, isUpdating }: ContactCardProps) => {
+  const conf = STATUS_CONFIG[contact.status]
 
   return (
-    <div
-      className={cn(
-        'wish-card-enter border-l-[3px] bg-white editorial-shadow',
-        conf.borderClass,
-      )}
-    >
+    <div className={cn('wish-card-enter border-l-[3px] bg-white editorial-shadow', conf.borderClass)}>
       {/* Summary row */}
       <button
         type="button"
@@ -96,13 +173,13 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
         className="flex w-full items-start gap-3 px-4 py-3.5 text-left"
       >
         <span className="mt-0.5 shrink-0 font-headline text-[9px] font-black tabular-nums text-muted-foreground/20">
-          {new Date(inquiry.created_at).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}
+          {new Date(contact.created_at).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}
         </span>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-headline text-[13px] font-black tracking-tight text-foreground/80 truncate">
-              {inquiry.subject}
+            <p className="truncate font-headline text-[13px] font-black tracking-tight text-foreground/80">
+              {contact.subject}
             </p>
             <span className={cn(
               'rounded-sm px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider',
@@ -110,7 +187,7 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
             )}>
               {conf.label}
             </span>
-            {inquiry.is_noreply && (
+            {contact.is_noreply && (
               <span className="flex items-center gap-1 rounded-sm bg-muted px-1.5 py-0.5 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground/60">
                 <Flag className="h-2.5 w-2.5" />
                 返信不要
@@ -118,11 +195,9 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
             )}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-            <span className="text-[10px] text-muted-foreground/50">{inquiry.name}</span>
-            <span className="text-[10px] text-muted-foreground/40">{inquiry.email}</span>
-            <span className="text-[10px] text-muted-foreground/35">
-              {CATEGORY_LABEL[inquiry.category]}
-            </span>
+            <span className="text-[10px] text-muted-foreground/50">{contact.name}</span>
+            <span className="text-[10px] text-muted-foreground/40">{contact.email}</span>
+            <span className="text-[10px] text-muted-foreground/35">{CATEGORY_LABEL[contact.category]}</span>
           </div>
         </div>
 
@@ -134,24 +209,24 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
 
       {/* Expanded body */}
       {expanded && (
-        <div className="border-t border-border px-4 pb-4 pt-3">
-          <p className="mb-3 whitespace-pre-wrap text-[12px] leading-[1.9] text-foreground/70">
-            {inquiry.body}
+        <div className="border-t border-border px-4 pb-5 pt-3">
+          <p className="mb-4 whitespace-pre-wrap text-[12px] leading-[1.9] text-foreground/70">
+            {contact.body}
           </p>
 
-          {/* Actions */}
+          {/* Status actions */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/25">
               ステータス変更
             </span>
-            {(['open', 'in_progress', 'closed'] as InquiryStatus[])
-              .filter((s) => s !== inquiry.status)
+            {(['open', 'in_progress', 'closed'] as ContactStatus[])
+              .filter((s) => s !== contact.status)
               .map((s) => {
                 const c = STATUS_CONFIG[s]
                 return (
                   <button
                     key={s}
-                    onClick={() => onStatusChange(inquiry.id, s)}
+                    onClick={() => onStatusChange(contact.id, s)}
                     disabled={isUpdating}
                     className={cn(
                       'flex h-7 items-center gap-1 rounded-sm px-2.5 font-headline text-[9px] font-black uppercase tracking-wider transition-colors disabled:opacity-40',
@@ -164,15 +239,14 @@ const InquiryCard = ({ inquiry, expanded, onToggle, onStatusChange, isUpdating }
               })}
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <a
-              href={`mailto:${inquiry.email}?subject=Re: ${encodeURIComponent(inquiry.subject)}`}
-              className="ml-auto flex h-7 items-center gap-1 border border-border bg-muted px-2.5 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground transition-colors hover:bg-foreground hover:text-white"
-            >
-              <Mail className="h-3 w-3" />
-              返信する
-            </a>
-          </div>
+          {/* Reply section */}
+          {!contact.is_noreply && (
+            <ReplySection
+              contactId={contact.id}
+              contactEmail={contact.email}
+              contactSubject={contact.subject}
+            />
+          )}
         </div>
       )}
     </div>
@@ -190,9 +264,9 @@ const AdminContactsPage = () => {
   const { data: inquiries, isLoading, error } = useInquiries(statusFilter)
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: InquiryStatus }) => {
+    mutationFn: async ({ id, status }: { id: string; status: ContactStatus }) => {
       const { error } = await supabase
-        .from('contact_inquiries')
+        .from('contacts')
         .update({ status } as never)
         .eq('id', id) as unknown as { data: unknown; error: { message: string } | null }
       if (error) throw new Error(error.message)
@@ -254,7 +328,6 @@ const AdminContactsPage = () => {
 
           {/* Control bar */}
           <div className="mb-6 flex flex-wrap items-center gap-3">
-            {/* Status filters */}
             <div className="flex gap-1">
               {STATUS_FILTERS.map((f) => {
                 const count = counts[f.value]
@@ -283,7 +356,6 @@ const AdminContactsPage = () => {
               })}
             </div>
 
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground/40" />
               <input
@@ -327,12 +399,12 @@ const AdminContactsPage = () => {
           {/* List */}
           {!isLoading && filtered.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((inquiry, i) => (
-                <div key={inquiry.id} style={{ animationDelay: `${i * 20}ms` }}>
-                  <InquiryCard
-                    inquiry={inquiry}
-                    expanded={expandedId === inquiry.id}
-                    onToggle={() => setExpandedId(expandedId === inquiry.id ? null : inquiry.id)}
+              {filtered.map((contact, i) => (
+                <div key={contact.id} style={{ animationDelay: `${i * 20}ms` }}>
+                  <ContactCard
+                    contact={contact}
+                    expanded={expandedId === contact.id}
+                    onToggle={() => setExpandedId(expandedId === contact.id ? null : contact.id)}
                     onStatusChange={(id, status) => updateStatus({ id, status })}
                     isUpdating={isUpdating}
                   />

@@ -25,7 +25,7 @@ const useAdminStats = () =>
         supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'flagged') as unknown as Promise<{ count: number | null; error: unknown }>,
-        supabase.from('contact_inquiries').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']) as unknown as Promise<{ count: number | null; error: unknown }>,
+        supabase.from('contacts').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']) as unknown as Promise<{ count: number | null; error: unknown }>,
       ])
 
       const shops = shopsAll.data ?? []
