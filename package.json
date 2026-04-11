@@ -7,14 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "npm run build && wrangler dev",
     "typecheck": "tsc --noEmit",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:types": "npx supabase gen types typescript --local > src/types/supabase.ts",
     "supabase:migrate": "npx supabase db push --local",
     "supabase:setup-storage": "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env 2>/dev/null | grep SERVICE_ROLE_KEY | cut -d= -f2 | tr -d '\"') node scripts/setup-storage.js",
-    "supabase:reset": "npx supabase db reset"
+    "supabase:reset": "npx supabase db reset",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -41,6 +42,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.31.2",
     "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.2.14",
@@ -53,6 +55,7 @@
     "supabase": "^2.89.1",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.7.2",
-    "vite": "^6.4.2"
+    "vite": "^6.4.2",
+    "wrangler": "^4.81.1"
   }
 }
