@@ -8,6 +8,8 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
+import { PAGE_SIZE_OPTIONS, type PageSizeOption } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -45,37 +47,88 @@ interface DmMessage {
 
 // ── Data hooks ─────────────────────────────────────────────────
 
-const useListingRequests = (status: string) =>
+type AppCounts = { all: number; pending: number; approved: number; rejected: number }
+
+const useListingRequestCounts = () =>
   useQuery({
-    queryKey: ['admin-listing-requests', status],
-    queryFn: async () => {
-      let q = supabase
-        .from('shop_listing_requests')
-        .select('id, shop_name, address, website_url, note, status, created_at, users:submitted_by ( display_name )')
-        .eq('is_owner_request', false)
-        .order('created_at', { ascending: false })
-        .limit(100)
-      if (status !== 'all') q = q.eq('status', status)
-      const { data, error } = await (q as unknown as Promise<{ data: ListingRequestRow[] | null; error: { message: string } | null }>)
-      if (error) throw new Error(error.message)
-      return data ?? []
+    queryKey: ['admin-listing-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<AppCounts> => {
+      const [all, pending, approved, rejected] = await Promise.all([
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', false) as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', false).eq('status', 'pending') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', false).eq('status', 'approved') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', false).eq('status', 'rejected') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, pending: pending.count ?? 0, approved: approved.count ?? 0, rejected: rejected.count ?? 0 }
     },
   })
 
-const useOwnerApplications = (status: string) =>
+const useOwnerAppCounts = () =>
   useQuery({
-    queryKey: ['admin-owner-applications', status],
+    queryKey: ['admin-owner-app-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<AppCounts> => {
+      const [all, pending, approved, rejected] = await Promise.all([
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', true) as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', true).eq('status', 'pending') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', true).eq('status', 'approved') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('is_owner_request', true).eq('status', 'rejected') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, pending: pending.count ?? 0, approved: approved.count ?? 0, rejected: rejected.count ?? 0 }
+    },
+  })
+
+const useListingRequests = (status: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-listing-requests', status, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let q = supabase
         .from('shop_listing_requests')
-        .select('id, shop_name, address, status, created_at, applicant_name, applicant_phone, applicant_role, instagram_handle, users:submitted_by ( display_name )')
+        .select('id, shop_name, address, website_url, note, status, created_at, users:submitted_by ( display_name )', { count: 'exact' })
+        .eq('is_owner_request', false)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+      if (status !== 'all') q = q.eq('status', status)
+      const { data, count, error } = await (q as unknown as Promise<{ data: ListingRequestRow[] | null; count: number | null; error: { message: string } | null }>)
+      if (error) throw new Error(error.message)
+      return { items: data ?? [], totalCount: count ?? 0 }
+    },
+  })
+
+const useOwnerApplications = (status: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-owner-applications', status, page, pageSize],
+    queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+      let q = supabase
+        .from('shop_listing_requests')
+        .select('id, shop_name, address, status, created_at, applicant_name, applicant_phone, applicant_role, instagram_handle, users:submitted_by ( display_name )', { count: 'exact' })
         .eq('is_owner_request', true)
         .order('created_at', { ascending: false })
-        .limit(100)
+        .range(from, to)
       if (status !== 'all') q = q.eq('status', status)
-      const { data, error } = await (q as unknown as Promise<{ data: OwnerApplicationRow[] | null; error: { message: string } | null }>)
+      const { data, count, error } = await (q as unknown as Promise<{ data: OwnerApplicationRow[] | null; count: number | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
+    },
+  })
+
+const useOwnerApplication = (id: string | null) =>
+  useQuery({
+    queryKey: ['admin-owner-application', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shop_listing_requests')
+        .select('id, shop_name, address, status, created_at, applicant_name, applicant_phone, applicant_role, instagram_handle, users:submitted_by ( display_name )')
+        .eq('id', id!)
+        .single() as unknown as { data: OwnerApplicationRow | null; error: { message: string } | null }
+      if (error) throw new Error(error.message)
+      return data
     },
   })
 
@@ -348,7 +401,10 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-owner-applications'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-owner-app-counts'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-owner-application', application.id] })
       queryClient.invalidateQueries({ queryKey: ['admin-listing-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-listing-counts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
@@ -365,7 +421,10 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-owner-applications'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-owner-app-counts'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-owner-application', application.id] })
       queryClient.invalidateQueries({ queryKey: ['admin-listing-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-listing-counts'] })
     },
   })
 
@@ -594,17 +653,48 @@ const AdminApplicationsPage = () => {
   const [listingStatus, setListingStatus] = useState('pending')
   const [ownerStatus, setOwnerStatus] = useState('pending')
   const [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null)
+  const [listingPage, setListingPage] = useState(1)
+  const [listingPageSize, setListingPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
+  const [ownerPage, setOwnerPage] = useState(1)
+  const [ownerPageSize, setOwnerPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
+
+  useEffect(() => { setListingPage(1) }, [listingStatus, listingPageSize])
+  useEffect(() => { setOwnerPage(1) }, [ownerStatus, ownerPageSize])
 
   // Listing requests (is_owner_request = false)
-  const { data: listingRequests, isLoading: listingLoading, error: listingError } = useListingRequests(listingStatus)
-  const { data: allListings } = useListingRequests('all')
+  const { data: listingData, isLoading: listingLoading, error: listingError } = useListingRequests(listingStatus, listingPage, listingPageSize)
+  const { data: listingCountData } = useListingRequestCounts()
 
   // Owner applications (is_owner_request = true)
-  const { data: ownerApplications, isLoading: ownerLoading } = useOwnerApplications(ownerStatus)
-  const { data: allOwnerApps } = useOwnerApplications('all')
+  const { data: ownerData, isLoading: ownerLoading } = useOwnerApplications(ownerStatus, ownerPage, ownerPageSize)
+  const { data: ownerCountData } = useOwnerAppCounts()
 
-  // Look up selected app from unfiltered list (so filter changes don't break the pane)
-  const selectedOwnerApp = allOwnerApps?.find((a) => a.id === selectedOwnerId) ?? null
+  // Single app query for DM pane (stable across filter/page changes)
+  const { data: selectedOwnerApp } = useOwnerApplication(selectedOwnerId)
+
+  const listingRequests = listingData?.items ?? []
+  const listingTotalCount = listingData?.totalCount ?? 0
+  const listingTotalPages = Math.max(1, Math.ceil(listingTotalCount / listingPageSize))
+
+  const ownerApplications = ownerData?.items ?? []
+  const ownerTotalCount = ownerData?.totalCount ?? 0
+  const ownerTotalPages = Math.max(1, Math.ceil(ownerTotalCount / ownerPageSize))
+
+  const listingCounts: Record<string, number> = {
+    all:      listingCountData?.all ?? 0,
+    pending:  listingCountData?.pending ?? 0,
+    approved: listingCountData?.approved ?? 0,
+    rejected: listingCountData?.rejected ?? 0,
+  }
+
+  const ownerCounts: Record<string, number> = {
+    all:      ownerCountData?.all ?? 0,
+    pending:  ownerCountData?.pending ?? 0,
+    approved: ownerCountData?.approved ?? 0,
+    rejected: ownerCountData?.rejected ?? 0,
+  }
+
+  const totalPending = (listingCountData?.pending ?? 0) + (ownerCountData?.pending ?? 0)
 
   const { mutate: updateListingStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: string }) => {
@@ -622,26 +712,12 @@ const AdminApplicationsPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-listing-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-listing-counts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
       queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
     },
   })
 
-  const listingCounts = {
-    all:      allListings?.length ?? 0,
-    pending:  allListings?.filter((r) => r.status === 'pending').length ?? 0,
-    approved: allListings?.filter((r) => r.status === 'approved').length ?? 0,
-    rejected: allListings?.filter((r) => r.status === 'rejected').length ?? 0,
-  }
-
-  const ownerCounts = {
-    all:      allOwnerApps?.length ?? 0,
-    pending:  allOwnerApps?.filter((r) => r.status === 'pending').length ?? 0,
-    approved: allOwnerApps?.filter((r) => r.status === 'approved').length ?? 0,
-    rejected: allOwnerApps?.filter((r) => r.status === 'rejected').length ?? 0,
-  }
-
-  const totalPending = listingCounts.pending + ownerCounts.pending
 
   return (
     <div className={cn(
@@ -736,26 +812,36 @@ const AdminApplicationsPage = () => {
                 <div className="h-5 w-5 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
               </div>
             )}
-            {!listingLoading && !listingError && (listingRequests?.length ?? 0) === 0 && (
+            {!listingLoading && !listingError && listingRequests.length === 0 && (
               <div className="flex flex-col items-center gap-2 py-20 text-center">
                 <p className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
                   該当する申請がありません
                 </p>
               </div>
             )}
-            {!listingLoading && (listingRequests?.length ?? 0) > 0 && (
+            {!listingLoading && listingRequests.length > 0 && (
               <div className="space-y-2">
-                {listingRequests?.map((req, i) => (
+                {listingRequests.map((req, i) => (
                   <ListingRow
                     key={req.id}
                     req={req}
-                    index={i}
+                    index={(listingPage - 1) * listingPageSize + i}
                     onApprove={(id) => updateListingStatus({ requestId: id, status: 'approved' })}
                     onReject={(id) => updateListingStatus({ requestId: id, status: 'rejected' })}
                     isUpdating={isUpdating}
                   />
                 ))}
               </div>
+            )}
+            {!listingLoading && (
+              <AdminPagination
+                page={listingPage}
+                totalPages={listingTotalPages}
+                totalItems={listingTotalCount}
+                pageSize={listingPageSize}
+                onPageChange={setListingPage}
+                onPageSizeChange={(size) => { setListingPageSize(size); setListingPage(1) }}
+              />
             )}
           </div>
         </div>
@@ -784,7 +870,7 @@ const AdminApplicationsPage = () => {
                     <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
                   </div>
                 )}
-                {!ownerLoading && (ownerApplications?.length ?? 0) === 0 && (
+                {!ownerLoading && ownerApplications.length === 0 && (
                   <div className="flex flex-col items-center gap-2 py-16 text-center">
                     <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">
                       該当する申請がありません
@@ -792,16 +878,28 @@ const AdminApplicationsPage = () => {
                   </div>
                 )}
                 <div className="divide-y divide-border/60">
-                  {ownerApplications?.map((app, i) => (
+                  {ownerApplications.map((app, i) => (
                     <OwnerAppItem
                       key={app.id}
                       app={app}
-                      index={i}
+                      index={(ownerPage - 1) * ownerPageSize + i}
                       isSelected={selectedOwnerId === app.id}
                       onSelect={() => setSelectedOwnerId(app.id)}
                     />
                   ))}
                 </div>
+                {ownerApplications.length > 0 && (
+                  <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+                    <AdminPagination
+                      page={ownerPage}
+                      totalPages={ownerTotalPages}
+                      totalItems={ownerTotalCount}
+                      pageSize={ownerPageSize}
+                      onPageChange={setOwnerPage}
+                      onPageSizeChange={(size) => { setOwnerPageSize(size); setOwnerPage(1) }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -810,7 +908,7 @@ const AdminApplicationsPage = () => {
               'min-h-0 flex-1 overflow-hidden',
               selectedOwnerId ? 'flex flex-col' : 'hidden lg:flex lg:flex-col',
             )}>
-              {selectedOwnerApp ? (
+              {selectedOwnerApp != null ? (
                 <OwnerDmPane
                   key={selectedOwnerApp.id}
                   application={selectedOwnerApp}

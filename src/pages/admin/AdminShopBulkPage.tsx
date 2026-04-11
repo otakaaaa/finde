@@ -355,7 +355,7 @@ const AdminShopBulkPage = () => {
           <section>
             <div className="mb-4 flex items-baseline gap-3">
               <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">01</span>
-              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">CSV Format</span>
+              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">CSVフォーマット</span>
             </div>
 
             <div className="overflow-hidden border border-border">
@@ -422,7 +422,7 @@ const AdminShopBulkPage = () => {
           <section>
             <div className="mb-4 flex items-baseline gap-3">
               <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">02</span>
-              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Upload File</span>
+              <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">ファイルをアップロード</span>
             </div>
 
             {/* Drop zone */}
@@ -505,7 +505,7 @@ const AdminShopBulkPage = () => {
               <div className="mb-4 flex items-baseline justify-between gap-3">
                 <div className="flex items-baseline gap-3">
                   <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">03</span>
-                  <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Preview</span>
+                  <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">プレビュー</span>
                 </div>
                 {/* Summary chips */}
                 <div className="flex items-center gap-2">
@@ -636,7 +636,7 @@ const AdminShopBulkPage = () => {
             <section className="wish-card-enter space-y-6">
               <div className="flex items-baseline gap-3">
                 <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">03</span>
-                <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">Result</span>
+                <span className="font-headline text-[11px] font-black uppercase tracking-[0.3em] text-foreground/60">結果</span>
               </div>
 
               {/* Result banner */}
@@ -647,10 +647,10 @@ const AdminShopBulkPage = () => {
                   : 'border-amber-200 bg-amber-50',
               )}>
                 <p className={cn(
-                  'font-headline text-2xl font-black tracking-tight',
+                  'font-headline text-md font-black tracking-tight',
                   result.failures.length === 0 ? 'text-emerald-700' : 'text-amber-700',
                 )}>
-                  {String(result.success).padStart(2, '0')} IMPORTED
+                  {String(result.success).padStart(2, '0')} 件インポート可能です
                 </p>
                 {result.failures.length > 0 && (
                   <p className="mt-1 text-xs font-medium text-amber-600">
@@ -694,7 +694,7 @@ const AdminShopBulkPage = () => {
                   onClick={() => navigate('/admin/shops')}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  ← Shop Management
+                  ← 店舗管理
                 </button>
               </div>
             </section>

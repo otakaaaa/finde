@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, Store, User, CreditCard, Calendar, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { PAGE_SIZE_OPTIONS } from '@/hooks/usePagination'
+import type { PageSizeOption } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -24,21 +27,47 @@ interface SubscriptionRow {
 
 // ── Data hooks ─────────────────────────────────────────────────
 
-const useAdminSubscriptions = (status: string) =>
+type SubCounts = { all: number; active: number; trialing: number; past_due: number; canceled: number; yearly: number; expiringSoon: number }
+
+const useSubCounts = () =>
   useQuery({
-    queryKey: ['admin-subscriptions', status],
+    queryKey: ['admin-sub-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<SubCounts> => {
+      const [all, active, trialing, past_due, canceled, yearly] = await Promise.all([
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null }>,
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active') as unknown as Promise<{ count: number | null }>,
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'trialing') as unknown as Promise<{ count: number | null }>,
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'past_due') as unknown as Promise<{ count: number | null }>,
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'canceled') as unknown as Promise<{ count: number | null }>,
+        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active').eq('plan', 'yearly') as unknown as Promise<{ count: number | null }>,
+      ])
+      // expiringSoon computed client-side from active list (needs date comparison)
+      return {
+        all: all.count ?? 0, active: active.count ?? 0, trialing: trialing.count ?? 0,
+        past_due: past_due.count ?? 0, canceled: canceled.count ?? 0,
+        yearly: yearly.count ?? 0, expiringSoon: 0,
+      }
+    },
+  })
+
+const useAdminSubscriptions = (status: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-subscriptions', status, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let query = supabase
         .from('subscriptions')
-        .select('id, plan, status, stripe_subscription_id, current_period_start, current_period_end, created_at, shops ( id, name ), users:user_id ( id, display_name )')
+        .select('id, plan, status, stripe_subscription_id, current_period_start, current_period_end, created_at, shops ( id, name ), users:user_id ( id, display_name )', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(200)
+        .range(from, to)
 
       if (status !== 'all') query = query.eq('status', status)
 
-      const { data, error } = await (query as unknown as Promise<{ data: SubscriptionRow[] | null; error: { message: string } | null }>)
+      const { data, count, error } = await (query as unknown as Promise<{ data: SubscriptionRow[] | null; count: number | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
@@ -185,20 +214,23 @@ const SubCard = ({ sub, index }: SubCardProps) => {
 
 const AdminSubscriptionsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
 
-  const { data: subscriptions, isLoading, error } = useAdminSubscriptions(statusFilter)
-  const { data: allSubscriptions } = useAdminSubscriptions('all')
+  useEffect(() => { setPage(1) }, [statusFilter, pageSize])
 
-  const counts = {
-    all:      allSubscriptions?.length ?? 0,
-    active:   allSubscriptions?.filter((s) => s.status === 'active').length ?? 0,
-    trialing: allSubscriptions?.filter((s) => s.status === 'trialing').length ?? 0,
-    past_due: allSubscriptions?.filter((s) => s.status === 'past_due').length ?? 0,
-    canceled: allSubscriptions?.filter((s) => s.status === 'canceled').length ?? 0,
-  }
+  const { data, isLoading, error } = useAdminSubscriptions(statusFilter, page, pageSize)
+  const { data: counts } = useSubCounts()
 
-  const yearlyCount  = allSubscriptions?.filter((s) => s.status === 'active' && s.plan === 'yearly').length ?? 0
-  const expiringSoon = allSubscriptions?.filter((s) => s.status === 'active' && isPeriodExpiringSoon(s.current_period_end)).length ?? 0
+  const subscriptions = data?.items ?? []
+  const totalCount = data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  const handlePageSizeChange = (size: PageSizeOption) => { setPageSize(size); setPage(1) }
+
+  // expiringSoon computed from current page items (approximate; full count not available without extra query)
+  const yearlyCount  = counts?.yearly ?? 0
+  const expiringSoon = subscriptions.filter((s) => s.status === 'active' && isPeriodExpiringSoon(s.current_period_end)).length
 
   return (
     <div>
@@ -232,11 +264,11 @@ const AdminSubscriptionsPage = () => {
                 </h1>
               </div>
 
-              {counts.past_due > 0 && (
+              {(counts?.past_due ?? 0) > 0 && (
                 <div className="flex items-center gap-2 rounded-sm border border-red-400/30 bg-red-400/10 px-3 py-2">
                   <AlertCircle className="h-3 w-3 text-red-300" />
                   <span className="font-headline text-[10px] font-black uppercase tracking-wider text-red-300">
-                    {counts.past_due} 件支払い遅延
+                    {counts?.past_due ?? 0} 件支払い遅延
                   </span>
                 </div>
               )}
@@ -251,16 +283,16 @@ const AdminSubscriptionsPage = () => {
 
           {/* Stats */}
           <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <StatCard label="アクティブ"   value={counts.active}   accent="success" index={0} />
-            <StatCard label="年額プラン"   value={yearlyCount}     accent="default" index={1} />
-            <StatCard label="まもなく更新"  value={expiringSoon}    accent={expiringSoon > 0 ? 'warn' : 'default'} index={2} />
-            <StatCard label="支払い遅延"   value={counts.past_due} accent={counts.past_due > 0 ? 'danger' : 'default'} index={3} />
+            <StatCard label="アクティブ"   value={counts?.active ?? 0}   accent="success" index={0} />
+            <StatCard label="年額プラン"   value={yearlyCount}            accent="default" index={1} />
+            <StatCard label="まもなく更新"  value={expiringSoon}           accent={expiringSoon > 0 ? 'warn' : 'default'} index={2} />
+            <StatCard label="支払い遅延"   value={counts?.past_due ?? 0}  accent={(counts?.past_due ?? 0) > 0 ? 'danger' : 'default'} index={3} />
           </div>
 
           {/* Status filters */}
           <div className="mb-6 flex flex-wrap gap-1">
             {STATUS_FILTERS.map((f) => {
-              const count = counts[f.value]
+              const count = counts?.[f.value] ?? 0
               return (
                 <button
                   key={f.value}
@@ -301,7 +333,7 @@ const AdminSubscriptionsPage = () => {
           )}
 
           {/* Empty */}
-          {!isLoading && !error && subscriptions?.length === 0 && (
+          {!isLoading && !error && subscriptions.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
                 No Subscriptions
@@ -311,12 +343,24 @@ const AdminSubscriptionsPage = () => {
           )}
 
           {/* List */}
-          {!isLoading && (subscriptions?.length ?? 0) > 0 && (
+          {!isLoading && subscriptions.length > 0 && (
             <div className="space-y-1.5">
-              {subscriptions?.map((sub, i) => (
-                <SubCard key={sub.id} sub={sub} index={i} />
+              {subscriptions.map((sub, i) => (
+                <SubCard key={sub.id} sub={sub} index={(page - 1) * pageSize + i} />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
           )}
 
         </div>

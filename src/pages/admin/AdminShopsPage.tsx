@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Search, Plus, FileSpreadsheet, ChevronLeft, ExternalLink, Pencil, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useDebounce } from '@/hooks/useDebounce'
+import { PAGE_SIZE_OPTIONS } from '@/hooks/usePagination'
+import type { PageSizeOption } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 interface ShopRow {
   id: string
@@ -13,21 +17,41 @@ interface ShopRow {
   areas: { city: string } | null
 }
 
-const useAdminShops = (status: string) =>
+type ShopCounts = { all: number; public: number; pending: number; private: number }
+
+const useAdminShopCounts = () =>
   useQuery({
-    queryKey: ['admin-shops', status],
+    queryKey: ['admin-shop-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<ShopCounts> => {
+      const [all, pub, pend, priv] = await Promise.all([
+        supabase.from('shops').select('id', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null }>,
+        supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'public') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'pending') as unknown as Promise<{ count: number | null }>,
+        supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'private') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, public: pub.count ?? 0, pending: pend.count ?? 0, private: priv.count ?? 0 }
+    },
+  })
+
+const useAdminShops = (status: string, search: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-shops', status, search, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let query = supabase
         .from('shops')
-        .select('id, name, status, created_at, areas ( city )')
+        .select('id, name, status, created_at, areas ( city )', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(100)
+        .range(from, to)
 
       if (status !== 'all') query = query.eq('status', status)
+      if (search) query = query.ilike('name', `%${search}%`)
 
-      const { data, error } = await (query as unknown as Promise<{ data: ShopRow[] | null; error: { message: string } | null }>)
+      const { data, count, error } = await (query as unknown as Promise<{ data: ShopRow[] | null; count: number | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
@@ -192,8 +216,21 @@ const AdminShopsPage = () => {
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
 
-  const { data: shops, isLoading } = useAdminShops(statusFilter)
+  const debouncedSearch = useDebounce(search)
+
+  useEffect(() => { setPage(1) }, [statusFilter, debouncedSearch, pageSize])
+
+  const { data, isLoading } = useAdminShops(statusFilter, debouncedSearch, page, pageSize)
+  const { data: counts } = useAdminShopCounts()
+
+  const shops = data?.items ?? []
+  const totalCount = data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  const handlePageSizeChange = (size: PageSizeOption) => { setPageSize(size); setPage(1) }
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ shopId, status }: { shopId: string; status: string }) => {
@@ -202,20 +239,10 @@ const AdminShopsPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-shop-counts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
   })
-
-  const filtered = (shops ?? []).filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase()),
-  )
-
-  const counts = {
-    all: shops?.length ?? 0,
-    public: shops?.filter((s) => s.status === 'public').length ?? 0,
-    pending: shops?.filter((s) => s.status === 'pending').length ?? 0,
-    private: shops?.filter((s) => s.status === 'private').length ?? 0,
-  }
 
   return (
     <div>
@@ -279,7 +306,7 @@ const AdminShopsPage = () => {
             {/* Status filter */}
             <div className="flex gap-1">
               {STATUS_FILTERS.map((f) => {
-                const count = counts[f.value]
+                const count = counts?.[f.value] ?? 0
                 return (
                   <button
                     key={f.value}
@@ -332,7 +359,7 @@ const AdminShopsPage = () => {
           )}
 
           {/* Column header */}
-          {!isLoading && filtered.length > 0 && (
+          {!isLoading && shops.length > 0 && (
             <div className="mb-2 flex items-center gap-4 px-4">
               <span className="w-7 shrink-0" />
               <div className="flex flex-1 items-center gap-3">
@@ -350,13 +377,13 @@ const AdminShopsPage = () => {
           )}
 
           {/* Shop list */}
-          {!isLoading && (
+          {!isLoading && shops.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((shop, i) => (
+              {shops.map((shop, i) => (
                 <ShopListRow
                   key={shop.id}
                   shop={shop}
-                  index={i}
+                  index={(page - 1) * pageSize + i}
                   onStatusChange={(shopId, status) => updateStatus({ shopId, status })}
                   isUpdating={isUpdating}
                 />
@@ -365,7 +392,7 @@ const AdminShopsPage = () => {
           )}
 
           {/* Empty state */}
-          {!isLoading && filtered.length === 0 && (
+          {!isLoading && shops.length === 0 && (
             <div className="py-20 text-center">
               <p
                 className="font-headline font-black text-muted-foreground"
@@ -387,21 +414,16 @@ const AdminShopsPage = () => {
             </div>
           )}
 
-          {/* Footer count */}
-          {!isLoading && filtered.length > 0 && (
-            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-              <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">
-                {String(filtered.length).padStart(3, '0')} 件
-              </span>
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 transition-colors hover:text-primary"
-                >
-                  絞り込みをリセット
-                </button>
-              )}
-            </div>
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
           )}
 
         </div>

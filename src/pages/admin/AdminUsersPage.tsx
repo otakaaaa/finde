@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Search, ChevronDown, Users, UserCheck, Shield } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types'
+import { useDebounce } from '@/hooks/useDebounce'
+import { PAGE_SIZE_OPTIONS } from '@/hooks/usePagination'
+import type { PageSizeOption } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -32,26 +36,47 @@ const ROLE_FILTERS = [
   { value: 'admin',      label: '管理者' },
 ] as const
 
-// ── Data hook ──────────────────────────────────────────────────
+// ── Data hooks ─────────────────────────────────────────────────
 
-const useUsers = (role: string) =>
+type UserCounts = { all: number; user: number; shop_owner: number; admin: number }
+
+const useUserCounts = () =>
   useQuery({
-    queryKey: ['admin-users', role],
+    queryKey: ['admin-user-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<UserCounts> => {
+      const [all, user, owner, admin] = await Promise.all([
+        supabase.from('users').select('id', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null }>,
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'user') as unknown as Promise<{ count: number | null }>,
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'shop_owner') as unknown as Promise<{ count: number | null }>,
+        supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'admin') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, user: user.count ?? 0, shop_owner: owner.count ?? 0, admin: admin.count ?? 0 }
+    },
+  })
+
+const useUsers = (role: string, search: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-users', role, search, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let query = supabase
         .from('users')
-        .select('id, role, display_name, avatar_url, created_at, updated_at')
+        .select('id, role, display_name, avatar_url, created_at, updated_at', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(500)
+        .range(from, to)
 
       if (role !== 'all') query = query.eq('role', role)
+      if (search) query = query.or(`display_name.ilike.%${search}%,id.ilike.%${search}%`)
 
-      const { data, error } = await (query as unknown as Promise<{
+      const { data, count, error } = await (query as unknown as Promise<{
         data: UserRow[] | null
+        count: number | null
         error: { message: string } | null
       }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
@@ -188,8 +213,21 @@ const AdminUsersPage = () => {
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
 
-  const { data: users, isLoading, error } = useUsers(roleFilter)
+  const debouncedSearch = useDebounce(search)
+
+  useEffect(() => { setPage(1) }, [roleFilter, debouncedSearch, pageSize])
+
+  const { data, isLoading, error } = useUsers(roleFilter, debouncedSearch, page, pageSize)
+  const { data: counts } = useUserCounts()
+
+  const users = data?.items ?? []
+  const totalCount = data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  const handlePageSizeChange = (size: PageSizeOption) => { setPageSize(size); setPage(1) }
 
   const { mutate: updateRole, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, role }: { id: string; role: UserRole }) => {
@@ -199,24 +237,11 @@ const AdminUsersPage = () => {
         .eq('id', id) as unknown as { data: unknown; error: { message: string } | null }
       if (error) throw new Error(error.message)
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-user-counts'] })
+    },
   })
-
-  const filtered = (users ?? []).filter((u) => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return (
-      (u.display_name ?? '').toLowerCase().includes(q) ||
-      u.id.toLowerCase().includes(q)
-    )
-  })
-
-  const counts = {
-    all:        users?.length ?? 0,
-    user:       users?.filter((u) => u.role === 'user').length ?? 0,
-    shop_owner: users?.filter((u) => u.role === 'shop_owner').length ?? 0,
-    admin:      users?.filter((u) => u.role === 'admin').length ?? 0,
-  }
 
   return (
     <div>
@@ -257,7 +282,7 @@ const AdminUsersPage = () => {
             {/* Role filters */}
             <div className="flex flex-wrap gap-1">
               {ROLE_FILTERS.map((f) => {
-                const count = counts[f.value]
+                const count = counts?.[f.value] ?? 0
                 return (
                   <button
                     key={f.value}
@@ -295,8 +320,8 @@ const AdminUsersPage = () => {
               />
             </div>
 
-            {search && (
-              <span className="text-[10px] text-muted-foreground/50 tabular-nums">{filtered.length} 件</span>
+            {debouncedSearch && !isLoading && (
+              <span className="text-[10px] text-muted-foreground/50 tabular-nums">{totalCount} 件</span>
             )}
           </div>
 
@@ -315,7 +340,7 @@ const AdminUsersPage = () => {
           )}
 
           {/* Empty */}
-          {!isLoading && !error && filtered.length === 0 && (
+          {!isLoading && !error && users.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/25">
                 No Users
@@ -325,9 +350,9 @@ const AdminUsersPage = () => {
           )}
 
           {/* List */}
-          {!isLoading && filtered.length > 0 && (
+          {!isLoading && users.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((user, i) => (
+              {users.map((user, i) => (
                 <div key={user.id} style={{ animationDelay: `${i * 20}ms` }}>
                   <UserCard
                     user={user}
@@ -339,6 +364,18 @@ const AdminUsersPage = () => {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
           )}
 
         </div>

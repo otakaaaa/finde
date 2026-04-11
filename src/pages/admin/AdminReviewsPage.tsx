@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Flag, Star, EyeOff, Eye, AlertTriangle, Store, User, MessageSquare } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { PAGE_SIZE_OPTIONS } from '@/hooks/usePagination'
+import type { PageSizeOption } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -30,11 +33,30 @@ interface ReportRow {
 
 // ── Data hooks ─────────────────────────────────────────────────
 
-const useReviewReports = () =>
+type ReviewCounts = { all: number; published: number; flagged: number; hidden: number }
+
+const useReviewCounts = () =>
   useQuery({
-    queryKey: ['admin-review-reports'],
+    queryKey: ['admin-review-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<ReviewCounts> => {
+      const [all, published, flagged, hidden] = await Promise.all([
+        supabase.from('reviews').select('id', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null }>,
+        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'published') as unknown as Promise<{ count: number | null }>,
+        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'flagged') as unknown as Promise<{ count: number | null }>,
+        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'hidden') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, published: published.count ?? 0, flagged: flagged.count ?? 0, hidden: hidden.count ?? 0 }
+    },
+  })
+
+const useReviewReports = (page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-review-reports', page, pageSize],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+      const { data, count, error } = await supabase
         .from('review_reports')
         .select(`
           id, reason, note, created_at,
@@ -43,30 +65,32 @@ const useReviewReports = () =>
             shops ( id, name ),
             users ( id, display_name )
           )
-        `)
+        `, { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(100) as { data: ReportRow[] | null; error: { message: string } | null }
+        .range(from, to) as unknown as { data: ReportRow[] | null; count: number | null; error: { message: string } | null }
 
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
-const useAllReviews = (status: string) =>
+const useAllReviews = (status: string, page: number, pageSize: number) =>
   useQuery({
-    queryKey: ['admin-reviews', status],
+    queryKey: ['admin-reviews', status, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let query = supabase
         .from('reviews')
-        .select('id, body, rating, status, ng_score, created_at, shops ( id, name ), users ( id, display_name )')
+        .select('id, body, rating, status, ng_score, created_at, shops ( id, name ), users ( id, display_name )', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(100)
+        .range(from, to)
 
       if (status !== 'all') query = query.eq('status', status)
 
-      const { data, error } = await (query as unknown as Promise<{ data: ReviewRow[] | null; error: { message: string } | null }>)
+      const { data, count, error } = await (query as unknown as Promise<{ data: ReviewRow[] | null; count: number | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
@@ -258,9 +282,25 @@ const AdminReviewsPage = () => {
   const queryClient = useQueryClient()
   const [viewMode, setViewMode] = useState<ViewMode>('reports')
   const [reviewStatusFilter, setReviewStatusFilter] = useState<string>('all')
+  const [reportsPage, setReportsPage] = useState(1)
+  const [reportsPageSize, setReportsPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
+  const [reviewsPage, setReviewsPage] = useState(1)
+  const [reviewsPageSize, setReviewsPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
 
-  const { data: reports, isLoading: reportsLoading, error: reportsError } = useReviewReports()
-  const { data: allReviews, isLoading: reviewsLoading, error: reviewsError } = useAllReviews(reviewStatusFilter)
+  useEffect(() => { setReportsPage(1) }, [viewMode, reportsPageSize])
+  useEffect(() => { setReviewsPage(1) }, [viewMode, reviewStatusFilter, reviewsPageSize])
+
+  const { data: reportsData, isLoading: reportsLoading, error: reportsError } = useReviewReports(reportsPage, reportsPageSize)
+  const { data: allReviewsData, isLoading: reviewsLoading, error: reviewsError } = useAllReviews(reviewStatusFilter, reviewsPage, reviewsPageSize)
+  const { data: reviewCounts } = useReviewCounts()
+
+  const reports = reportsData?.items ?? []
+  const reportsTotalCount = reportsData?.totalCount ?? 0
+  const reportsTotalPages = Math.max(1, Math.ceil(reportsTotalCount / reportsPageSize))
+
+  const allReviews = allReviewsData?.items ?? []
+  const reviewsTotalCount = allReviewsData?.totalCount ?? 0
+  const reviewsTotalPages = Math.max(1, Math.ceil(reviewsTotalCount / reviewsPageSize))
 
   const { mutate: updateReviewStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ reviewId, status }: { reviewId: string; status: string }) => {
@@ -273,6 +313,7 @@ const AdminReviewsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-review-reports'] })
       queryClient.invalidateQueries({ queryKey: ['admin-reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-review-counts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
       queryClient.invalidateQueries({ queryKey: ['my-review'] })
@@ -281,13 +322,6 @@ const AdminReviewsPage = () => {
 
   const isLoading = viewMode === 'reports' ? reportsLoading : reviewsLoading
   const error     = viewMode === 'reports' ? reportsError  : reviewsError
-
-  const reviewCounts = {
-    all:       allReviews?.length ?? 0,
-    published: allReviews?.filter((r) => r.status === 'published').length ?? 0,
-    flagged:   allReviews?.filter((r) => r.status === 'flagged').length ?? 0,
-    hidden:    allReviews?.filter((r) => r.status === 'hidden').length ?? 0,
-  }
 
   return (
     <div>
@@ -374,7 +408,7 @@ const AdminReviewsPage = () => {
           {viewMode === 'all' && (
             <div className="mb-6 flex gap-1">
               {REVIEW_STATUS_FILTERS.map((f) => {
-                const count = reviewCounts[f.value]
+                const count = reviewCounts?.[f.value] ?? 0
                 return (
                   <button
                     key={f.value}
@@ -417,7 +451,7 @@ const AdminReviewsPage = () => {
 
           {/* Empty */}
           {!isLoading && !error && (
-            viewMode === 'reports' ? reports?.length === 0 : allReviews?.length === 0
+            viewMode === 'reports' ? reports.length === 0 : allReviews.length === 0
           ) && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
@@ -430,37 +464,57 @@ const AdminReviewsPage = () => {
           )}
 
           {/* Reports list */}
-          {!isLoading && viewMode === 'reports' && (reports?.length ?? 0) > 0 && (
-            <div className="space-y-2">
-              {reports?.map((report, i) => (
-                <ReviewCard
-                  key={report.id}
-                  review={report.reviews}
-                  index={i}
-                  reportReason={report.reason}
-                  reportNote={report.note}
-                  onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
-                  onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
-                  isUpdating={isUpdating}
-                />
-              ))}
-            </div>
+          {!isLoading && viewMode === 'reports' && reports.length > 0 && (
+            <>
+              <div className="space-y-2">
+                {reports.map((report, i) => (
+                  <ReviewCard
+                    key={report.id}
+                    review={report.reviews}
+                    index={(reportsPage - 1) * reportsPageSize + i}
+                    reportReason={report.reason}
+                    reportNote={report.note}
+                    onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
+                    onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
+                    isUpdating={isUpdating}
+                  />
+                ))}
+              </div>
+              <AdminPagination
+                page={reportsPage}
+                totalPages={reportsTotalPages}
+                totalItems={reportsTotalCount}
+                pageSize={reportsPageSize}
+                onPageChange={setReportsPage}
+                onPageSizeChange={(s) => { setReportsPageSize(s); setReportsPage(1) }}
+              />
+            </>
           )}
 
           {/* All reviews list */}
-          {!isLoading && viewMode === 'all' && (allReviews?.length ?? 0) > 0 && (
-            <div className="space-y-2">
-              {allReviews?.map((review, i) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                  index={i}
-                  onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
-                  onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
-                  isUpdating={isUpdating}
-                />
-              ))}
-            </div>
+          {!isLoading && viewMode === 'all' && allReviews.length > 0 && (
+            <>
+              <div className="space-y-2">
+                {allReviews.map((review, i) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    index={(reviewsPage - 1) * reviewsPageSize + i}
+                    onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
+                    onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
+                    isUpdating={isUpdating}
+                  />
+                ))}
+              </div>
+              <AdminPagination
+                page={reviewsPage}
+                totalPages={reviewsTotalPages}
+                totalItems={reviewsTotalCount}
+                pageSize={reviewsPageSize}
+                onPageChange={setReviewsPage}
+                onPageSizeChange={(s) => { setReviewsPageSize(s); setReviewsPage(1) }}
+              />
+            </>
           )}
 
         </div>
