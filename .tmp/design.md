@@ -812,7 +812,7 @@ alter table shops add column favorite_count int not null default 0;
 ```bash
 # .env.local
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_STRIPE_PUBLISHABLE_KEY=
 
 # Edge Functions（Supabase secrets）
