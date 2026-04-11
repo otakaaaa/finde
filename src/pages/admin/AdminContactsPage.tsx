@@ -6,7 +6,9 @@ import { supabase } from '@/lib/supabase'
 import type { Contact, ContactStatus } from '@/constants/contact'
 import { cn } from '@/lib/utils'
 import { ContactCard } from '@/components/contact/ContactCard'
-import { usePagination } from '@/hooks/usePagination'
+import { useDebounce } from '@/hooks/useDebounce'
+import { PAGE_SIZE_OPTIONS } from '@/hooks/usePagination'
+import type { PageSizeOption } from '@/hooks/usePagination'
 import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Config ─────────────────────────────────────────────────────
@@ -18,26 +20,47 @@ const STATUS_FILTERS = [
   { value: 'closed',      label: '完了' },
 ] as const
 
-// ── Data hook ──────────────────────────────────────────────────
+// ── Data hooks ─────────────────────────────────────────────────
 
-const useContacts = (status: string) =>
+type ContactCounts = { all: number; open: number; in_progress: number; closed: number }
+
+const useContactCounts = () =>
   useQuery({
-    queryKey: ['admin-contacts', status],
+    queryKey: ['admin-contact-counts'],
+    staleTime: 60_000,
+    queryFn: async (): Promise<ContactCounts> => {
+      const [all, open, inProgress, closed] = await Promise.all([
+        supabase.from('contacts').select('id', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null }>,
+        supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('status', 'open') as unknown as Promise<{ count: number | null }>,
+        supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('status', 'in_progress') as unknown as Promise<{ count: number | null }>,
+        supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('status', 'closed') as unknown as Promise<{ count: number | null }>,
+      ])
+      return { all: all.count ?? 0, open: open.count ?? 0, in_progress: inProgress.count ?? 0, closed: closed.count ?? 0 }
+    },
+  })
+
+const useContacts = (status: string, search: string, page: number, pageSize: number) =>
+  useQuery({
+    queryKey: ['admin-contacts', status, search, page, pageSize],
     queryFn: async () => {
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
       let query = supabase
         .from('contacts')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
-        .limit(200)
+        .range(from, to)
 
       if (status !== 'all') query = query.eq('status', status)
+      if (search) query = query.or(`subject.ilike.%${search}%,name.ilike.%${search}%,email.ilike.%${search}%,body.ilike.%${search}%`)
 
-      const { data, error } = await (query as unknown as Promise<{
+      const { data, count, error } = await (query as unknown as Promise<{
         data: Contact[] | null
+        count: number | null
         error: { message: string } | null
       }>)
       if (error) throw new Error(error.message)
-      return data ?? []
+      return { items: data ?? [], totalCount: count ?? 0 }
     },
   })
 
@@ -48,8 +71,21 @@ const AdminContactsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<PageSizeOption>(PAGE_SIZE_OPTIONS[0])
 
-  const { data: contacts, isLoading, error } = useContacts(statusFilter)
+  const debouncedSearch = useDebounce(search)
+
+  useEffect(() => { setPage(1) }, [statusFilter, debouncedSearch, pageSize])
+
+  const { data, isLoading, error } = useContacts(statusFilter, debouncedSearch, page, pageSize)
+  const { data: counts } = useContactCounts()
+
+  const contacts = data?.items ?? []
+  const totalCount = data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+
+  const handlePageSizeChange = (size: PageSizeOption) => { setPageSize(size); setPage(1) }
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: ContactStatus }) => {
@@ -59,31 +95,11 @@ const AdminContactsPage = () => {
         .eq('id', id) as unknown as { data: unknown; error: { message: string } | null }
       if (error) throw new Error(error.message)
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-contacts'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-contacts'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-contact-counts'] })
+    },
   })
-
-  const filtered = (contacts ?? []).filter((c) => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return (
-      c.subject.toLowerCase().includes(q) ||
-      c.name.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      c.body.toLowerCase().includes(q)
-    )
-  })
-
-  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
-    usePagination(filtered)
-
-  useEffect(() => { resetPage() }, [statusFilter, search])
-
-  const counts = {
-    all:         contacts?.length ?? 0,
-    open:        contacts?.filter((c) => c.status === 'open').length ?? 0,
-    in_progress: contacts?.filter((c) => c.status === 'in_progress').length ?? 0,
-    closed:      contacts?.filter((c) => c.status === 'closed').length ?? 0,
-  }
 
   return (
     <div>
@@ -123,7 +139,7 @@ const AdminContactsPage = () => {
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <div className="flex gap-1">
               {STATUS_FILTERS.map((f) => {
-                const count = counts[f.value]
+                const count = counts?.[f.value] ?? 0
                 return (
                   <button
                     key={f.value}
@@ -160,8 +176,8 @@ const AdminContactsPage = () => {
               />
             </div>
 
-            {search && (
-              <span className="text-[10px] text-muted-foreground/50 tabular-nums">{filtered.length} 件</span>
+            {debouncedSearch && !isLoading && (
+              <span className="text-[10px] text-muted-foreground/50 tabular-nums">{totalCount} 件</span>
             )}
           </div>
 
@@ -180,7 +196,7 @@ const AdminContactsPage = () => {
           )}
 
           {/* Empty */}
-          {!isLoading && !error && filtered.length === 0 && (
+          {!isLoading && !error && contacts.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-20 text-center">
               <span className="font-headline text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/25">
                 No Contacts
@@ -190,9 +206,9 @@ const AdminContactsPage = () => {
           )}
 
           {/* List */}
-          {!isLoading && filtered.length > 0 && (
+          {!isLoading && contacts.length > 0 && (
             <div className="space-y-1.5">
-              {paginatedItems.map((contact, i) => (
+              {contacts.map((contact, i) => (
                 <ContactCard
                   key={contact.id}
                   contact={contact}
@@ -212,10 +228,10 @@ const AdminContactsPage = () => {
             <AdminPagination
               page={page}
               totalPages={totalPages}
-              totalItems={totalItems}
+              totalItems={totalCount}
               pageSize={pageSize}
               onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+              onPageSizeChange={handlePageSizeChange}
             />
           )}
 
