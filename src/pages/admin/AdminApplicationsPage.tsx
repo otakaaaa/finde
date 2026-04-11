@@ -8,6 +8,8 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -643,6 +645,12 @@ const AdminApplicationsPage = () => {
 
   const totalPending = listingCounts.pending + ownerCounts.pending
 
+  const listingPagination = usePagination(listingRequests ?? [])
+  const ownerPagination = usePagination(ownerApplications ?? [])
+
+  useEffect(() => { listingPagination.resetPage() }, [listingStatus])
+  useEffect(() => { ownerPagination.resetPage() }, [ownerStatus])
+
   return (
     <div className={cn(
       'flex flex-col',
@@ -745,17 +753,27 @@ const AdminApplicationsPage = () => {
             )}
             {!listingLoading && (listingRequests?.length ?? 0) > 0 && (
               <div className="space-y-2">
-                {listingRequests?.map((req, i) => (
+                {listingPagination.paginatedItems.map((req, i) => (
                   <ListingRow
                     key={req.id}
                     req={req}
-                    index={i}
+                    index={(listingPagination.page - 1) * listingPagination.pageSize + i}
                     onApprove={(id) => updateListingStatus({ requestId: id, status: 'approved' })}
                     onReject={(id) => updateListingStatus({ requestId: id, status: 'rejected' })}
                     isUpdating={isUpdating}
                   />
                 ))}
               </div>
+            )}
+            {!listingLoading && (
+              <AdminPagination
+                page={listingPagination.page}
+                totalPages={listingPagination.totalPages}
+                totalItems={listingPagination.totalItems}
+                pageSize={listingPagination.pageSize}
+                onPageChange={listingPagination.setPage}
+                onPageSizeChange={listingPagination.setPageSize}
+              />
             )}
           </div>
         </div>
@@ -792,16 +810,28 @@ const AdminApplicationsPage = () => {
                   </div>
                 )}
                 <div className="divide-y divide-border/60">
-                  {ownerApplications?.map((app, i) => (
+                  {ownerPagination.paginatedItems.map((app, i) => (
                     <OwnerAppItem
                       key={app.id}
                       app={app}
-                      index={i}
+                      index={(ownerPagination.page - 1) * ownerPagination.pageSize + i}
                       isSelected={selectedOwnerId === app.id}
                       onSelect={() => setSelectedOwnerId(app.id)}
                     />
                   ))}
                 </div>
+                {(ownerApplications?.length ?? 0) > 0 && (
+                  <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+                    <AdminPagination
+                      page={ownerPagination.page}
+                      totalPages={ownerPagination.totalPages}
+                      totalItems={ownerPagination.totalItems}
+                      pageSize={ownerPagination.pageSize}
+                      onPageChange={ownerPagination.setPage}
+                      onPageSizeChange={ownerPagination.setPageSize}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
