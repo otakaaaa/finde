@@ -57,8 +57,9 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!user) return
 
+    const channelTopic = `notifications:${user.id}:${crypto.randomUUID()}`
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(channelTopic)
       .on(
         'postgres_changes',
         {
@@ -69,10 +70,13 @@ export const useNotifications = () => {
         },
         (payload) => {
           const newNotif = mapRow(payload.new as NotificationRow)
-          queryClient.setQueryData<Notification[]>(queryKey, (prev) => [
-            newNotif,
-            ...(prev ?? []),
-          ])
+          queryClient.setQueryData<Notification[]>(queryKey, (prev) => {
+            if (prev?.some((notification) => notification.id === newNotif.id)) {
+              return prev
+            }
+
+            return [newNotif, ...(prev ?? [])]
+          })
         },
       )
       .subscribe((status) => {
