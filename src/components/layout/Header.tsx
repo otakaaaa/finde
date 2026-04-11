@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import { NotificationBell } from '@/components/notification/NotificationBell'
+import { FukunaviLogo } from '@/components/icons/FukunaviLogo'
 import { LogOut, User, Heart, LayoutDashboard, Store, ShieldCheck } from 'lucide-react'
 
 interface NavItem {
@@ -109,25 +110,10 @@ export const Header = () => {
           {/* ── Logo ─────────────────────────────── */}
           <Link
             to="/"
-            className="group flex items-center gap-2.5 select-none"
+            className="transition-opacity duration-200 hover:opacity-60"
+            aria-label="フクナビ トップページ"
           >
-            {/* Mark */}
-            <span className={cn(
-              'flex h-8 w-8 shrink-0 items-center justify-center bg-primary',
-              'font-headline text-[15px] font-black leading-none text-white',
-              'transition-transform duration-200 group-hover:scale-95',
-            )}>
-              服
-            </span>
-            {/* Wordmark */}
-            <span className="flex flex-col leading-none">
-              <span className="font-headline text-[13px] font-black tracking-[0.15em] text-foreground">
-                FUKUNAVI
-              </span>
-              <span className="font-headline text-[8px] font-bold tracking-[0.4em] text-muted-foreground/40">
-                フクナビ
-              </span>
-            </span>
+            <FukunaviLogo size="md" />
           </Link>
 
           {/* ── Desktop Nav ──────────────────────── */}

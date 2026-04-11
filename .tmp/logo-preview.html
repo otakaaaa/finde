@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フクナビ ロゴ案 v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --ink:#111; --bg:#f4f3ef; --muted:#888; --border:#e0ddd8; }
+body { background:var(--bg); color:var(--ink); padding:56px 48px; font-family:'Inter',sans-serif; }
+
+.page-label {
+  font-size:9px; font-weight:700; letter-spacing:0.5em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:56px; display:flex; align-items:center; gap:12px;
+}
+.page-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.section { margin-bottom:72px; }
+.section-label {
+  font-size:9px; font-weight:700; letter-spacing:0.4em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:24px;
+}
+
+.row { display:flex; align-items:center; gap:40px; flex-wrap:wrap; }
+.col { display:flex; flex-direction:column; gap:12px; }
+
+.logo { display:inline-flex; align-items:center; gap:11px; }
+.wm  { display:flex; flex-direction:column; line-height:1; gap:3px; }
+.wm-main { font-family:'Bebas Neue',sans-serif; letter-spacing:0.13em; color:var(--ink); font-size:15px; }
+.wm-sub  { font-family:'Inter',sans-serif; font-weight:700; letter-spacing:0.45em; color:var(--muted); font-size:7.5px; }
+
+.sizes { display:flex; align-items:center; gap:14px; }
+.on-dark { background:var(--ink); padding:28px 32px; display:inline-flex; align-items:center; gap:12px; }
+.on-dark .wm-main { color:#fff; }
+.on-dark .wm-sub  { color:rgba(255,255,255,0.35); }
+
+hr { border:none; border-top:1px solid var(--border); margin:64px 0; }
+
+.header-sim {
+  background:rgba(255,255,255,0.95); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; height:56px; max-width:760px;
+}
+.nav-item { font-family:'Bebas Neue',sans-serif; font-size:10px; letter-spacing:0.3em; color:rgba(0,0,0,0.35); }
+</style>
+</head>
+<body>
+
+<div class="page-label">フクナビ — ロゴ案 v4</div>
+
+<!-- ══════════════════════════
+     案 D: ネガティブスペース抜き
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 D — ネガティブスペース（Tシャツ形くり抜き）</div>
+  <div class="row">
+    <div class="logo">
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M0 0H32V32H0Z M3 9H9V5H13V9H19V5H23V9H29V13H23V29H9V13H3Z" fill="#111"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+    <div class="sizes">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H32V32H0Z M3 9H9V5H13V9H19V5H23V9H29V13H23V29H9V13H3Z" fill="#111"/></svg>
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H32V32H0Z M3 9H9V5H13V9H19V5H23V9H29V13H23V29H9V13H3Z" fill="#111"/></svg>
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H32V32H0Z M3 9H9V5H13V9H19V5H23V9H29V13H23V29H9V13H3Z" fill="#111"/></svg>
+    </div>
+    <div class="on-dark">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H32V32H0Z M3 9H9V5H13V9H19V5H23V9H29V13H23V29H9V13H3Z" fill="white"/></svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     案 E: ダイヤモンドピン
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 E — ダイヤモンドピン（ナビゲーション × 洋服）</div>
+  <div class="row">
+    <div class="logo">
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)" fill="#111"/>
+        <path d="M11 14H13.5V12.5H14.5V14H17.5V12.5H18.5V14H21V16H18.5V22H13.5V16H11Z" fill="white"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+    <div class="sizes">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)" fill="#111"/><path d="M11 14H13.5V12.5H14.5V14H17.5V12.5H18.5V14H21V16H18.5V22H13.5V16H11Z" fill="white"/></svg>
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)" fill="#111"/><path d="M11 14H13.5V12.5H14.5V14H17.5V12.5H18.5V14H21V16H18.5V22H13.5V16H11Z" fill="white"/></svg>
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)" fill="#111"/><path d="M11 14H13.5V12.5H14.5V14H17.5V12.5H18.5V14H21V16H18.5V22H13.5V16H11Z" fill="white"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     案 F: エディトリアル・ワードマーク
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 F — エディトリアル・ワードマーク（マークなし）</div>
+  <div class="row" style="align-items:flex-start">
+    <div class="col">
+      <span style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted)">F-1: スタック型</span>
+      <div style="line-height:0.82">
+        <div style="font-family:'Bebas Neue';font-size:34px;letter-spacing:0.04em">FUKU</div>
+        <div style="font-family:'Bebas Neue';font-size:34px;letter-spacing:0.04em;padding-left:4px">NAVI</div>
+      </div>
+    </div>
+    <div class="col">
+      <span style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted)">F-2: ルーラー付き</span>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-family:'Bebas Neue';font-size:20px;letter-spacing:0.18em">FUKUNAVI</span>
+        <div style="height:1px;background:#111;opacity:0.15"></div>
+        <span style="font-size:7.5px;font-weight:700;letter-spacing:0.5em;color:var(--muted)">SELECT SHOP NAVIGATOR</span>
+      </div>
+    </div>
+    <div class="col">
+      <span style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted)">F-3: ドット付き</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;background:#111;flex-shrink:0"></div>
+        <span style="font-family:'Bebas Neue';font-size:18px;letter-spacing:0.15em">FUKUNAVI</span>
+      </div>
+      <span style="font-size:7px;font-weight:700;letter-spacing:0.45em;color:var(--muted);margin-left:16px">フクナビ</span>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════
+     案 N: 太十字（クロスロード）
+     2本の太い線が交差する十字形
+     「出会い」「交差点」「探す起点」を抽象化
+     ファッション誌の × マークにも見える
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 N — 太十字（交差点・出会い）</div>
+  <div class="row">
+    <div class="logo">
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <!-- Horizontal bar -->
+        <rect x="0" y="12" width="32" height="8" fill="white"/>
+        <!-- Vertical bar -->
+        <rect x="12" y="0" width="8" height="32" fill="white"/>
+        <!-- Center: ink square to create "cut" feel -->
+        <rect x="12" y="12" width="8" height="8" fill="#111"/>
+        <!-- Center dot -->
+        <rect x="14.5" y="14.5" width="3" height="3" fill="white"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+    <div class="sizes">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="0" y="12" width="32" height="8" fill="white"/>
+        <rect x="12" y="0" width="8" height="32" fill="white"/>
+        <rect x="12" y="12" width="8" height="8" fill="#111"/>
+        <rect x="14.5" y="14.5" width="3" height="3" fill="white"/>
+      </svg>
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="0" y="12" width="32" height="8" fill="white"/>
+        <rect x="12" y="0" width="8" height="32" fill="white"/>
+        <rect x="12" y="12" width="8" height="8" fill="#111"/>
+        <rect x="14.5" y="14.5" width="3" height="3" fill="white"/>
+      </svg>
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="0" y="12" width="32" height="8" fill="white"/>
+        <rect x="12" y="0" width="8" height="32" fill="white"/>
+        <rect x="12" y="12" width="8" height="8" fill="#111"/>
+        <rect x="14.5" y="14.5" width="3" height="3" fill="white"/>
+      </svg>
+    </div>
+    <div class="on-dark">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="white"/>
+        <rect x="0" y="12" width="32" height="8" fill="#111"/>
+        <rect x="12" y="0" width="8" height="32" fill="#111"/>
+        <rect x="12" y="12" width="8" height="8" fill="white"/>
+        <rect x="14.5" y="14.5" width="3" height="3" fill="#111"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     案 O: 同心正方形（ターゲット）
+     3重に入れ子になった正方形
+     「目的地に絞り込んでいく」精度と集中を抽象化
+     地図のズームイン・スコープ的な印象
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 O — 同心正方形（ターゲット・精度）</div>
+  <div class="row">
+    <div class="logo">
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <!-- Outer ring -->
+        <rect x="3" y="3" width="26" height="26" fill="none" stroke="white" stroke-width="2"/>
+        <!-- Mid ring -->
+        <rect x="9" y="9" width="14" height="14" fill="none" stroke="white" stroke-width="2"/>
+        <!-- Center filled -->
+        <rect x="14" y="14" width="4" height="4" fill="white"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+    <div class="sizes">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="3" y="3" width="26" height="26" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="9" y="9" width="14" height="14" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="14" y="14" width="4" height="4" fill="white"/>
+      </svg>
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="3" y="3" width="26" height="26" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="9" y="9" width="14" height="14" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="14" y="14" width="4" height="4" fill="white"/>
+      </svg>
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="3" y="3" width="26" height="26" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="9" y="9" width="14" height="14" fill="none" stroke="white" stroke-width="2"/>
+        <rect x="14" y="14" width="4" height="4" fill="white"/>
+      </svg>
+    </div>
+    <div class="on-dark">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="white"/>
+        <rect x="3" y="3" width="26" height="26" fill="none" stroke="#111" stroke-width="2"/>
+        <rect x="9" y="9" width="14" height="14" fill="none" stroke="#111" stroke-width="2"/>
+        <rect x="14" y="14" width="4" height="4" fill="#111"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     案 P: 太い斜線（ダッシュマーク）
+     正方形を横切る1本の極太白線
+     ファッション誌の「—」ダッシュ記号を
+     グラフィックに拡大したような印象
+     「横断する」「道を切り開く」
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">案 P — 太斜線（ダッシュ・横断）</div>
+  <div class="row">
+    <div class="logo">
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <!-- Bold diagonal slash: rotated thick rectangle -->
+        <rect x="-4" y="12" width="40" height="8"
+              transform="rotate(-38 16 16)" fill="white"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+    <div class="sizes">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="-4" y="12" width="40" height="8" transform="rotate(-38 16 16)" fill="white"/>
+      </svg>
+      <svg width="38" height="38" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="-4" y="12" width="40" height="8" transform="rotate(-38 16 16)" fill="white"/>
+      </svg>
+      <svg width="52" height="52" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="#111"/>
+        <rect x="-4" y="12" width="40" height="8" transform="rotate(-38 16 16)" fill="white"/>
+      </svg>
+    </div>
+    <div class="on-dark">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" fill="white" stroke="#111" stroke-width="1"/>
+        <rect x="-4" y="12" width="40" height="8" transform="rotate(-38 16 16)" fill="#111"/>
+      </svg>
+      <div class="wm"><span class="wm-main">FUKUNAVI</span><span class="wm-sub">フクナビ</span></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ══════════════════════════
+     ヘッダーシミュレーション
+══════════════════════════ -->
+<div class="section">
+  <div class="section-label">ヘッダーでの見え方</div>
+  <div style="display:flex;flex-direction:column;gap:20px;max-width:760px">
+
+    <div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted);margin-bottom:6px">案 N — 太十字</div>
+      <div class="header-sim">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="27" height="27" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" fill="#111"/>
+            <rect x="0" y="12" width="32" height="8" fill="white"/>
+            <rect x="12" y="0" width="8" height="32" fill="white"/>
+            <rect x="12" y="12" width="8" height="8" fill="#111"/>
+            <rect x="14.5" y="14.5" width="3" height="3" fill="white"/>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:2px;line-height:1">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.14em">FUKUNAVI</span>
+            <span style="font-size:6.5px;font-weight:700;letter-spacing:0.45em;color:#aaa">フクナビ</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:center">
+          <span class="nav-item">SHOPS</span><span class="nav-item">WISHES</span><span class="nav-item">MYPAGE</span>
+          <div style="width:1px;height:14px;background:#ddd"></div>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:0.25em;border:1px solid #ccc;padding:4px 10px;color:#888">Login</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted);margin-bottom:6px">案 O — 同心正方形</div>
+      <div class="header-sim">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="27" height="27" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" fill="#111"/>
+            <rect x="3" y="3" width="26" height="26" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="9" y="9" width="14" height="14" fill="none" stroke="white" stroke-width="2"/>
+            <rect x="14" y="14" width="4" height="4" fill="white"/>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:2px;line-height:1">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.14em">FUKUNAVI</span>
+            <span style="font-size:6.5px;font-weight:700;letter-spacing:0.45em;color:#aaa">フクナビ</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:center">
+          <span class="nav-item">SHOPS</span><span class="nav-item">WISHES</span><span class="nav-item">MYPAGE</span>
+          <div style="width:1px;height:14px;background:#ddd"></div>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:0.25em;border:1px solid #ccc;padding:4px 10px;color:#888">Login</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:0.3em;color:var(--muted);margin-bottom:6px">案 P — 太斜線</div>
+      <div class="header-sim">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="27" height="27" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" fill="#111"/>
+            <rect x="-4" y="12" width="40" height="8" transform="rotate(-38 16 16)" fill="white"/>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:2px;line-height:1">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.14em">FUKUNAVI</span>
+            <span style="font-size:6.5px;font-weight:700;letter-spacing:0.45em;color:#aaa">フクナビ</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:center">
+          <span class="nav-item">SHOPS</span><span class="nav-item">WISHES</span><span class="nav-item">MYPAGE</span>
+          <div style="width:1px;height:14px;background:#ddd"></div>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:0.25em;border:1px solid #ccc;padding:4px 10px;color:#888">Login</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
