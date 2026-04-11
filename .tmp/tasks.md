@@ -114,7 +114,7 @@
 - **依存**: Task 1.6
 - **推定時間**: 3h
 
-### Task 2.2: Google OAuth 認証
+<!-- ### Task 2.2: Google OAuth 認証 -->
 
 - [ ] Supabase Auth の Google プロバイダー設定（Google Cloud Console での OAuth クライアント作成）
 - [ ] Google ログインボタン実装
@@ -124,7 +124,7 @@
 - **依存**: Task 2.1
 - **推定時間**: 2h
 
-### Task 2.3: アカウント統合フロー
+<!-- ### Task 2.3: アカウント統合フロー -->
 
 - [ ] Supabase Auth の "Automatically link identities" を OFF に設定
 - [ ] Google OAuth 試行時に既存メールアドレス検出 → `/auth/link-account` リダイレクト処理
@@ -151,7 +151,7 @@
 - **依存**: Task 1.6
 - **推定時間**: 4h
 
-### Task 3.2: 全文検索
+<!-- ### Task 3.2: 全文検索 -->
 
 - [ ] `search_shops` PostgreSQL RPC 関数作成（pg_bigm 横断検索: 店舗名・ブランド名・タグ・市区町村）
 - [ ] `useShops` フックに検索クエリ対応を追加
@@ -225,7 +225,7 @@
 - **依存**: Task 2.1, Task 1.3
 - **推定時間**: 3h
 
-### Task 3.9: ウィッシュ登録直後レコメンド
+<!-- ### Task 3.9: ウィッシュ登録直後レコメンド -->
 
 - [ ] `get_wish_recommendations` PostgreSQL RPC 関数作成（カテゴリ・価格帯・エリア完全一致）
 - [ ] `WishRecommendList` コンポーネント実装（一致理由バッジ付き店舗カード）
@@ -339,7 +339,7 @@
 
 ## Phase 6: Edge Functions（残り2本）
 
-### Task 6.1: notify-admin Edge Function
+<!-- ### Task 6.1: notify-admin Edge Function -->
 
 - [ ] `notify-admin` Edge Function 作成
 - [ ] ブランド新規投稿時の運営通知メール（Resend）
@@ -424,7 +424,7 @@
 
 ## Phase 8: デプロイ・インフラ
 
-### Task 8.1: Cloudflare Pages 本番デプロイ
+<!-- ### Task 8.1: Cloudflare Pages 本番デプロイ -->
 
 - [ ] Cloudflare Registrar で `fukunavi.com` を取得
 - [ ] Cloudflare Pages プロジェクト作成・GitHub 連携
@@ -435,7 +435,7 @@
 - **依存**: 全 Phase 完了後
 - **推定時間**: 2h
 
-### Task 8.2: Supabase 本番環境設定
+<!-- ### Task 8.2: Supabase 本番環境設定 -->
 
 - [ ] production プロジェクトに全マイグレーションを適用（`supabase db push --linked`）
 - [ ] Google OAuth の本番リダイレクト URI 設定
