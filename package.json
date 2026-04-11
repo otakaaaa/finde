@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "npm run build && wrangler dev",
+    "preview": "npm run build && wrangler pages dev dist",
     "typecheck": "tsc --noEmit",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
@@ -15,7 +15,7 @@
     "supabase:migrate": "npx supabase db push --local",
     "supabase:setup-storage": "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env 2>/dev/null | grep SERVICE_ROLE_KEY | cut -d= -f2 | tr -d '\"') node scripts/setup-storage.js",
     "supabase:reset": "npx supabase db reset",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name fukunavi"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
