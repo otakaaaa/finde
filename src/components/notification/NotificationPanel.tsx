@@ -1,4 +1,5 @@
 import { Bell } from 'lucide-react'
+import { Link } from 'react-router'
 import { NotificationItem } from './NotificationItem'
 import type { Notification } from '@/types'
 
@@ -85,14 +86,16 @@ export const NotificationPanel = ({
         )}
       </div>
 
-      {/* フッター（将来の通知一覧ページへのリンク用スペース） */}
-      {notifications.length > 0 && (
-        <div className="border-t border-border/50 px-4 py-2 text-center">
-          <span className="text-[9px] text-muted-foreground/30">
-            直近50件を表示
-          </span>
-        </div>
-      )}
+      {/* フッター */}
+      <div className="border-t border-border/50 px-4 py-2 text-center">
+        <Link
+          to="/mypage/notifications"
+          onClick={onClose}
+          className="text-[9px] font-medium text-muted-foreground/40 transition-colors hover:text-primary"
+        >
+          すべての通知を見る →
+        </Link>
+      </div>
     </div>
   )
 }
