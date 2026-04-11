@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Flag, Star, EyeOff, Eye, AlertTriangle, Store, User, MessageSquare } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -282,6 +284,12 @@ const AdminReviewsPage = () => {
   const isLoading = viewMode === 'reports' ? reportsLoading : reviewsLoading
   const error     = viewMode === 'reports' ? reportsError  : reviewsError
 
+  const reportsPagination = usePagination(reports ?? [])
+  const allReviewsPagination = usePagination(allReviews ?? [])
+
+  useEffect(() => { reportsPagination.resetPage() }, [viewMode])
+  useEffect(() => { allReviewsPagination.resetPage() }, [viewMode, reviewStatusFilter])
+
   const reviewCounts = {
     all:       allReviews?.length ?? 0,
     published: allReviews?.filter((r) => r.status === 'published').length ?? 0,
@@ -431,36 +439,56 @@ const AdminReviewsPage = () => {
 
           {/* Reports list */}
           {!isLoading && viewMode === 'reports' && (reports?.length ?? 0) > 0 && (
-            <div className="space-y-2">
-              {reports?.map((report, i) => (
-                <ReviewCard
-                  key={report.id}
-                  review={report.reviews}
-                  index={i}
-                  reportReason={report.reason}
-                  reportNote={report.note}
-                  onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
-                  onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
-                  isUpdating={isUpdating}
-                />
-              ))}
-            </div>
+            <>
+              <div className="space-y-2">
+                {reportsPagination.paginatedItems.map((report, i) => (
+                  <ReviewCard
+                    key={report.id}
+                    review={report.reviews}
+                    index={(reportsPagination.page - 1) * reportsPagination.pageSize + i}
+                    reportReason={report.reason}
+                    reportNote={report.note}
+                    onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
+                    onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
+                    isUpdating={isUpdating}
+                  />
+                ))}
+              </div>
+              <AdminPagination
+                page={reportsPagination.page}
+                totalPages={reportsPagination.totalPages}
+                totalItems={reportsPagination.totalItems}
+                pageSize={reportsPagination.pageSize}
+                onPageChange={reportsPagination.setPage}
+                onPageSizeChange={reportsPagination.setPageSize}
+              />
+            </>
           )}
 
           {/* All reviews list */}
           {!isLoading && viewMode === 'all' && (allReviews?.length ?? 0) > 0 && (
-            <div className="space-y-2">
-              {allReviews?.map((review, i) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                  index={i}
-                  onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
-                  onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
-                  isUpdating={isUpdating}
-                />
-              ))}
-            </div>
+            <>
+              <div className="space-y-2">
+                {allReviewsPagination.paginatedItems.map((review, i) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    index={(allReviewsPagination.page - 1) * allReviewsPagination.pageSize + i}
+                    onHide={(id) => updateReviewStatus({ reviewId: id, status: 'hidden' })}
+                    onRestore={(id) => updateReviewStatus({ reviewId: id, status: 'published' })}
+                    isUpdating={isUpdating}
+                  />
+                ))}
+              </div>
+              <AdminPagination
+                page={allReviewsPagination.page}
+                totalPages={allReviewsPagination.totalPages}
+                totalItems={allReviewsPagination.totalItems}
+                pageSize={allReviewsPagination.pageSize}
+                onPageChange={allReviewsPagination.setPage}
+                onPageSizeChange={allReviewsPagination.setPageSize}
+              />
+            </>
           )}
 
         </div>

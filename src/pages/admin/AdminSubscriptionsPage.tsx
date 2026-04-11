@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, Store, User, CreditCard, Calendar, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -200,6 +202,11 @@ const AdminSubscriptionsPage = () => {
   const yearlyCount  = allSubscriptions?.filter((s) => s.status === 'active' && s.plan === 'yearly').length ?? 0
   const expiringSoon = allSubscriptions?.filter((s) => s.status === 'active' && isPeriodExpiringSoon(s.current_period_end)).length ?? 0
 
+  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
+    usePagination(subscriptions ?? [])
+
+  useEffect(() => { resetPage() }, [statusFilter])
+
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
@@ -313,10 +320,22 @@ const AdminSubscriptionsPage = () => {
           {/* List */}
           {!isLoading && (subscriptions?.length ?? 0) > 0 && (
             <div className="space-y-1.5">
-              {subscriptions?.map((sub, i) => (
-                <SubCard key={sub.id} sub={sub} index={i} />
+              {paginatedItems.map((sub, i) => (
+                <SubCard key={sub.id} sub={sub} index={(page - 1) * pageSize + i} />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
 
         </div>

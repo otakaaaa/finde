@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Search, Plus, FileSpreadsheet, ChevronLeft, ExternalLink, Pencil, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 interface ShopRow {
   id: string
@@ -195,6 +197,15 @@ const AdminShopsPage = () => {
 
   const { data: shops, isLoading } = useAdminShops(statusFilter)
 
+  const filtered = (shops ?? []).filter((s) =>
+    s.name.toLowerCase().includes(search.toLowerCase()),
+  )
+
+  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
+    usePagination(filtered)
+
+  useEffect(() => { resetPage() }, [statusFilter, search])
+
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
     mutationFn: async ({ shopId, status }: { shopId: string; status: string }) => {
       const { error } = await supabase.from('shops').update({ status } as never).eq('id', shopId) as unknown as { data: unknown; error: { message: string } | null }
@@ -205,10 +216,6 @@ const AdminShopsPage = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
   })
-
-  const filtered = (shops ?? []).filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase()),
-  )
 
   const counts = {
     all: shops?.length ?? 0,
@@ -352,11 +359,11 @@ const AdminShopsPage = () => {
           {/* Shop list */}
           {!isLoading && (
             <div className="space-y-1.5">
-              {filtered.map((shop, i) => (
+              {paginatedItems.map((shop, i) => (
                 <ShopListRow
                   key={shop.id}
                   shop={shop}
-                  index={i}
+                  index={(page - 1) * pageSize + i}
                   onStatusChange={(shopId, status) => updateStatus({ shopId, status })}
                   isUpdating={isUpdating}
                 />
@@ -387,21 +394,16 @@ const AdminShopsPage = () => {
             </div>
           )}
 
-          {/* Footer count */}
-          {!isLoading && filtered.length > 0 && (
-            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-              <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">
-                {String(filtered.length).padStart(3, '0')} 件
-              </span>
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 transition-colors hover:text-primary"
-                >
-                  絞り込みをリセット
-                </button>
-              )}
-            </div>
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
 
         </div>

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Search, GitMerge, RotateCcw, Tag, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -203,6 +205,11 @@ const AdminBrandsPage = () => {
     )
   })
 
+  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
+    usePagination(filtered)
+
+  useEffect(() => { resetPage() }, [statusFilter, search])
+
   const counts = {
     all:    brands?.length ?? 0,
     active: brands?.filter((b) => b.status === 'active').length ?? 0,
@@ -325,17 +332,29 @@ const AdminBrandsPage = () => {
           {/* List */}
           {!isLoading && filtered.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((brand, i) => (
+              {paginatedItems.map((brand, i) => (
                 <BrandCard
                   key={brand.id}
                   brand={brand}
-                  index={i}
+                  index={(page - 1) * pageSize + i}
                   onMerge={(id) => updateBrandStatus({ brandId: id, status: 'merged' })}
                   onRestore={(id) => updateBrandStatus({ brandId: id, status: 'active' })}
                   isUpdating={isUpdating}
                 />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
 
         </div>

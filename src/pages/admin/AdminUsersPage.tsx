@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Search, ChevronDown, Users, UserCheck, Shield } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -211,6 +213,11 @@ const AdminUsersPage = () => {
     )
   })
 
+  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
+    usePagination(filtered)
+
+  useEffect(() => { resetPage() }, [roleFilter, search])
+
   const counts = {
     all:        users?.length ?? 0,
     user:       users?.filter((u) => u.role === 'user').length ?? 0,
@@ -327,7 +334,7 @@ const AdminUsersPage = () => {
           {/* List */}
           {!isLoading && filtered.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((user, i) => (
+              {paginatedItems.map((user, i) => (
                 <div key={user.id} style={{ animationDelay: `${i * 20}ms` }}>
                   <UserCard
                     user={user}
@@ -339,6 +346,18 @@ const AdminUsersPage = () => {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
 
         </div>

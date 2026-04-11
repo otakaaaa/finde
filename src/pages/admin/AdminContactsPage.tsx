@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, Search } from 'lucide-react'
@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import type { Contact, ContactStatus } from '@/constants/contact'
 import { cn } from '@/lib/utils'
 import { ContactCard } from '@/components/contact/ContactCard'
+import { usePagination } from '@/hooks/usePagination'
+import { AdminPagination } from '@/components/admin/AdminPagination'
 
 // ── Config ─────────────────────────────────────────────────────
 
@@ -70,6 +72,11 @@ const AdminContactsPage = () => {
       c.body.toLowerCase().includes(q)
     )
   })
+
+  const { page, pageSize, totalPages, totalItems, paginatedItems, setPage, setPageSize, resetPage } =
+    usePagination(filtered)
+
+  useEffect(() => { resetPage() }, [statusFilter, search])
 
   const counts = {
     all:         contacts?.length ?? 0,
@@ -185,7 +192,7 @@ const AdminContactsPage = () => {
           {/* List */}
           {!isLoading && filtered.length > 0 && (
             <div className="space-y-1.5">
-              {filtered.map((contact, i) => (
+              {paginatedItems.map((contact, i) => (
                 <ContactCard
                   key={contact.id}
                   contact={contact}
@@ -194,10 +201,22 @@ const AdminContactsPage = () => {
                   isAdmin={true}
                   onStatusChange={(id, status) => updateStatus({ id, status })}
                   isUpdating={isUpdating}
-                  index={i}
+                  index={(page - 1) * pageSize + i}
                 />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && (
+            <AdminPagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           )}
 
         </div>
