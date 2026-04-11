@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -376,6 +376,14 @@ const MyPage = () => {
               label="お問い合わせ履歴"
               sublabel="過去のお問い合わせを確認する"
               animDelay={220}
+            />
+            <NavItem
+              to="/mypage/notifications"
+              icon={<Bell className="h-3.5 w-3.5" />}
+              index="06"
+              label="通知"
+              sublabel="お知らせや申請結果を確認する"
+              animDelay={275}
             />
           </div>
 

@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import type { Notification } from '@/types'
 
+export type { Notification }
+
 interface NotificationRow {
   id: string
   user_id: string
@@ -126,6 +128,90 @@ export const useNotifications = () => {
   return {
     notifications,
     unreadCount,
+    isLoading: query.isLoading,
+    markAsRead,
+    markAllAsRead,
+    isMarkingAll,
+  }
+}
+
+// ── ページネーション対応（一覧ページ用） ───────────────────────
+
+export const usePaginatedNotifications = (
+  unreadOnly: boolean,
+  page: number,
+  pageSize: number,
+) => {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const listKey = ['notifications-list', user?.id, unreadOnly, page, pageSize]
+  const bellKey = ['notifications', user?.id]
+
+  const query = useQuery({
+    queryKey: listKey,
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return { items: [], totalCount: 0 }
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      let q = supabase
+        .from('notifications')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (unreadOnly) q = q.eq('is_read', false)
+
+      const { data, count, error } = await (q as unknown as Promise<{
+        data: NotificationRow[] | null
+        count: number | null
+        error: { message: string } | null
+      }>)
+      if (error) throw new Error(error.message)
+      return { items: (data ?? []).map(mapRow), totalCount: count ?? 0 }
+    },
+  })
+
+  const { mutate: markAsRead } = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true } as never)
+        .eq('id', id) as unknown as { error: { message: string } | null }
+      if (error) throw new Error(error.message)
+    },
+    onMutate: (id) => {
+      queryClient.setQueryData<{ items: Notification[]; totalCount: number }>(listKey, (prev) =>
+        prev ? { ...prev, items: prev.items.map((n) => (n.id === id ? { ...n, isRead: true } : n)) } : prev,
+      )
+      // ベルアイコン側も同期
+      queryClient.setQueryData<Notification[]>(bellKey, (prev) =>
+        prev?.map((n) => (n.id === id ? { ...n, isRead: true } : n)) ?? [],
+      )
+    },
+  })
+
+  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMutation({
+    mutationFn: async () => {
+      if (!user) return
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true } as never)
+        .eq('user_id', user.id)
+        .eq('is_read', false) as unknown as { error: { message: string } | null }
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-list', user?.id] })
+      queryClient.invalidateQueries({ queryKey: bellKey })
+    },
+  })
+
+  return {
+    items: query.data?.items ?? [],
+    totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     markAsRead,
     markAllAsRead,
