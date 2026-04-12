@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { FukunaviLogo } from '@/components/icons/FukunaviLogo'
 
 const NAV_COLUMNS = [
   {
@@ -53,19 +54,9 @@ export const Footer = () => (
         {/* Brand column */}
         <div className="flex flex-col justify-between gap-8">
           <div>
-            {/* Logo mark */}
-            <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center border border-white/20 font-headline text-base font-black leading-none text-white select-none">
-                服
-              </span>
-              <div className="flex flex-col leading-none">
-                <span className="font-headline text-[13px] font-black tracking-[0.15em] text-white">
-                  FUKUNAVI
-                </span>
-                <span className="font-headline text-[8px] font-bold tracking-[0.4em] text-white/30">
-                  フクナビ
-                </span>
-              </div>
+            {/* Logo */}
+            <div className="mb-5">
+              <FukunaviLogo size="md" variant="inverse" />
             </div>
 
             {/* Tagline */}

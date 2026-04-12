@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @theme {
   --color-primary: oklch(0.18 0.004 250);
@@ -13,6 +12,7 @@
   --radius: 0.5rem;
 
   --font-headline: 'Manrope', 'Noto Sans JP', sans-serif;
+  --font-logo: 'Bebas Neue', sans-serif;
 }
 
 * {
