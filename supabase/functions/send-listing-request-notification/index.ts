@@ -68,10 +68,10 @@ serve(async (req) => {
     if (!request_id) throw new Error('request_id is required')
 
     // service role で申請情報・ユーザー情報を取得
+    // SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY は Supabase が自動注入する変数
     const supabase = createClient(
-      Deno.env.get('VITE_SUPABASE_URL')!,
-      // Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      Deno.env.get('VITE_SUPABASE_PUBLISHABLE_KEY')!,
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
     const { data: request, error: requestErr } = await supabase
