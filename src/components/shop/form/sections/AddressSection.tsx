@@ -7,18 +7,19 @@ import type { City, Prefecture } from '@/types'
 interface AddressSectionProps {
   num: string
   prefectures: Prefecture[]
-  citiesForPrefecture: City[]
+  cities: City[]
   animationDelay?: string
 }
 
 export const AddressSection = ({
   num,
   prefectures,
-  citiesForPrefecture,
+  cities,
   animationDelay = '40ms',
 }: AddressSectionProps) => {
   const { register, watch, formState: { errors } } = useFormContext<ShopFormValues>()
   const watchedPrefectureId = watch('prefectureId')
+  const citiesForPrefecture = cities.filter((c) => c.prefectureId === watchedPrefectureId)
 
   return (
     <section className="wish-card-enter" style={{ animationDelay }}>

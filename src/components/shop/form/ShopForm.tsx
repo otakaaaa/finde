@@ -71,10 +71,6 @@ export const ShopForm = ({
   const { handleSubmit, setValue, control, formState: { isDirty } } = methods
 
   const businessHours = useWatch({ control, name: 'businessHours' })
-  const watchedPrefectureId = methods.watch('prefectureId')
-  const citiesForPrefecture = masterData?.cities.filter(
-    (c) => c.prefectureId === watchedPrefectureId,
-  ) ?? []
 
   // Dynamic section numbering
   let sectionIndex = 1
@@ -123,7 +119,7 @@ export const ShopForm = ({
                   <AddressSection
                     num={s02}
                     prefectures={masterData?.prefectures ?? []}
-                    citiesForPrefecture={citiesForPrefecture}
+                    cities={masterData?.cities ?? []}
                     animationDelay="40ms"
                   />
 
