@@ -19,6 +19,7 @@ import { BasicInfoSection } from '@/components/shop/form/sections/BasicInfoSecti
 import { AddressSection } from '@/components/shop/form/sections/AddressSection'
 import { PriceRangeSection } from '@/components/shop/form/sections/PriceRangeSection'
 import { CategoriesSection } from '@/components/shop/form/sections/CategoriesSection'
+import { BrandsSection } from '@/components/shop/form/sections/BrandsSection'
 import { ContactSection } from '@/components/shop/form/sections/ContactSection'
 import { SnsSection } from '@/components/shop/form/sections/SnsSection'
 import {
@@ -28,6 +29,7 @@ import {
 } from '@/components/shop/form/shopFormSchema'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import type { Brand } from '@/types'
 
 const BUCKET = 'shop-photos'
 
@@ -105,6 +107,7 @@ const ListingRequestPage = () => {
   const [submitted, setSubmitted] = useState(false)
 
   const pendingFilesRef = useRef<File[]>([])
+  const pendingBrandsRef = useRef<Brand[]>([])
 
   const methods = useForm<ListingRequestFormValues>({
     resolver: zodResolver(listingRequestSchema),
@@ -143,6 +146,16 @@ const ListingRequestPage = () => {
 
       if (insertError) throw new Error(insertError.message)
       if (!request) throw new Error('申請の送信に失敗しました')
+
+      const brands = pendingBrandsRef.current
+      for (const brand of brands) {
+        const { error: brandErr } = await supabase
+          .from('listing_request_brands')
+          .insert({ request_id: request.id, brand_id: brand.id } as never) as unknown as {
+            error: { message: string } | null
+          }
+        if (brandErr) throw new Error(brandErr.message)
+      }
 
       const files = pendingFilesRef.current
       for (let i = 0; i < files.length; i++) {
@@ -305,8 +318,14 @@ const ListingRequestPage = () => {
 
                   <SnsSection num="07" animationDelay="160ms" />
 
+                  <BrandsSection
+                    num="09"
+                    onBrandsChange={(brands) => { pendingBrandsRef.current = brands }}
+                    animationDelay="190ms"
+                  />
+
                   <ShopBusinessHoursSection
-                    num="08"
+                    num="10"
                     businessHours={businessHours}
                     register={methods.register}
                     onToggle={(dayKey: DayKey) =>
@@ -316,12 +335,12 @@ const ListingRequestPage = () => {
                         { shouldDirty: true },
                       )
                     }
-                    animationDelay="180ms"
+                    animationDelay="200ms"
                   />
 
-                  {/* 09 補足メモ */}
-                  <section className="wish-card-enter" style={{ animationDelay: '200ms' }}>
-                    <SectionLabel num="09" title="補足メモ" optional />
+                  {/* 11 補足メモ */}
+                  <section className="wish-card-enter" style={{ animationDelay: '210ms' }}>
+                    <SectionLabel num="11" title="補足メモ" optional />
                     <Field label="フクナビ運営への補足" optional error={errors.note?.message}>
                       <textarea
                         rows={3}
