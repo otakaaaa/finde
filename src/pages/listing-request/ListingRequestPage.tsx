@@ -174,8 +174,16 @@ const ListingRequestPage = () => {
           throw new Error(photoErr.message)
         }
       }
+
+      return request.id
     },
-    onSuccess: () => setSubmitted(true),
+    onSuccess: (requestId) => {
+      // メール送信はfire-and-forget（失敗しても申請成功扱い）
+      supabase.functions
+        .invoke('send-listing-request-notification', { body: { request_id: requestId } })
+        .catch(() => { /* ignore */ })
+      setSubmitted(true)
+    },
   })
 
   if (submitted) {
