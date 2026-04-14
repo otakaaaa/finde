@@ -1,46 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, FormProvider, useWatch, type Path } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
-import { ChevronLeft, Store, Check, ArrowRight, Globe, Instagram, Phone, X } from 'lucide-react'
-import { XLogo } from '@/components/icons/XLogo'
-import { TikTokLogo } from '@/components/icons/TikTokLogo'
+import { ArrowRight, Check, Store } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { validateAllowedImageFiles } from '@/lib/fileValidation'
-import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { useAuth } from '@/hooks/useAuth'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
-import { SectionLabel, Field, inputClass, selectClass } from '@/components/shop/ShopFormUI'
+import { SectionLabel, Field } from '@/components/shop/ShopFormUI'
 import {
   ShopBusinessHoursSection,
-  businessHoursSchema,
   toBusinessHours,
-  DEFAULT_HOURS_ENTRY,
   type DayKey,
 } from '@/components/shop/ShopBusinessHoursSection'
+import { ShopPhotoNewSection } from '@/components/shop/ShopPhotoNewSection'
+import { BasicInfoSection } from '@/components/shop/form/sections/BasicInfoSection'
+import { AddressSection } from '@/components/shop/form/sections/AddressSection'
+import { PriceRangeSection } from '@/components/shop/form/sections/PriceRangeSection'
+import { CategoriesSection } from '@/components/shop/form/sections/CategoriesSection'
+import { ContactSection } from '@/components/shop/form/sections/ContactSection'
+import { SnsSection } from '@/components/shop/form/sections/SnsSection'
+import {
+  shopFormSchema,
+  DEFAULT_SHOP_FORM_VALUES,
+  type ShopFormValues,
+} from '@/components/shop/form/shopFormSchema'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
-import type { Path } from 'react-hook-form'
 
 const BUCKET = 'shop-photos'
 
-const listingRequestSchema = z.object({
-  shopName:      z.string().min(1, '店舗名を入力してください').max(100),
-  description:   z.string().max(2000).optional(),
-  prefectureId:  z.number({ required_error: '都道府県を選択してください', invalid_type_error: '都道府県を選択してください' }),
-  cityId:        z.number().optional(),
-  address:       z.string().max(200).optional(),
-  priceRangeId:  z.number().optional(),
-  categoryIds:   z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
-  phone:         z.string().max(20).optional(),
-  websiteUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  instagramUrl:  z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  twitterUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  tiktokUrl:     z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  businessHours: businessHoursSchema,
-  note:          z.string().max(500).optional(),
+// shopFormSchema を拡張して note フィールドを追加
+const listingRequestSchema = shopFormSchema.extend({
+  note: z.string().max(500).optional(),
 })
 
 type ListingRequestFormValues = z.infer<typeof listingRequestSchema>
@@ -111,46 +104,25 @@ const ListingRequestPage = () => {
   const { data: masterData } = useShopMasterData()
   const [submitted, setSubmitted] = useState(false)
 
-  const [pendingFiles, setPendingFiles] = useState<File[]>([])
-  const [previewUrls, setPreviewUrls] = useState<string[]>([])
-  const [uploadingPhotos, setUploadingPhotos] = useState(false)
-  const [photoError, setPhotoError] = useState<string | null>(null)
+  const pendingFilesRef = useRef<File[]>([])
 
-  useEffect(() => {
-    const urls = pendingFiles.map((f) => URL.createObjectURL(f))
-    setPreviewUrls(urls)
-    return () => urls.forEach((u) => URL.revokeObjectURL(u))
-  }, [pendingFiles])
+  const methods = useForm<ListingRequestFormValues>({
+    resolver: zodResolver(listingRequestSchema),
+    defaultValues: DEFAULT_SHOP_FORM_VALUES,
+  })
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (files.length === 0) return
-    setUploadingPhotos(true)
-    setPhotoError(null)
-    try {
-      await validateAllowedImageFiles(files)
-      setPendingFiles((prev) => [...prev, ...files])
-    } catch (err) {
-      setPhotoError(err instanceof Error ? err.message : '画像の検証に失敗しました')
-    } finally {
-      setUploadingPhotos(false)
-    }
-  }
-
-  const removeFile = (index: number) => {
-    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+  const { handleSubmit, register, setValue, control, formState: { errors } } = methods
+  const businessHours = useWatch({ control, name: 'businessHours' })
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: async (values: ListingRequestFormValues) => {
       if (!user) throw new Error('ログインが必要です')
 
-      // 1. 申請レコードを作成
       const { data: request, error: insertError } = await supabase
         .from('shop_listing_requests')
         .insert({
           submitted_by:   user.id,
-          shop_name:      values.shopName,
+          shop_name:      values.name,
           description:    values.description || null,
           prefecture_id:  values.prefectureId,
           city_id:        values.cityId ?? null,
@@ -172,9 +144,9 @@ const ListingRequestPage = () => {
       if (insertError) throw new Error(insertError.message)
       if (!request) throw new Error('申請の送信に失敗しました')
 
-      // 2. 写真をアップロード
-      for (let i = 0; i < pendingFiles.length; i++) {
-        const file = pendingFiles[i]
+      const files = pendingFilesRef.current
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
         const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
         const path = `listing-requests/${request.id}/${crypto.randomUUID()}.${ext}`
         const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
@@ -192,36 +164,6 @@ const ListingRequestPage = () => {
     },
     onSuccess: () => setSubmitted(true),
   })
-
-  const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<ListingRequestFormValues>({
-    resolver: zodResolver(listingRequestSchema),
-    defaultValues: {
-      categoryIds: [],
-      businessHours: {
-        mon: { ...DEFAULT_HOURS_ENTRY },
-        tue: { ...DEFAULT_HOURS_ENTRY },
-        wed: { ...DEFAULT_HOURS_ENTRY },
-        thu: { ...DEFAULT_HOURS_ENTRY },
-        fri: { ...DEFAULT_HOURS_ENTRY },
-        sat: { ...DEFAULT_HOURS_ENTRY },
-        sun: { ...DEFAULT_HOURS_ENTRY },
-      },
-    },
-  })
-
-  const selectedCategories  = watch('categoryIds')
-  const watchedPrefectureId = watch('prefectureId')
-  const watchedBusinessHours = useWatch({ control, name: 'businessHours' })
-  const citiesForPrefecture = masterData?.cities.filter((c) => c.prefectureId === watchedPrefectureId) ?? []
-
-  const toggleCategory = (id: number) => {
-    const current = selectedCategories ?? []
-    setValue(
-      'categoryIds',
-      current.includes(id) ? current.filter((c) => c !== id) : [...current, id],
-      { shouldValidate: true },
-    )
-  }
 
   if (submitted) {
     return <SubmittedScreen onBack={() => navigate('/')} />
@@ -247,8 +189,7 @@ const ListingRequestPage = () => {
                 onClick={() => navigate(-1)}
                 className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
               >
-                <ChevronLeft className="h-3 w-3" />
-                Back
+                ← Back
               </button>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
                 — MYPAGE
@@ -266,7 +207,7 @@ const ListingRequestPage = () => {
         <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-14">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
 
-            {/* ── Sidebar ──────────────────────────── */}
+            {/* ── Left sidebar (info) ──────────────── */}
             <aside className="lg:sticky lg:top-8 lg:self-start">
               <div className="mb-8">
                 <div className="mb-3 flex items-center gap-2">
@@ -330,294 +271,104 @@ const ListingRequestPage = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-12">
+              <FormProvider {...methods}>
+                <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-12">
 
-                {/* 01 基本情報 */}
-                <section className="wish-card-enter" style={{ animationDelay: '0ms' }}>
-                  <SectionLabel num="01" title="基本情報" required />
-                  <div className="space-y-4">
-                    <Field label="店舗名" error={errors.shopName?.message}>
-                      <input
-                        type="text"
-                        placeholder="例: ○○古着店"
-                        className={cn(inputClass, errors.shopName && 'border-red-400')}
-                        {...register('shopName')}
-                      />
-                    </Field>
-                    <Field label="店舗説明" optional>
+                  <BasicInfoSection num="01" animationDelay="0ms" />
+
+                  <AddressSection
+                    num="02"
+                    prefectures={masterData?.prefectures ?? []}
+                    cities={masterData?.cities ?? []}
+                    animationDelay="40ms"
+                  />
+
+                  <PriceRangeSection
+                    num="03"
+                    priceRanges={masterData?.priceRanges ?? []}
+                    animationDelay="60ms"
+                  />
+
+                  <CategoriesSection
+                    num="04"
+                    categories={masterData?.categories ?? []}
+                    animationDelay="80ms"
+                  />
+
+                  <ShopPhotoNewSection
+                    num="05"
+                    onFilesChange={(files) => { pendingFilesRef.current = files }}
+                    animationDelay="100ms"
+                  />
+
+                  <ContactSection num="06" animationDelay="120ms" />
+
+                  <SnsSection num="07" animationDelay="160ms" />
+
+                  <ShopBusinessHoursSection
+                    num="08"
+                    businessHours={businessHours}
+                    register={methods.register}
+                    onToggle={(dayKey: DayKey) =>
+                      setValue(
+                        `businessHours.${dayKey}.enabled` as Path<ShopFormValues>,
+                        !(businessHours?.[dayKey]?.enabled ?? false),
+                        { shouldDirty: true },
+                      )
+                    }
+                    animationDelay="180ms"
+                  />
+
+                  {/* 09 補足メモ */}
+                  <section className="wish-card-enter" style={{ animationDelay: '200ms' }}>
+                    <SectionLabel num="09" title="補足メモ" optional />
+                    <Field label="フクナビ運営への補足" optional error={errors.note?.message}>
                       <textarea
-                        rows={4}
-                        placeholder="店舗の特徴、取り扱いブランド、雰囲気など…"
+                        rows={3}
+                        placeholder="フクナビ運営への補足情報など…"
                         className={cn(
                           'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
                           'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
                           'resize-none',
+                          errors.note && 'border-red-400',
                         )}
-                        {...register('description')}
+                        {...register('note')}
                       />
                     </Field>
-                  </div>
-                </section>
+                  </section>
 
-                {/* 02 住所 */}
-                <section className="wish-card-enter" style={{ animationDelay: '40ms' }}>
-                  <SectionLabel num="02" title="住所" required />
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Field label="都道府県" error={errors.prefectureId?.message}>
-                        <select
-                          className={cn(selectClass, errors.prefectureId && 'border-red-400')}
-                          {...register('prefectureId', { valueAsNumber: true })}
-                        >
-                          <option value="">選択してください</option>
-                          {masterData?.prefectures.map((pref) => (
-                            <option key={pref.id} value={pref.id}>{pref.name}</option>
-                          ))}
-                        </select>
-                      </Field>
-                      <Field label="市区町村" optional>
-                        <select
-                          className={selectClass}
-                          disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
-                          {...register('cityId', { valueAsNumber: true })}
-                        >
-                          <option value="">選択してください</option>
-                          {citiesForPrefecture.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
-                      </Field>
-                    </div>
-                    <Field label="町名・番地・建物名" optional>
-                      <input
-                        type="text"
-                        placeholder="例: 道玄坂1-1-1 ○○ビル2F"
-                        className={inputClass}
-                        {...register('address')}
-                      />
-                    </Field>
-                  </div>
-                </section>
-
-                {/* 03 価格帯 */}
-                <section className="wish-card-enter" style={{ animationDelay: '60ms' }}>
-                  <SectionLabel num="03" title="価格帯" optional />
-                  <div className="sm:w-1/2">
-                    <Field label="価格帯" optional>
-                      <select
-                        className={selectClass}
-                        {...register('priceRangeId', { valueAsNumber: true })}
-                      >
-                        <option value="">指定なし</option>
-                        {masterData?.priceRanges.map((pr) => (
-                          <option key={pr.id} value={pr.id}>{pr.label}</option>
-                        ))}
-                      </select>
-                    </Field>
-                  </div>
-                </section>
-
-                {/* 04 カテゴリ */}
-                <section className="wish-card-enter" style={{ animationDelay: '80ms' }}>
-                  <SectionLabel num="04" title="カテゴリ" required />
-                  <div className="flex flex-wrap gap-2">
-                    {masterData?.categories.map((cat) => (
+                  {/* Submit */}
+                  <div className="border-t border-border pt-8">
+                    <div className="flex items-center gap-3">
                       <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => toggleCategory(cat.id)}
+                        type="submit"
+                        disabled={isPending}
                         className={cn(
-                          'rounded-sm border px-3 py-2 text-[11px] font-bold transition-all',
-                          selectedCategories?.includes(cat.id)
-                            ? 'border-primary bg-primary text-white'
-                            : 'border-border bg-white text-muted-foreground hover:border-primary/30',
+                          'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
+                          'hover:opacity-90 disabled:opacity-40',
                         )}
                       >
-                        {cat.name}
+                        {isPending ? (
+                          <span className="flex items-center gap-2">
+                            <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            送信中...
+                          </span>
+                        ) : (
+                          '申請する'
+                        )}
                       </button>
-                    ))}
-                  </div>
-                  {errors.categoryIds && (
-                    <p className="mt-2 text-[10px] font-medium text-red-500">{errors.categoryIds.message}</p>
-                  )}
-                </section>
-
-                {/* 05 写真 */}
-                <section className="wish-card-enter space-y-4" style={{ animationDelay: '100ms' }}>
-                  <SectionLabel num="05" title="写真" optional />
-
-                  <ShopPhotoUploadInput
-                    onChange={handleFileSelect}
-                    disabled={uploadingPhotos}
-                    uploading={uploadingPhotos}
-                  />
-
-                  {photoError && (
-                    <p className="text-[10px] font-medium text-red-500">{photoError}</p>
-                  )}
-
-                  {previewUrls.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                      {previewUrls.map((url, i) => (
-                        <div key={url} className="group relative aspect-square overflow-hidden bg-muted">
-                          <img src={url} alt="" className="h-full w-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => removeFile(i)}
-                            className={cn(
-                              'absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full',
-                              'bg-foreground/70 text-white opacity-0 transition-opacity group-hover:opacity-100',
-                            )}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                          {i === 0 && (
-                            <span className="absolute bottom-1 left-1 rounded-sm bg-primary/80 px-1 py-0.5 font-headline text-[8px] font-black uppercase tracking-wider text-white">
-                              Main
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                      <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        キャンセル
+                      </button>
                     </div>
-                  )}
-
-                  <p className="text-[10px] text-muted-foreground/40">
-                    JPEG / PNG / WebP · 最大10枚
-                  </p>
-                </section>
-
-                {/* 06 連絡先 */}
-                <section className="wish-card-enter" style={{ animationDelay: '120ms' }}>
-                  <SectionLabel num="06" title="連絡先" icon={<Phone className="h-3.5 w-3.5" />} optional />
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Field label="電話番号" optional>
-                      <div className="relative">
-                        <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
-                        <input
-                          type="tel"
-                          placeholder="03-0000-0000"
-                          className={cn(inputClass, 'pl-9')}
-                          {...register('phone')}
-                        />
-                      </div>
-                    </Field>
-                    <Field label="公式サイト" optional error={errors.websiteUrl?.message}>
-                      <div className="relative">
-                        <Globe className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
-                        <input
-                          type="url"
-                          placeholder="https://example.com"
-                          className={cn(inputClass, 'pl-9', errors.websiteUrl && 'border-red-400')}
-                          {...register('websiteUrl')}
-                        />
-                      </div>
-                    </Field>
                   </div>
-                </section>
 
-                {/* 07 SNS */}
-                <section className="wish-card-enter" style={{ animationDelay: '160ms' }}>
-                  <SectionLabel num="07" title="SNS" optional />
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Field label="Instagram" optional error={errors.instagramUrl?.message}>
-                      <div className="relative">
-                        <Instagram className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
-                        <input
-                          type="url"
-                          placeholder="https://instagram.com/..."
-                          className={cn(inputClass, 'pl-9', errors.instagramUrl && 'border-red-400')}
-                          {...register('instagramUrl')}
-                        />
-                      </div>
-                    </Field>
-                    <Field label="X" optional error={errors.twitterUrl?.message}>
-                      <div className="relative">
-                        <XLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
-                        <input
-                          type="url"
-                          placeholder="https://x.com/..."
-                          className={cn(inputClass, 'pl-9', errors.twitterUrl && 'border-red-400')}
-                          {...register('twitterUrl')}
-                        />
-                      </div>
-                    </Field>
-                    <Field label="TikTok" optional error={errors.tiktokUrl?.message}>
-                      <div className="relative">
-                        <TikTokLogo className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/30" />
-                        <input
-                          type="url"
-                          placeholder="https://tiktok.com/@..."
-                          className={cn(inputClass, 'pl-9', errors.tiktokUrl && 'border-red-400')}
-                          {...register('tiktokUrl')}
-                        />
-                      </div>
-                    </Field>
-                  </div>
-                </section>
-
-                {/* 08 営業時間 */}
-                <ShopBusinessHoursSection
-                  num="08"
-                  businessHours={watchedBusinessHours}
-                  register={register}
-                  onToggle={(dayKey: DayKey) =>
-                    setValue(
-                      `businessHours.${dayKey}.enabled` as Path<ListingRequestFormValues>,
-                      !(watchedBusinessHours?.[dayKey]?.enabled ?? false),
-                      { shouldDirty: true },
-                    )
-                  }
-                  animationDelay="180ms"
-                />
-
-                {/* 09 補足メモ */}
-                <section className="wish-card-enter" style={{ animationDelay: '200ms' }}>
-                  <SectionLabel num="09" title="補足メモ" optional />
-                  <Field label="フクナビ運営への補足" optional>
-                    <textarea
-                      rows={3}
-                      placeholder="フクナビ運営への補足情報など…"
-                      className={cn(
-                        'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
-                        'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',
-                        'resize-none',
-                      )}
-                      {...register('note')}
-                    />
-                  </Field>
-                </section>
-
-                {/* Submit */}
-                <div className="border-t border-border pt-8">
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className={cn(
-                        'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
-                        'hover:opacity-90 disabled:opacity-40',
-                      )}
-                    >
-                      {isPending ? (
-                        <span className="flex items-center gap-2">
-                          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          送信中...
-                        </span>
-                      ) : (
-                        '申請する'
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate(-1)}
-                      className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      キャンセル
-                    </button>
-                  </div>
-                </div>
-
-              </form>
+                </form>
+              </FormProvider>
             </div>
 
           </div>
