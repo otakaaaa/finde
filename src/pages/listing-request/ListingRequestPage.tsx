@@ -8,7 +8,7 @@ import { ArrowRight, Check, Store } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
-import { SectionLabel, Field, inputClass } from '@/components/shop/ShopFormUI'
+import { SectionLabel, Field } from '@/components/shop/ShopFormUI'
 import {
   ShopBusinessHoursSection,
   toBusinessHours,
