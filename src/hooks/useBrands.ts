@@ -34,3 +34,21 @@ export const useBrands = () =>
     },
     staleTime: 10 * 60 * 1000,
   })
+
+export const useSearchBrands = (committedQuery: string) =>
+  useQuery({
+    queryKey: ['brands-search', committedQuery],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('brands')
+        .select('id, name, name_kana, aliases, status')
+        .eq('status', 'active')
+        .ilike('name', `%${committedQuery}%`)
+        .order('name')
+        .limit(10) as unknown as { data: BrandRow[] | null; error: unknown }
+      return (data ?? []).map(mapBrand)
+    },
+    enabled: committedQuery.trim().length >= 1,
+    staleTime: 30 * 1000,
+  })
+
