@@ -13,6 +13,7 @@
     "supabase:stop": "npx supabase stop",
     "supabase:types": "npx supabase gen types typescript --local > src/types/supabase.ts",
     "supabase:migrate": "npx supabase db push --local",
+    "supabase:send-listing-request-notification": "npx supabase functions serve send-listing-request-notification --env-file supabase/.env.local",
     "supabase:setup-storage": "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env 2>/dev/null | grep SERVICE_ROLE_KEY | cut -d= -f2 | tr -d '\"') node scripts/setup-storage.js",
     "supabase:reset": "npx supabase db reset",
     "deploy": "npm run build && wrangler pages deploy dist --project-name fukunavi"

@@ -87,7 +87,7 @@ serve(async (req) => {
     )
     if (userErr || !user?.email) throw new Error(userErr?.message ?? 'User not found')
 
-    const displayName = user.user_metadata?.display_name as string | undefined
+    const displayName = user.user_metadata?.full_name as string | undefined
     const submittedAt = new Date(request.created_at).toLocaleString('ja-JP', {
       timeZone: 'Asia/Tokyo',
       year: 'numeric', month: '2-digit', day: '2-digit',
