@@ -12,19 +12,6 @@ interface ListingRequestRow {
   created_at: string
 }
 
-interface EmailTemplate {
-  subject: string
-  body: string
-  is_active: boolean
-}
-
-function renderTemplate(template: string, vars: Record<string, string>): string {
-  return Object.entries(vars).reduce(
-    (text, [key, value]) => text.replaceAll(`{{${key}}}`, value),
-    template,
-  )
-}
-
 async function sendEmail(params: {
   resendApiKey: string
   from: string
@@ -67,8 +54,6 @@ serve(async (req) => {
     const { request_id } = await req.json() as { request_id: string }
     if (!request_id) throw new Error('request_id is required')
 
-    // service role で申請情報・ユーザー情報を取得
-    // SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY は Supabase が自動注入する変数
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -94,28 +79,30 @@ serve(async (req) => {
       hour: '2-digit', minute: '2-digit',
     })
 
-    // ── テンプレートを取得 ──────────────────────────────────
-    const { data: tmpl } = await supabase
-      .from('email_templates')
-      .select('subject, body, is_active')
-      .eq('slug', 'listing_request_received')
-      .single() as { data: EmailTemplate | null; error: unknown }
-
     // ── 申請者への受付確認メール ────────────────────────────
-    if (tmpl?.is_active) {
-      const vars = {
-        display_name: displayName ?? user.email,
-        shop_name:    request.shop_name,
-        submitted_at: submittedAt,
-      }
-      await sendEmail({
-        resendApiKey,
-        from:    fromEmail,
-        to:      user.email,
-        subject: renderTemplate(tmpl.subject, vars),
-        text:    renderTemplate(tmpl.body, vars),
-      })
-    }
+    await sendEmail({
+      resendApiKey,
+      from:    fromEmail,
+      to:      user.email,
+      subject: '【フクナビ】掲載申請を受け付けました',
+      text: [
+        `${displayName ?? 'お客'}様`,
+        '',
+        'この度はフクナビへ店舗掲載申請をいただきありがとうございます。',
+        '以下の内容で申請を受け付けました。',
+        '',
+        '■ 申請内容',
+        `・店舗名   : ${request.shop_name}`,
+        `・申請日時 : ${submittedAt}`,
+        '',
+        'フクナビ運営チームが内容を確認の上、審査完了後にメールにてご連絡いたします。',
+        '通常2〜5営業日程度お時間をいただきます。',
+        '',
+        'ご不明な点がございましたら、お問い合わせよりご連絡ください。',
+        '',
+        'フクナビ運営チーム',
+      ].join('\n'),
+    })
 
     // ── 管理者への新規申請通知メール ────────────────────────
     await sendEmail({
@@ -126,7 +113,7 @@ serve(async (req) => {
       text: [
         '新しい掲載申請が届きました。',
         '',
-        `■ 申請情報`,
+        '■ 申請情報',
         `・店舗名   : ${request.shop_name}`,
         `・申請者   : ${displayName ?? '未設定'} (${user.email})`,
         `・申請日時 : ${submittedAt}`,
@@ -141,7 +128,6 @@ serve(async (req) => {
     })
   } catch (err) {
     console.error('[send-listing-request-notification]', err)
-    // メール送信エラーはフロントには 200 で返す（申請自体は成功しているため）
     return new Response(JSON.stringify({ ok: false, error: (err as Error).message }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

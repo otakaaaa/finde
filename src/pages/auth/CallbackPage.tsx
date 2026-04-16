@@ -3,6 +3,23 @@ import { useNavigate } from 'react-router'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/types'
 
+const WELCOME_EMAIL_UID_KEY = 'pending_welcome_email_uid'
+
+async function maybeSendWelcomeEmail(userId: string): Promise<void> {
+  const pendingUid = localStorage.getItem(WELCOME_EMAIL_UID_KEY)
+  if (pendingUid !== userId) return
+
+  localStorage.removeItem(WELCOME_EMAIL_UID_KEY)
+  try {
+    await supabase.functions.invoke('send-welcome-email', {
+      body: { user_id: userId },
+    })
+  } catch {
+    // メール送信失敗はログに留め、画面遷移はブロックしない
+    console.warn('[CallbackPage] welcome email failed')
+  }
+}
+
 const ROLE_REDIRECT: Record<UserRole, string> = {
   admin: '/admin',
   shop_owner: '/owner',
@@ -32,6 +49,8 @@ const CallbackPage = () => {
         navigate('/auth/login')
         return
       }
+
+      await maybeSendWelcomeEmail(session.user.id)
 
       const { data } = await supabase
         .from('users')
