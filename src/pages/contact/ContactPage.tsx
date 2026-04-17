@@ -130,6 +130,11 @@ const ContactPage = () => {
     if (user) {
       queryClient.invalidateQueries({ queryKey: ['my-contacts', user.id] })
     }
+    if (data?.id) {
+      supabase.functions.invoke('send-contact-notification', {
+        body: { contact_id: data.id },
+      }).catch(() => {})
+    }
     setDoneId(data?.id ?? 'unknown')
   }
 
