@@ -35,6 +35,11 @@ export const useAuthActions = () => {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) { setError(error.message); return }
       if (data.user) {
+        const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+        if (aalData?.nextLevel === 'aal2' && aalData.currentLevel !== 'aal2') {
+          navigate('/auth/mfa')
+          return
+        }
         localStorage.setItem('pending_login_toast', 'true')
         await redirectByRole(data.user.id)
       }

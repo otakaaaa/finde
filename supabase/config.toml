@@ -298,8 +298,8 @@ max_enrolled_factors = 10
 
 # アプリ認証（TOTP）による MFA を制御する
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 
 # 電話メッセージによる MFA を設定する
 [auth.mfa.phone]
