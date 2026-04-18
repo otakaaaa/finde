@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -384,6 +384,14 @@ const MyPage = () => {
               label="通知"
               sublabel="お知らせや申請結果を確認する"
               animDelay={275}
+            />
+            <NavItem
+              to="/mypage/security"
+              icon={<Shield className="h-3.5 w-3.5" />}
+              index="07"
+              label="セキュリティ設定"
+              sublabel="二段階認証の設定"
+              animDelay={330}
             />
           </div>
 

@@ -17,9 +17,11 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 const CallbackPage = lazy(() => import('@/pages/auth/CallbackPage'))
 const LinkAccountPage = lazy(() => import('@/pages/auth/LinkAccountPage'))
+const MfaChallengePage = lazy(() => import('@/pages/auth/MfaChallengePage'))
 
 // User pages (auth required)
 const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
+const SecurityPage = lazy(() => import('@/pages/mypage/SecurityPage'))
 const FavoritesPage = lazy(() => import('@/pages/mypage/FavoritesPage'))
 const ContactsPage = lazy(() => import('@/pages/mypage/ContactsPage'))
 const NotificationsPage = lazy(() => import('@/pages/mypage/NotificationsPage'))
@@ -103,11 +105,16 @@ const App = () => (
             <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
             <Route path="/auth/callback" element={<CallbackPage />} />
             <Route path="/auth/link-account" element={<LinkAccountPage />} />
+            <Route path="/auth/mfa" element={<MfaChallengePage />} />
 
             {/* User (auth required) */}
             <Route
               path="/mypage"
               element={<ProtectedRoute><MyPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/mypage/security"
+              element={<ProtectedRoute><SecurityPage /></ProtectedRoute>}
             />
             <Route
               path="/mypage/favorites"
