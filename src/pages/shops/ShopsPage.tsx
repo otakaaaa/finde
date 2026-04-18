@@ -3,7 +3,7 @@ import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useUiStore } from '@/store/uiStore'
 import { ShopCard } from '@/components/shop/ShopCard'
 import { cn } from '@/lib/utils'
-import { ChevronDown, Tag, X } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import type { ShopFilters } from '@/types'
 
 const SORT_OPTIONS: { value: NonNullable<ShopFilters['sort']>; label: string }[] = [
@@ -164,19 +164,25 @@ const ShopsPage = () => {
               ))}
             </FilterSelect>
 
-            {shopFilters.brandId && shopFilters.brandName && (
-              <>
-                <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
-                <button
-                  onClick={() => update({ brandId: undefined, brandName: undefined })}
-                  className="flex h-8 shrink-0 items-center gap-1.5 border border-white/60 bg-white/15 px-2.5 text-xs font-bold text-white transition-colors hover:bg-white/25"
-                >
-                  <Tag className="h-3 w-3" />
-                  <span className="max-w-[120px] truncate">{shopFilters.brandName}</span>
-                  <X className="h-3 w-3 opacity-60" />
-                </button>
-              </>
-            )}
+            <FilterSelect
+              value={shopFilters.brandId ?? ''}
+              onChange={(v) => {
+                if (v) {
+                  const brand = master?.brands.find((b) => b.id === v)
+                  update({ brandId: v, brandName: brand?.name })
+                } else {
+                  update({ brandId: undefined, brandName: undefined })
+                }
+              }}
+              placeholder="ブランド"
+              isActive={shopFilters.brandId != null}
+            >
+              {master?.brands.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </FilterSelect>
 
             {hasActiveFilters && (
               <>
