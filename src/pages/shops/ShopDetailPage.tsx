@@ -5,9 +5,12 @@ import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
-import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
+import { useFavoriteStatus, useToggleFavorite, useFavoritesCount } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
+import { useUserSubscription } from '@/hooks/useUserSubscription'
+import { useUiStore } from '@/store/uiStore'
+import { FREE_PLAN_LIMITS } from '@/lib/planLimits'
 import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { cn } from '@/lib/utils'
@@ -100,10 +103,26 @@ const ShopDetailPage = () => {
   const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
+  const { data: favoritesCount = 0 } = useFavoritesCount()
+  const { isPremium } = useUserSubscription(user?.id)
+  const { addToast } = useUiStore()
   const { data: reviews } = useReviews(id ?? '')
   const { data: myReview } = useMyReview(id ?? '')
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
+
+  const handleToggleFavorite = () => {
+    if (!user) { navigate('/auth/login'); return }
+    if (!isFavorited && !isPremium && favoritesCount >= FREE_PLAN_LIMITS.favorites) {
+      addToast({
+        title: 'お気に入りの上限に達しました',
+        description: `フリープランは${FREE_PLAN_LIMITS.favorites}件まで。プレミアムプランで無制限に保存できます。`,
+        variant: 'destructive',
+      })
+      return
+    }
+    toggleFavorite(isFavorited ?? false)
+  }
 
   if (isLoading) {
     return (
@@ -231,10 +250,7 @@ const ShopDetailPage = () => {
               </span>
               <span className="text-xs text-muted-foreground">({shop.reviewCount}件)</span>
               <button
-                onClick={() => {
-                  if (!user) { navigate('/auth/login'); return }
-                  toggleFavorite(isFavorited ?? false)
-                }}
+                onClick={handleToggleFavorite}
                 className={cn(
                   'ml-auto flex items-center gap-1.5 text-sm font-bold transition-colors',
                   isFavorited ? 'text-primary' : 'text-muted-foreground hover:text-primary'
@@ -297,10 +313,7 @@ const ShopDetailPage = () => {
                   <span className="text-[10px] text-muted-foreground">({shop.reviewCount})</span>
                 </div>
                 <button
-                  onClick={() => {
-                    if (!user) { navigate('/auth/login'); return }
-                    toggleFavorite(isFavorited ?? false)
-                  }}
+                  onClick={handleToggleFavorite}
                   className={cn(
                     'flex items-center gap-1.5 text-xs font-bold transition-colors',
                     isFavorited ? 'text-primary' : 'text-muted-foreground hover:text-primary'
