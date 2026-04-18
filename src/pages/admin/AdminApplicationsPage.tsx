@@ -398,6 +398,9 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
       const { error } = await (supabase as unknown as { rpc: (fn: string, args: Record<string, string>) => Promise<{ error: { message: string } | null }> })
         .rpc('approve_listing_request', { p_request_id: application.id })
       if (error) throw new Error(error.message)
+      supabase.functions.invoke('send-listing-status-notification', {
+        body: { request_id: application.id, status: 'approved' },
+      }).catch(() => {})
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-owner-applications'] })
@@ -418,6 +421,9 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
         .update({ status: 'rejected' } as never)
         .eq('id', application.id) as unknown as { error: { message: string } | null }
       if (error) throw new Error(error.message)
+      supabase.functions.invoke('send-listing-status-notification', {
+        body: { request_id: application.id, status: 'rejected' },
+      }).catch(() => {})
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-owner-applications'] })
@@ -708,6 +714,11 @@ const AdminApplicationsPage = () => {
           .update({ status } as never)
           .eq('id', requestId) as unknown as { data: unknown; error: { message: string } | null }
         if (error) throw new Error(error.message)
+      }
+      if (status === 'approved' || status === 'rejected') {
+        supabase.functions.invoke('send-listing-status-notification', {
+          body: { request_id: requestId, status },
+        }).catch(() => {})
       }
     },
     onSuccess: () => {

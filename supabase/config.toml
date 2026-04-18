@@ -1,106 +1,106 @@
-# For detailed configuration reference documentation, visit:
+# 詳細な設定リファレンスについては以下を参照:
 # https://supabase.com/docs/guides/local-development/cli/config
-# A string used to distinguish different Supabase projects on the same host. Defaults to the
-# working directory name when running `supabase init`.
+# 同一ホスト上の異なる Supabase プロジェクトを区別するための文字列。
+# `supabase init` 実行時のカレントディレクトリ名がデフォルト値。
 project_id = "fukunavi"
 
 [api]
 enabled = true
-# Port to use for the API URL.
+# API URL に使用するポート。
 port = 54321
-# Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
-# endpoints. `public` and `graphql_public` schemas are included by default.
+# API に公開するスキーマ。このスキーマのテーブル・ビュー・ストアドプロシージャが
+# API エンドポイントとして公開される。`public` と `graphql_public` はデフォルトで含まれる。
 schemas = ["public", "graphql_public"]
-# Extra schemas to add to the search_path of every request.
+# すべてのリクエストの search_path に追加する追加スキーマ。
 extra_search_path = ["public", "extensions"]
-# The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
-# for accidental or malicious requests.
+# ビュー・テーブル・ストアドプロシージャから返される最大行数。
+# 意図しないリクエストや悪意あるリクエストによるペイロードサイズを制限する。
 max_rows = 1000
 
 [api.tls]
-# Enable HTTPS endpoints locally using a self-signed certificate.
+# 自己署名証明書を使用してローカルで HTTPS エンドポイントを有効化する。
 enabled = false
-# Paths to self-signed certificate pair.
+# 自己署名証明書ペアのパス。
 # cert_path = "../certs/my-cert.pem"
 # key_path = "../certs/my-key.pem"
 
 [db]
-# Port to use for the local database URL.
+# ローカルデータベース URL に使用するポート。
 port = 54322
-# Port used by db diff command to initialize the shadow database.
+# db diff コマンドでシャドウデータベースを初期化する際に使用するポート。
 shadow_port = 54320
-# Maximum amount of time to wait for health check when starting the local database.
+# ローカルデータベース起動時のヘルスチェックの最大待機時間。
 health_timeout = "2m"
-# The database major version to use. This has to be the same as your remote database's. Run `SHOW
-# server_version;` on the remote database to check.
+# 使用するデータベースのメジャーバージョン。リモートデータベースと同じにする必要がある。
+# リモートデータベースで `SHOW server_version;` を実行して確認すること。
 major_version = 17
 
 [db.pooler]
 enabled = false
-# Port to use for the local connection pooler.
+# ローカル接続プーラーに使用するポート。
 port = 54329
-# Specifies when a server connection can be reused by other clients.
-# Configure one of the supported pooler modes: `transaction`, `session`.
+# サーバー接続を他のクライアントが再利用できるタイミングを指定する。
+# サポートされているプーラーモード: `transaction`、`session`。
 pool_mode = "transaction"
-# How many server connections to allow per user/database pair.
+# ユーザー/データベースペアごとに許可するサーバー接続数。
 default_pool_size = 20
-# Maximum number of client connections allowed.
+# 許可するクライアント接続の最大数。
 max_client_conn = 100
 
 # [db.vault]
 # secret_key = "env(SECRET_VALUE)"
 
 [db.migrations]
-# If disabled, migrations will be skipped during a db push or reset.
+# 無効にすると、db push や reset 時にマイグレーションがスキップされる。
 enabled = true
-# Specifies an ordered list of schema files that describe your database.
-# Supports glob patterns relative to supabase directory: "./schemas/*.sql"
+# データベースのスキーマを記述したスキーマファイルの順序付きリストを指定する。
+# supabase ディレクトリからの相対グロブパターンをサポート: "./schemas/*.sql"
 schema_paths = []
 
 [db.seed]
-# If enabled, seeds the database after migrations during a db reset.
+# 有効にすると、db reset 時にマイグレーション後にデータベースにシードデータが投入される。
 enabled = true
-# Specifies an ordered list of seed files to load during db reset.
-# Supports glob patterns relative to supabase directory: "./seeds/*.sql"
+# db reset 時に読み込むシードファイルの順序付きリストを指定する。
+# supabase ディレクトリからの相対グロブパターンをサポート: "./seeds/*.sql"
 sql_paths = ["./seed.sql"]
 
 [db.network_restrictions]
-# Enable management of network restrictions.
+# ネットワーク制限の管理を有効化する。
 enabled = false
-# List of IPv4 CIDR blocks allowed to connect to the database.
-# Defaults to allow all IPv4 connections. Set empty array to block all IPs.
+# データベースへの接続を許可する IPv4 CIDR ブロックのリスト。
+# デフォルトはすべての IPv4 接続を許可。空配列にするとすべての IP をブロック。
 allowed_cidrs = ["0.0.0.0/0"]
-# List of IPv6 CIDR blocks allowed to connect to the database.
-# Defaults to allow all IPv6 connections. Set empty array to block all IPs.
+# データベースへの接続を許可する IPv6 CIDR ブロックのリスト。
+# デフォルトはすべての IPv6 接続を許可。空配列にするとすべての IP をブロック。
 allowed_cidrs_v6 = ["::/0"]
 
-# Uncomment to reject non-secure connections to the database.
+# データベースへの非セキュア接続を拒否する場合はコメントを外す。
 # [db.ssl_enforcement]
 # enabled = true
 
 [realtime]
 enabled = true
-# Bind realtime via either IPv4 or IPv6. (default: IPv4)
+# IPv4 または IPv6 で Realtime をバインドする。（デフォルト: IPv4）
 # ip_version = "IPv6"
-# The maximum length in bytes of HTTP request headers. (default: 4096)
+# HTTP リクエストヘッダーの最大バイト長。（デフォルト: 4096）
 # max_header_length = 4096
 
 [studio]
 enabled = true
-# Port to use for Supabase Studio.
+# Supabase Studio に使用するポート。
 port = 54323
-# External URL of the API server that frontend connects to.
+# フロントエンドが接続する API サーバーの外部 URL。
 api_url = "http://127.0.0.1"
-# OpenAI API Key to use for Supabase AI in the Supabase Studio.
+# Supabase Studio の Supabase AI に使用する OpenAI API キー。
 openai_api_key = "env(OPENAI_API_KEY)"
 
-# Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
-# are monitored, and you can view the emails that would have been sent from the web interface.
+# メールテストサーバー。ローカル開発環境で送信されたメールは実際には送信されず、
+# 監視されるため、Web インターフェースから送信予定のメールを確認できる。
 [inbucket]
 enabled = true
-# Port to use for the email testing server web interface.
+# メールテストサーバーの Web インターフェースに使用するポート。
 port = 54324
-# Uncomment to expose additional ports for testing user applications that send emails.
+# メールを送信するユーザーアプリケーションのテスト用に追加ポートを公開する場合はコメントを外す。
 # smtp_port = 54325
 # pop3_port = 54326
 # admin_email = "admin@email.com"
@@ -108,10 +108,10 @@ port = 54324
 
 [storage]
 enabled = true
-# The maximum file size allowed (e.g. "5MB", "500KB").
+# 許可される最大ファイルサイズ（例: "5MB"、"500KB"）。
 file_size_limit = "50MiB"
 
-# Uncomment to configure local storage buckets
+# ローカルストレージバケットを設定する場合はコメントを外す
 # [storage.buckets.images]
 # public = false
 # file_size_limit = "50MiB"
@@ -123,105 +123,105 @@ public = true
 file_size_limit = "10MiB"
 allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 
-# Allow connections via S3 compatible clients
+# S3 互換クライアント経由での接続を許可する
 [storage.s3_protocol]
 enabled = true
 
-# Image transformation API is available to Supabase Pro plan.
+# 画像変換 API は Supabase Pro プランで利用可能。
 # [storage.image_transformation]
 # enabled = true
 
-# Store analytical data in S3 for running ETL jobs over Iceberg Catalog
-# This feature is only available on the hosted platform.
+# Iceberg カタログ経由で ETL ジョブを実行するために分析データを S3 に保存する
+# この機能はホスト型プラットフォームでのみ利用可能。
 [storage.analytics]
 enabled = false
 max_namespaces = 5
 max_tables = 10
 max_catalogs = 2
 
-# Analytics Buckets is available to Supabase Pro plan.
+# Analytics Buckets は Supabase Pro プランで利用可能。
 # [storage.analytics.buckets.my-warehouse]
 
-# Store vector embeddings in S3 for large and durable datasets
-# This feature is only available on the hosted platform.
+# 大規模で耐久性の高いデータセット用にベクター埋め込みを S3 に保存する
+# この機能はホスト型プラットフォームでのみ利用可能。
 [storage.vector]
 enabled = false
 max_buckets = 10
 max_indexes = 5
 
-# Vector Buckets is available to Supabase Pro plan.
+# Vector Buckets は Supabase Pro プランで利用可能。
 # [storage.vector.buckets.documents-openai]
 
 [auth]
 enabled = true
-# The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
-# in emails.
+# ウェブサイトのベース URL。リダイレクトの許可リストおよびメールで使用する
+# URL の構築に使用される。
 site_url = "http://localhost:5174"
-# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
+# 認証後にリダイレクトが許可される*完全一致* URL のリスト。
 additional_redirect_urls = ["http://localhost:5174", "https://fukunavi.com"]
-# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
+# トークンの有効期間（秒）。デフォルトは 3600（1時間）、最大 604,800（1週間）。
 jwt_expiry = 3600
-# JWT issuer URL. If not set, defaults to the local API URL (http://127.0.0.1:<port>/auth/v1).
+# JWT 発行者 URL。未設定の場合、ローカル API URL（http://127.0.0.1:<port>/auth/v1）がデフォルト。
 # jwt_issuer = ""
-# Path to JWT signing key. DO NOT commit your signing keys file to git.
+# JWT 署名キーのパス。署名キーファイルを git にコミットしないこと。
 # signing_keys_path = "./signing_keys.json"
-# If disabled, the refresh token will never expire.
+# 無効にすると、リフレッシュトークンが期限切れにならない。
 enable_refresh_token_rotation = true
-# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
-# Requires enable_refresh_token_rotation = true.
+# リフレッシュトークンを期限切れ後も指定秒数内であれば再利用できるようにする。
+# enable_refresh_token_rotation = true が必要。
 refresh_token_reuse_interval = 10
-# Allow/disallow new user signups to your project.
+# プロジェクトへの新規ユーザーサインアップを許可/禁止する。
 enable_signup = true
-# Allow/disallow anonymous sign-ins to your project.
+# プロジェクトへの匿名サインインを許可/禁止する。
 enable_anonymous_sign_ins = false
-# Allow/disallow testing manual linking of accounts
+# アカウントの手動リンクのテストを許可/禁止する。
 enable_manual_linking = true
-# Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
+# この値より短いパスワードは脆弱として拒否される。最小 6、推奨 8 以上。
 minimum_password_length = 6
-# Passwords that do not meet the following requirements will be rejected as weak. Supported values
-# are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
+# 以下の要件を満たさないパスワードは脆弱として拒否される。サポートされる値:
+# `letters_digits`、`lower_upper_letters_digits`、`lower_upper_letters_digits_symbols`
 password_requirements = ""
 
 [auth.rate_limit]
-# Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
+# 1時間あたりに送信できるメール数。auth.email.smtp の有効化が必要。
 email_sent = 2
-# Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
+# 1時間あたりに送信できる SMS メッセージ数。auth.sms の有効化が必要。
 sms_sent = 30
-# Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
+# IP アドレスごとに1時間あたり許可される匿名サインイン数。enable_anonymous_sign_ins = true が必要。
 anonymous_users = 30
-# Number of sessions that can be refreshed in a 5 minute interval per IP address.
+# IP アドレスごとに5分間隔でリフレッシュできるセッション数。
 token_refresh = 150
-# Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
+# IP アドレスごとに5分間隔で許可されるサインアップ・サインインリクエスト数（匿名ユーザーを除く）。
 sign_in_sign_ups = 30
-# Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
+# IP アドレスごとに5分間隔で許可される OTP / マジックリンク検証数。
 token_verifications = 30
-# Number of Web3 logins that can be made in a 5 minute interval per IP address.
+# IP アドレスごとに5分間隔で許可される Web3 ログイン数。
 web3 = 30
 
-# Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
+# サポートされているキャプチャプロバイダーを設定する: `hcaptcha`、`turnstile`。
 # [auth.captcha]
 # enabled = true
 # provider = "hcaptcha"
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
+# プロジェクトへのメールによる新規ユーザーサインアップを許可/禁止する。
 enable_signup = true
-# If enabled, a user will be required to confirm any email change on both the old, and new email
-# addresses. If disabled, only the new email is required to confirm.
+# 有効にすると、メールアドレス変更時に旧メールアドレスと新メールアドレスの両方での確認が必要になる。
+# 無効にすると、新しいメールアドレスのみで確認が必要。
 double_confirm_changes = true
-# If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
-# If enabled, users will need to reauthenticate or have logged in recently to change their password.
+# 有効にすると、ユーザーはサインイン前にメールアドレスを確認する必要がある。
+enable_confirmations = true
+# 有効にすると、ユーザーはパスワードを変更するために再認証するか、最近ログインしている必要がある。
 secure_password_change = false
-# Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
+# 次のサインアップ確認メールまたはパスワードリセットメールを送信するまでの最短待機時間。
 max_frequency = "1s"
-# Number of characters used in the email OTP.
+# メール OTP に使用する文字数。
 otp_length = 6
-# Number of seconds before the email OTP expires (defaults to 1 hour).
+# メール OTP の有効期限（秒）。デフォルトは 1 時間。
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
+# 本番環境対応の SMTP サーバーを使用する場合はコメントを外す
 # [auth.email.smtp]
 # enabled = true
 # host = "smtp.sendgrid.net"
@@ -231,67 +231,77 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
+# アカウント登録時の確認メールテンプレート
+[auth.email.template.confirm_signup]
+subject = "【フクナビ】メールアドレスの確認"
+content_path = "./supabase/templates/confirm_signup.html"
+
+# パスワードリセットメールテンプレート
+[auth.email.template.recovery]
+subject = "【フクナビ】パスワードリセットのご案内"
+content_path = "./supabase/templates/recovery.html"
+
+# メールテンプレートをカスタマイズする場合はコメントを外す
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
-# Uncomment to customize notification email template
+# 通知メールテンプレートをカスタマイズする場合はコメントを外す
 # [auth.email.notification.password_changed]
 # enabled = true
 # subject = "Your password has been changed"
 # content_path = "./templates/password_changed_notification.html"
 
 [auth.sms]
-# Allow/disallow new user signups via SMS to your project.
+# プロジェクトへの SMS による新規ユーザーサインアップを許可/禁止する。
 enable_signup = false
-# If enabled, users need to confirm their phone number before signing in.
+# 有効にすると、ユーザーはサインイン前に電話番号を確認する必要がある。
 enable_confirmations = false
-# Template for sending OTP to users
+# ユーザーへの OTP 送信テンプレート。
 template = "Your code is {{ .Code }}"
-# Controls the minimum amount of time that must pass before sending another sms otp.
+# 次の SMS OTP を送信するまでの最短待機時間。
 max_frequency = "5s"
 
-# Use pre-defined map of phone number to OTP for testing.
+# テスト用に電話番号と OTP の定義済みマッピングを使用する場合はコメントを外す。
 # [auth.sms.test_otp]
 # 4152127777 = "123456"
 
-# Configure logged in session timeouts.
+# ログイン済みセッションのタイムアウトを設定する場合はコメントを外す。
 # [auth.sessions]
-# Force log out after the specified duration.
+# 指定した期間後に強制ログアウトする。
 # timebox = "24h"
-# Force log out if the user has been inactive longer than the specified duration.
+# 指定した期間より長くユーザーが非アクティブな場合に強制ログアウトする。
 # inactivity_timeout = "8h"
 
-# This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
+# このフックは新規ユーザー作成前に実行され、受信したユーザーオブジェクトに基づいてリクエストを拒否できる。
 # [auth.hook.before_user_created]
 # enabled = true
 # uri = "pg-functions://postgres/auth/before-user-created-hook"
 
-# This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
+# このフックはトークン発行前に実行され、使用された認証方法に基づいて追加クレームを付与できる。
 # [auth.hook.custom_access_token]
 # enabled = true
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
-# Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# サポートされている SMS プロバイダーを設定する: `twilio`、`twilio_verify`、`messagebird`、`textlocal`、`vonage`。
 [auth.sms.twilio]
 enabled = false
 account_sid = ""
 message_service_sid = ""
-# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
+# Twilio の認証トークンを git にコミットしないこと。環境変数による置換を使用すること:
 auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 
-# Multi-factor-authentication is available to Supabase Pro plan.
+# 多要素認証は Supabase Pro プランで利用可能。
 [auth.mfa]
-# Control how many MFA factors can be enrolled at once per user.
+# ユーザーごとに同時に登録できる MFA 要素の数を制御する。
 max_enrolled_factors = 10
 
-# Control MFA via App Authenticator (TOTP)
+# アプリ認証（TOTP）による MFA を制御する
 [auth.mfa.totp]
 enroll_enabled = false
 verify_enabled = false
 
-# Configure MFA via Phone Messaging
+# 電話メッセージによる MFA を設定する
 [auth.mfa.phone]
 enroll_enabled = false
 verify_enabled = false
@@ -299,75 +309,75 @@ otp_length = 6
 template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
-# Configure MFA via WebAuthn
+# WebAuthn による MFA を設定する場合はコメントを外す
 # [auth.mfa.web_authn]
 # enroll_enabled = true
 # verify_enabled = true
 
-# Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
-# `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
-# `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+# 外部 OAuth プロバイダーを使用する。サポートされているプロバイダーの一覧:
+# `apple`、`azure`、`bitbucket`、`discord`、`facebook`、`github`、`gitlab`、`google`、
+# `keycloak`、`linkedin_oidc`、`notion`、`twitch`、`twitter`、`x`、`slack`、`spotify`、`workos`、`zoom`。
 [auth.external.apple]
 enabled = false
 client_id = ""
-# DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
+# OAuth プロバイダーのシークレットを git にコミットしないこと。環境変数による置換を使用すること:
 secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
-# Overrides the default auth redirectUrl.
+# デフォルトの auth リダイレクト URL を上書きする。
 redirect_uri = ""
-# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
-# or any other third-party OIDC providers.
+# デフォルトの auth プロバイダー URL を上書きする。セルフホスト GitLab、シングルテナント Azure、
+# またはその他のサードパーティ OIDC プロバイダーのサポートに使用する。
 url = ""
-# If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
+# 有効にすると、nonce チェックがスキップされる。ローカルでの Google 認証サインインに必要。
 skip_nonce_check = false
-# If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
+# 有効にすると、プロバイダーがメールアドレスを返さない場合でもユーザーが正常に認証できる。
 email_optional = false
 
-# Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
-# You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
+# Solana ウォレット保有者が Sign in with Solana（SIWS、EIP-4361）標準でプロジェクトにサインインできるようにする。
+# [auth.rate_limit] セクションで "web3" レートリミットを設定し、セルフホストの場合は [auth.captcha] を設定できる。
 [auth.web3.solana]
 enabled = false
 
-# Use Firebase Auth as a third-party provider alongside Supabase Auth.
+# Firebase Auth をサードパーティプロバイダーとして Supabase Auth と併用する。
 [auth.third_party.firebase]
 enabled = false
 # project_id = "my-firebase-project"
 
-# Use Auth0 as a third-party provider alongside Supabase Auth.
+# Auth0 をサードパーティプロバイダーとして Supabase Auth と併用する。
 [auth.third_party.auth0]
 enabled = false
 # tenant = "my-auth0-tenant"
 # tenant_region = "us"
 
-# Use AWS Cognito (Amplify) as a third-party provider alongside Supabase Auth.
+# AWS Cognito（Amplify）をサードパーティプロバイダーとして Supabase Auth と併用する。
 [auth.third_party.aws_cognito]
 enabled = false
 # user_pool_id = "my-user-pool-id"
 # user_pool_region = "us-east-1"
 
-# Use Clerk as a third-party provider alongside Supabase Auth.
+# Clerk をサードパーティプロバイダーとして Supabase Auth と併用する。
 [auth.third_party.clerk]
 enabled = false
-# Obtain from https://clerk.com/setup/supabase
+# https://clerk.com/setup/supabase から取得する
 # domain = "example.clerk.accounts.dev"
 
-# OAuth server configuration
+# OAuth サーバー設定
 [auth.oauth_server]
-# Enable OAuth server functionality
+# OAuth サーバー機能を有効化する
 enabled = false
-# Path for OAuth consent flow UI
+# OAuth 同意フロー UI のパス
 authorization_url_path = "/oauth/consent"
-# Allow dynamic client registration
+# 動的クライアント登録を許可する
 allow_dynamic_registration = false
 
 [edge_runtime]
 enabled = true
-# Supported request policies: `oneshot`, `per_worker`.
-# `per_worker` (default) — enables hot reload during local development.
-# `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
+# サポートされているリクエストポリシー: `oneshot`、`per_worker`。
+# `per_worker`（デフォルト）— ローカル開発中のホットリロードを有効化する。
+# `oneshot` — ホットリロードで問題が発生する場合のフォールバックモード（大規模リポジトリやシンボリックリンクなど）。
 policy = "per_worker"
-# Port to attach the Chrome inspector for debugging edge functions.
+# エッジ関数のデバッグ用に Chrome インスペクターをアタッチするポート。
 inspector_port = 8083
-# The Deno major version to use.
+# 使用する Deno のメジャーバージョン。
 deno_version = 2
 
 # [edge_runtime.secrets]
@@ -376,26 +386,26 @@ deno_version = 2
 [analytics]
 enabled = true
 port = 54327
-# Configure one of the supported backends: `postgres`, `bigquery`.
+# サポートされているバックエンドを設定する: `postgres`、`bigquery`。
 backend = "postgres"
 
-# Experimental features may be deprecated any time
+# 実験的な機能はいつでも廃止される可能性がある
 [experimental]
-# Configures Postgres storage engine to use OrioleDB (S3)
+# OrioleDB（S3）を使用するように Postgres ストレージエンジンを設定する
 orioledb_version = ""
-# Configures S3 bucket URL, eg. <bucket_name>.s3-<region>.amazonaws.com
+# S3 バケット URL を設定する（例: <bucket_name>.s3-<region>.amazonaws.com）
 s3_host = "env(S3_HOST)"
-# Configures S3 bucket region, eg. us-east-1
+# S3 バケットのリージョンを設定する（例: us-east-1）
 s3_region = "env(S3_REGION)"
-# Configures AWS_ACCESS_KEY_ID for S3 bucket
+# S3 バケットの AWS_ACCESS_KEY_ID を設定する
 s3_access_key = "env(S3_ACCESS_KEY)"
-# Configures AWS_SECRET_ACCESS_KEY for S3 bucket
+# S3 バケットの AWS_SECRET_ACCESS_KEY を設定する
 s3_secret_key = "env(S3_SECRET_KEY)"
 
 # [experimental.pgdelta]
-# When enabled, pg-delta becomes the active engine for supported schema flows.
+# 有効にすると、サポートされているスキーマフローで pg-delta がアクティブエンジンになる。
 # enabled = false
-# Directory under `supabase/` where declarative files are written.
+# 宣言型ファイルが書き込まれる `supabase/` 配下のディレクトリ。
 # declarative_schema_path = "./declarative"
-# JSON string passed through to pg-delta SQL formatting.
+# pg-delta SQL フォーマットに渡される JSON 文字列。
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"

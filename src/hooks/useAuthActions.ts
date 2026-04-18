@@ -57,6 +57,9 @@ export const useAuthActions = () => {
       if (data.user && data.session) {
         await redirectByRole(data.user.id)
       } else {
+        if (data.user) {
+          localStorage.setItem('pending_welcome_email_uid', data.user.id)
+        }
         navigate('/auth/login?registered=true')
       }
     } finally {
