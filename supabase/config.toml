@@ -332,6 +332,13 @@ skip_nonce_check = false
 # 有効にすると、プロバイダーがメールアドレスを返さない場合でもユーザーが正常に認証できる。
 email_optional = false
 
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = ""
+skip_nonce_check = true
+
 # Solana ウォレット保有者が Sign in with Solana（SIWS、EIP-4361）標準でプロジェクトにサインインできるようにする。
 # [auth.rate_limit] セクションで "web3" レートリミットを設定し、セルフホストの場合は [auth.captcha] を設定できる。
 [auth.web3.solana]
