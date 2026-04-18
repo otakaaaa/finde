@@ -23,8 +23,8 @@ const PLAN_FEATURES = {
 }
 
 const PLAN_PRICE = {
-  monthly: { amount: '¥980', period: '/ 月', label: '月額プラン' },
-  yearly: { amount: '¥9,800', period: '/ 年', label: '年額プラン', note: '¥816/月 相当 — 2ヶ月分お得' },
+  monthly: { amount: '¥980', period: '/ 月', label: '月額プラン', note: '' },
+  yearly: { amount: '¥9,800', period: '/ 年', label: '年額プラン', note: '2ヶ月分お得' },
 }
 
 type PlanToggle = 'monthly' | 'yearly'
