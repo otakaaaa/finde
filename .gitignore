@@ -21,8 +21,8 @@ dist-ssr
 .env.production.local
 
 # Editor
-.vscode/*
-!.vscode/extensions.json
+.vscode
+.claude
 .idea
 *.suo
 *.ntvs*
