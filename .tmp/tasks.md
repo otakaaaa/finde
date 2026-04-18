@@ -114,7 +114,7 @@
 - **依存**: Task 1.6
 - **推定時間**: 3h
 
-<!-- ### Task 2.2: Google OAuth 認証 -->
+### Task 2.2: Google OAuth 認証
 
 - [ ] Supabase Auth の Google プロバイダー設定（Google Cloud Console での OAuth クライアント作成）
 - [ ] Google ログインボタン実装
@@ -124,7 +124,7 @@
 - **依存**: Task 2.1
 - **推定時間**: 2h
 
-<!-- ### Task 2.3: アカウント統合フロー -->
+### Task 2.3: アカウント統合フロー
 
 - [ ] Supabase Auth の "Automatically link identities" を OFF に設定
 - [ ] Google OAuth 試行時に既存メールアドレス検出 → `/auth/link-account` リダイレクト処理
@@ -339,7 +339,7 @@
 
 ## Phase 6: Edge Functions（残り2本）
 
-<!-- ### Task 6.1: notify-admin Edge Function -->
+### Task 6.1: notify-admin Edge Function
 
 - [ ] `notify-admin` Edge Function 作成
 - [ ] ブランド新規投稿時の運営通知メール（Resend）

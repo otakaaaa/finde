@@ -223,7 +223,7 @@ export interface ShopRecommend {
 
 export interface Subscription {
   id: string
-  shopId: string
+  shopId: string | null
   userId: string
   stripeSubscriptionId: string | null
   stripeCustomerId: string | null
@@ -231,6 +231,7 @@ export interface Subscription {
   status: SubscriptionStatus
   currentPeriodStart: string | null
   currentPeriodEnd: string | null
+  canceledAt: string | null
   createdAt: string
   updatedAt: string
 }

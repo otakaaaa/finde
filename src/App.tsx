@@ -29,6 +29,7 @@ const WishesPage = lazy(() => import('@/pages/wishes/WishesPage'))
 const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
 const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingRequestPage'))
+const SubscriptionPage = lazy(() => import('@/pages/mypage/SubscriptionPage'))
 
 // Brand pages
 const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
@@ -143,6 +144,10 @@ const App = () => (
             <Route
               path="/listing-request"
               element={<ProtectedRoute><ListingRequestPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/mypage/subscription"
+              element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>}
             />
             <Route
               path="/owner-application/new"

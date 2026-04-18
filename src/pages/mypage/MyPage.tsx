@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Crown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -392,6 +392,14 @@ const MyPage = () => {
               label="セキュリティ設定"
               sublabel="二段階認証の設定"
               animDelay={330}
+            />
+            <NavItem
+              to="/mypage/subscription"
+              icon={<Crown className="h-3.5 w-3.5" />}
+              index="08"
+              label="プレミアム会員"
+              sublabel="サブスクリプションの確認・管理"
+              animDelay={385}
             />
           </div>
 
