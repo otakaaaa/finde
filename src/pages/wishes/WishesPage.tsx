@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil } from 'lucide-react'
+import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil, Crown } from 'lucide-react'
 import { useMyWishes, useDeleteWish } from '@/hooks/useWishes'
+import { useAuth } from '@/hooks/useAuth'
+import { useUserSubscription } from '@/hooks/useUserSubscription'
+import { FREE_PLAN_LIMITS } from '@/lib/planLimits'
 import { cn } from '@/lib/utils'
 import type { Wish } from '@/types'
 
@@ -227,7 +230,12 @@ const WishCardSkeleton = ({ index }: { index: number }) => (
 )
 
 const WishesPage = () => {
+  const { user } = useAuth()
   const { data: wishes, isLoading, isError } = useMyWishes()
+  const { isPremium } = useUserSubscription(user?.id)
+
+  const wishesCount = wishes?.length ?? 0
+  const isAtLimit = !isPremium && wishesCount >= FREE_PLAN_LIMITS.wishes
 
   return (
     <div>
@@ -260,13 +268,20 @@ const WishesPage = () => {
                   {String(wishes.length).padStart(3, '0')}
                 </span>
               )}
-              <Link
-                to="/wishes/new"
-                className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                追加する
-              </Link>
+              {isAtLimit ? (
+                <span className="flex h-8 items-center gap-1.5 rounded-sm border border-white/10 bg-white/5 px-3 text-xs font-bold text-white/30 cursor-not-allowed">
+                  <Plus className="h-3.5 w-3.5" />
+                  追加する
+                </span>
+              ) : (
+                <Link
+                  to="/wishes/new"
+                  className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  追加する
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -275,6 +290,29 @@ const WishesPage = () => {
       {/* ── Content ──────────────────────────────── */}
       <div className="bg-background">
         <div className="mx-auto max-w-6xl px-4 py-10 md:px-16 md:py-14">
+
+          {/* Plan limit banner */}
+          {isAtLimit && (
+            <div className="mb-8 flex items-start gap-4 border-l-[3px] border-l-amber-400 bg-amber-50 px-5 py-4">
+              <Crown className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+              <div className="flex-1">
+                <p className="mb-1 font-headline text-[10px] font-black uppercase tracking-[0.3em] text-amber-700">
+                  上限に達しています
+                </p>
+                <p className="text-[11px] leading-relaxed text-amber-700/80">
+                  フリープランではウィッシュを{FREE_PLAN_LIMITS.wishes}件まで登録できます。
+                  プレミアムプランにアップグレードすると無制限に登録できます。
+                </p>
+                <Link
+                  to="/mypage/subscription"
+                  className="mt-2 inline-flex items-center gap-1 font-headline text-[10px] font-black uppercase tracking-[0.2em] text-amber-700 underline-offset-2 hover:underline"
+                >
+                  <Crown className="h-3 w-3" />
+                  プレミアムにアップグレード
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Loading skeleton */}
           {isLoading && (

@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, Link } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag } from 'lucide-react'
+import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag, Crown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { useCreateWish } from '@/hooks/useWishes'
+import { useCreateWish, useMyWishes } from '@/hooks/useWishes'
+import { useAuth } from '@/hooks/useAuth'
+import { useUserSubscription } from '@/hooks/useUserSubscription'
+import { FREE_PLAN_LIMITS } from '@/lib/planLimits'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -135,7 +138,12 @@ const selectClass = cn(
 
 const WishNewPage = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { mutate, isPending, error } = useCreateWish()
+  const { data: wishes } = useMyWishes()
+  const { isPremium } = useUserSubscription(user?.id)
+
+  const isAtLimit = !isPremium && (wishes?.length ?? 0) >= FREE_PLAN_LIMITS.wishes
 
   const { data: masterData } = useQuery({
     queryKey: ['master-data'],
@@ -174,6 +182,58 @@ const WishNewPage = () => {
     mutate(values, {
       onSuccess: () => navigate('/wishes'),
     })
+  }
+
+  if (isAtLimit) {
+    return (
+      <div className="bg-background">
+        <section className="bg-primary px-6 pb-10 pt-10 md:px-16">
+          <div className="mx-auto max-w-3xl">
+            <button
+              type="button"
+              onClick={() => navigate('/wishes')}
+              className="mb-6 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              戻る
+            </button>
+            <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
+              ウィッシュを追加
+            </h1>
+          </div>
+        </section>
+
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center md:px-16">
+          <div className="inline-flex h-16 w-16 items-center justify-center bg-amber-50 text-amber-400">
+            <Crown className="h-8 w-8" />
+          </div>
+          <h2 className="mt-6 font-headline text-xl font-black tracking-tight text-foreground">
+            登録上限に達しました
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            フリープランではウィッシュを{FREE_PLAN_LIMITS.wishes}件まで登録できます。
+            <br />
+            プレミアムプランにアップグレードすると無制限に登録できます。
+          </p>
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link
+              to="/mypage/subscription"
+              className="flex items-center gap-2 bg-primary px-6 py-3 font-headline text-[10px] font-black uppercase tracking-[0.3em] text-white transition-opacity hover:opacity-85"
+            >
+              <Crown className="h-3.5 w-3.5" />
+              プレミアムにアップグレード
+            </Link>
+            <button
+              type="button"
+              onClick={() => navigate('/wishes')}
+              className="font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 transition-colors hover:text-foreground/60"
+            >
+              ← ウィッシュリストに戻る
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

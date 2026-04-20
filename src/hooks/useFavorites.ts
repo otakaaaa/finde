@@ -2,6 +2,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
+export const useFavoritesCount = () => {
+  const { user } = useAuth()
+
+  return useQuery({
+    queryKey: ['favorites-count', user?.id],
+    queryFn: async () => {
+      if (!user) return 0
+      const { count, error } = await supabase
+        .from('favorites')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      if (error) throw new Error(error.message)
+      return count ?? 0
+    },
+    enabled: !!user,
+  })
+}
+
 export const useFavoriteStatus = (shopId: string) => {
   const { user } = useAuth()
 
@@ -53,6 +71,7 @@ export const useToggleFavorite = (shopId: string) => {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['favorite', shopId] })
       queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] })
+      queryClient.invalidateQueries({ queryKey: ['favorites-count', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['shop', shopId] })
     },
   })
