@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Crown, Check, Loader2, ExternalLink } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserSubscription } from '@/hooks/useUserSubscription'
@@ -50,6 +51,7 @@ const SubscriptionPage = () => {
   const { user } = useAuth()
   const { subscription, isPremium, isLoading } = useUserSubscription(user?.id)
 
+  const queryClient = useQueryClient()
   const [selectedPlan, setSelectedPlan] = useState<PlanToggle>('monthly')
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
@@ -57,6 +59,25 @@ const SubscriptionPage = () => {
 
   const isSuccess = searchParams.get('success') === 'true'
   const isCanceled = searchParams.get('canceled') === 'true'
+
+  // 決済完了後、Webhookの処理を待ちながらサブスクリプション状態をポーリングで更新する
+  useEffect(() => {
+    if (!isSuccess || !user?.id) return
+
+    // 即時再フェッチ
+    queryClient.invalidateQueries({ queryKey: ['user-subscription', user.id] })
+
+    // Webhookの処理遅延に備え、最大10秒間ポーリング（2秒おき×5回）
+    let attempts = 0
+    const maxAttempts = 5
+    const interval = setInterval(() => {
+      attempts++
+      queryClient.invalidateQueries({ queryKey: ['user-subscription', user.id] })
+      if (attempts >= maxAttempts) clearInterval(interval)
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [isSuccess, user?.id, queryClient])
 
   const handleSubscribe = async () => {
     setCheckoutLoading(true)

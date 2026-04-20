@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@22.0.2?target=deno'
+import Stripe from 'npm:stripe'
 
 serve(async (req) => {
   const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
@@ -35,36 +35,52 @@ serve(async (req) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        if (session.mode !== 'subscription' || !session.subscription) break
+
+        if (session.mode !== 'subscription' || !session.subscription) {
+          console.log('Skipping: not a subscription session')
+          break
+        }
 
         const userId = session.metadata?.user_id
-        if (!userId) break
+        if (!userId) {
+          console.log('Skipping: no user_id in metadata')
+          break
+        }
 
-        const subscription = await stripe.subscriptions.retrieve(
-          typeof session.subscription === 'string'
-            ? session.subscription
-            : session.subscription.id,
-        )
+        const subscriptionId = typeof session.subscription === 'string'
+          ? session.subscription
+          : session.subscription.id
+
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
         const plan = determinePlan(subscription)
 
-        await supabase.from('subscriptions').upsert(
+        const { error: upsertError } = await supabase.from('subscriptions').upsert(
           {
             user_id: userId,
-            shop_id: null,  // ユーザープレミアム会員は shop_id を持たない
+            shop_id: null,
             stripe_subscription_id: subscription.id,
             stripe_customer_id: typeof subscription.customer === 'string'
               ? subscription.customer
               : subscription.customer.id,
             plan,
             status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: subscription.current_period_start != null
+              ? new Date(subscription.current_period_start * 1000).toISOString()
+              : null,
+            current_period_end: subscription.current_period_end != null
+              ? new Date(subscription.current_period_end * 1000).toISOString()
+              : null,
             canceled_at: null,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'stripe_subscription_id' },
         )
+
+        if (upsertError) {
+          console.error('Upsert error:', JSON.stringify(upsertError))
+          throw upsertError
+        }
         break
       }
 
@@ -77,8 +93,12 @@ serve(async (req) => {
           .update({
             plan,
             status: subscription.status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: subscription.current_period_start != null
+              ? new Date(subscription.current_period_start * 1000).toISOString()
+              : null,
+            current_period_end: subscription.current_period_end != null
+              ? new Date(subscription.current_period_end * 1000).toISOString()
+              : null,
             canceled_at: subscription.canceled_at
               ? new Date(subscription.canceled_at * 1000).toISOString()
               : null,
