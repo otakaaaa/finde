@@ -3,10 +3,10 @@ import { Link, useLocation } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
-import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 import { NotificationBell } from '@/components/notification/NotificationBell'
 import { FukunaviLogo } from '@/components/icons/FukunaviLogo'
-import { LogOut, User, Heart, LayoutDashboard, Store, ShieldCheck } from 'lucide-react'
+import { LogOut, User, LayoutDashboard, Store, ShieldCheck } from 'lucide-react'
 
 interface NavItem {
   to: string
@@ -20,7 +20,7 @@ const PUBLIC_NAV: NavItem[] = [
 ]
 
 const USER_NAV: NavItem[] = [
-  { to: '/wishes', label: 'WISHES', labelJa: 'ウィッシュ' },
+  ...(WISH_FEATURE_ENABLED ? [{ to: '/wishes', label: 'WISHES', labelJa: 'ウィッシュ' }] : []),
   { to: '/mypage', label: 'MYPAGE', labelJa: 'マイページ' },
 ]
 
@@ -195,15 +195,6 @@ export const Header = () => {
                       </span>
                     </Link>
                     <Link
-                      to="/wishes"
-                      className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
-                    >
-                      <Heart className="h-3 w-3 shrink-0 text-muted-foreground/40" />
-                      <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">
-                        ウィッシュ
-                      </span>
-                    </Link>
-                    <Link
                       to="/mypage/contacts"
                       className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted"
                     >
@@ -307,10 +298,6 @@ export const Header = () => {
                       <Link to="/mypage" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
                         <User className="h-3 w-3 shrink-0 text-muted-foreground/40" />
                         <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">マイページ</span>
-                      </Link>
-                      <Link to="/wishes" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
-                        <Heart className="h-3 w-3 shrink-0 text-muted-foreground/40" />
-                        <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">ウィッシュ</span>
                       </Link>
                       <Link to="/mypage/contacts" className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted">
                         <LayoutDashboard className="h-3 w-3 shrink-0 text-muted-foreground/40" />
