@@ -241,7 +241,7 @@ const TopPage = () => {
             className="text-white/30 text-[9px] font-bold tracking-[0.5em] uppercase"
             style={{ writingMode: 'vertical-rl' }}
           >
-            FUKUNAVI — 2026
+            FINDE — 2026
           </span>
           <div className="h-16 w-px bg-white/20" />
         </div>

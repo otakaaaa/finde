@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { useUiStore } from '@/store/uiStore'
 import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 import { NotificationBell } from '@/components/notification/NotificationBell'
-import { FukunaviLogo } from '@/components/icons/FukunaviLogo'
+import { FindeLogo } from '@/components/icons/FindeLogo'
 import { LogOut, User, LayoutDashboard, Store, ShieldCheck } from 'lucide-react'
 
 interface NavItem {
@@ -111,9 +111,9 @@ export const Header = () => {
           <Link
             to="/"
             className="transition-opacity duration-200 hover:opacity-60"
-            aria-label="フクナビ トップページ"
+            aria-label="FINDE トップページ"
           >
-            <FukunaviLogo size="md" />
+            <FindeLogo size="md" />
           </Link>
 
           {/* ── Desktop Nav ──────────────────────── */}

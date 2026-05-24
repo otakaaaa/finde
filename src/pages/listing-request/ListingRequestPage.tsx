@@ -42,7 +42,7 @@ type ListingRequestFormValues = z.infer<typeof listingRequestSchema>
 
 const PROCESS_STEPS = [
   { num: '01', label: '申請フォームの送信', desc: '店舗情報を入力して送信' },
-  { num: '02', label: 'フクナビ運営による審査', desc: '通常2〜5営業日' },
+  { num: '02', label: 'FINDE運営による審査', desc: '通常2〜5営業日' },
   { num: '03', label: '掲載開始のご連絡', desc: 'メールにてお知らせ' },
 ]
 
@@ -79,7 +79,7 @@ const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
             </span>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            フクナビ運営が内容を確認の上、審査完了後にメールにてご連絡いたします。<br />
+            FINDE運営が内容を確認の上、審査完了後にメールにてご連絡いたします。<br />
             通常2〜5営業日程度お時間をいただきます。
           </p>
         </div>
@@ -238,8 +238,8 @@ const ListingRequestPage = () => {
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  フクナビに掲載したい店舗を申請してください。<br />
-                  フクナビ運営が確認後、掲載いたします。
+                  FINDEに掲載したい店舗を申請してください。<br />
+                  FINDE運営が確認後、掲載いたします。
                 </p>
                 {OWNER_FEATURE_ENABLED && (
                   <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
@@ -349,10 +349,10 @@ const ListingRequestPage = () => {
                   {/* 11 補足メモ */}
                   <section className="wish-card-enter" style={{ animationDelay: '210ms' }}>
                     <SectionLabel num="11" title="補足メモ" optional />
-                    <Field label="フクナビ運営への補足" optional error={errors.note?.message}>
+                    <Field label="FINDE運営への補足" optional error={errors.note?.message}>
                       <textarea
                         rows={3}
-                        placeholder="フクナビ運営への補足情報など…"
+                        placeholder="FINDE運営への補足情報など…"
                         className={cn(
                           'w-full rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed',
                           'placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50',

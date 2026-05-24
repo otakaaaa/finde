@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { FukunaviLogo } from '@/components/icons/FukunaviLogo'
+import { FindeLogo } from '@/components/icons/FindeLogo'
 
 const NAV_COLUMNS = [
   {
@@ -55,7 +55,7 @@ export const Footer = () => (
           <div>
             {/* Logo */}
             <div className="mb-5">
-              <FukunaviLogo size="md" variant="inverse" />
+              <FindeLogo size="md" variant="inverse" />
             </div>
 
             {/* Tagline */}
@@ -106,7 +106,7 @@ export const Footer = () => (
       {/* Bottom strip */}
       <div className="mt-12 flex flex-col items-start gap-2 border-t border-white/[0.07] pt-6 sm:flex-row sm:items-center sm:justify-between">
         <span className="font-headline text-[9px] font-black tabular-nums tracking-[0.3em] text-white/20">
-          © 2026 FUKUNAVI
+          © 2026 FINDE
         </span>
         <span className="font-headline text-[9px] font-bold uppercase tracking-[0.2em] text-white/15">
           古着 · セレクト ・ ユニセックス

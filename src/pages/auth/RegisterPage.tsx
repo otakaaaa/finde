@@ -114,7 +114,7 @@ const RegisterPage = () => {
         {/* Top: brand mark */}
         <div className="relative">
           <p className="font-headline text-[9px] font-black uppercase tracking-[0.6em] text-white/30">
-            fukunavi
+            FINDE
           </p>
         </div>
 
@@ -144,7 +144,7 @@ const RegisterPage = () => {
         {/* Mobile brand header */}
         <div className="mb-10 lg:hidden">
           <p className="mb-1 font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/35">
-            fukunavi
+            FINDE
           </p>
           <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground">
             REGISTER

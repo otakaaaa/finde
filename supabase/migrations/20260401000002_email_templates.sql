@@ -47,31 +47,31 @@ insert into public.email_templates (slug, name, subject, body, is_active, variab
 
 ('welcome',
  '新規登録完了',
- '【フクナビ】ご登録ありがとうございます',
+ '【FINDE】ご登録ありがとうございます',
  '{{display_name}} 様
 
-この度はフクナビにご登録いただきありがとうございます。
+この度はFINDEにご登録いただきありがとうございます。
 
 ■ アカウント情報
 ・メールアドレス: {{email}}
 ・登録日時: {{created_at}}
 
-フクナビでは、あなたのお気に入りの古着屋を見つけることができます。
+FINDEでは、あなたのお気に入りの古着屋を見つけることができます。
 ぜひウィッシュリストや店舗検索をご活用ください。
 
 ご不明な点がございましたら、お気軽にお問い合わせください。
 
-フクナビ運営チーム
-https://fukunavi.example.com',
+FINDE運営チーム
+https://finde.example.com',
 true,
 ARRAY['display_name', 'email', 'created_at']),
 
 ('email_confirmation',
  'メールアドレス確認',
- '【フクナビ】メールアドレスをご確認ください',
+ '【FINDE】メールアドレスをご確認ください',
  '{{display_name}} 様
 
-フクナビのご登録ありがとうございます。
+FINDEのご登録ありがとうございます。
 以下のリンクをクリックしてメールアドレスを確認してください。
 
 ■ 確認リンク
@@ -81,13 +81,13 @@ ARRAY['display_name', 'email', 'created_at']),
 
 ※このメールに心当たりがない場合は破棄してください。
 
-フクナビ運営チーム',
+FINDE運営チーム',
 true,
 ARRAY['display_name', 'confirmation_url', 'expires_at']),
 
 ('password_reset',
  'パスワードリセット',
- '【フクナビ】パスワードリセットのご案内',
+ '【FINDE】パスワードリセットのご案内',
  '{{display_name}} 様
 
 パスワードリセットのリクエストを受け付けました。
@@ -101,13 +101,13 @@ ARRAY['display_name', 'confirmation_url', 'expires_at']),
 ※パスワードリセットをリクエストしていない場合は、このメールを無視してください。
 　アカウントへの不正アクセスの恐れがある場合はお問い合わせください。
 
-フクナビ運営チーム',
+FINDE運営チーム',
 true,
 ARRAY['display_name', 'reset_url', 'expires_at']),
 
 ('listing_approved',
  '掲載申請承認',
- '【フクナビ】店舗掲載申請が承認されました',
+ '【FINDE】店舗掲載申請が承認されました',
  '{{display_name}} 様
 
 ご申請いただいた店舗の掲載が承認されました。
@@ -119,15 +119,15 @@ ARRAY['display_name', 'reset_url', 'expires_at']),
 オーナーダッシュボードから店舗情報の編集や写真の追加が行えます。
 {{dashboard_url}}
 
-引き続きフクナビをよろしくお願いいたします。
+引き続きFINDEをよろしくお願いいたします。
 
-フクナビ運営チーム',
+FINDE運営チーム',
 true,
 ARRAY['display_name', 'shop_name', 'approved_at', 'dashboard_url']),
 
 ('listing_rejected',
  '掲載申請却下',
- '【フクナビ】店舗掲載申請について',
+ '【FINDE】店舗掲載申請について',
  '{{display_name}} 様
 
 ご申請いただいた「{{shop_name}}」の掲載申請について、
@@ -139,16 +139,16 @@ ARRAY['display_name', 'shop_name', 'approved_at', 'dashboard_url']),
 内容を修正の上、再度申請いただくことも可能です。
 ご不明な点はお問い合わせよりご連絡ください。
 
-フクナビ運営チーム',
+FINDE運営チーム',
 true,
 ARRAY['display_name', 'shop_name', 'rejection_reason']),
 
 ('contact_received',
  'お問い合わせ受付確認',
- '【フクナビ】お問い合わせを受け付けました',
+ '【FINDE】お問い合わせを受け付けました',
  '{{name}} 様
 
-この度はフクナビへお問い合わせいただきありがとうございます。
+この度はFINDEへお問い合わせいただきありがとうございます。
 以下の内容でお問い合わせを受け付けました。
 
 ■ お問い合わせ内容
@@ -161,7 +161,7 @@ ARRAY['display_name', 'shop_name', 'rejection_reason']),
 返信までに数日お時間をいただく場合がございます。
 {{/unless}}
 
-フクナビ運営チーム
-https://fukunavi.example.com',
+FINDE運営チーム
+https://finde.example.com',
 true,
 ARRAY['name', 'subject', 'category', 'received_at', 'is_noreply']);
