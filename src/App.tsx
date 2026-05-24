@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 
 // Public pages
 const TopPage = lazy(() => import('@/pages/top/TopPage'))
@@ -131,15 +131,15 @@ const App = () => (
             />
             <Route
               path="/wishes"
-              element={<ProtectedRoute><WishesPage /></ProtectedRoute>}
+              element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishesPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/wishes/new"
-              element={<ProtectedRoute><WishNewPage /></ProtectedRoute>}
+              element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishNewPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/wishes/:id/edit"
-              element={<ProtectedRoute><WishEditPage /></ProtectedRoute>}
+              element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishEditPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
             <Route
               path="/listing-request"

@@ -5,11 +5,10 @@ import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
-import { useMyWishes } from '@/hooks/useWishes'
 import { useFavoriteShops } from '@/hooks/useFavorites'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
-import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 
 const ROLE_LABEL: Record<string, string> = {
   user: 'MEMBER',
@@ -102,7 +101,6 @@ const NavItem = ({ to, icon, index, label, sublabel, animDelay = 0 }: NavItemPro
 const MyPage = () => {
   const { user, refreshUser } = useAuth()
   const { openLogoutModal, openDeleteAccountModal } = useUiStore()
-  const { data: wishes } = useMyWishes()
   const { data: favorites } = useFavoriteShops()
 
   const { data: ownerApplications } = useQuery({
@@ -199,7 +197,6 @@ const MyPage = () => {
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit' })
     : '—'
-  const wishCount = wishes?.length ?? 0
   const favoriteCount = favorites?.length ?? 0
 
   return (
@@ -300,23 +297,17 @@ const MyPage = () => {
       <div className="bg-background">
         <div className="mx-auto max-w-3xl px-4 md:px-16">
           {/* Stats row overlapping the section break slightly */}
-          <div className="-mt-0 grid grid-cols-3 gap-3 pt-8 md:gap-4">
-            <StatPanel
-              value={String(wishCount).padStart(2, '0')}
-              label="Wishes"
-              sublabel="登録済みウィッシュ"
-              index={0}
-            />
+          <div className="-mt-0 grid grid-cols-2 gap-3 pt-8 md:gap-4">
             <StatPanel
               value={String(favoriteCount).padStart(2, '0')}
               label="Favorites"
               sublabel="お気に入り店舗"
-              index={1}
+              index={0}
             />
             <StatPanel
               value={memberSince}
               label="Member Since"
-              index={2}
+              index={1}
             />
           </div>
         </div>
@@ -343,63 +334,65 @@ const MyPage = () => {
               sublabel="保存した店舗を確認する"
               animDelay={0}
             />
-            <NavItem
-              to="/wishes"
-              icon={<List className="h-3.5 w-3.5" />}
-              index="02"
-              label="ウィッシュリスト"
-              sublabel="探しているアイテムを管理する"
-              animDelay={55}
-            />
+            {WISH_FEATURE_ENABLED && (
+              <NavItem
+                to="/wishes"
+                icon={<List className="h-3.5 w-3.5" />}
+                index="02"
+                label="ウィッシュリスト"
+                sublabel="探しているアイテムを管理する"
+                animDelay={55}
+              />
+            )}
             <NavItem
               to="/listing-request"
               icon={<Store className="h-3.5 w-3.5" />}
-              index="03"
+              index="02"
               label="店舗の掲載申請"
               sublabel="知っている店舗を登録する"
-              animDelay={110}
+              animDelay={55}
             />
-            {OWNER_FEATURE_ENABLED &&
+            {OWNER_FEATURE_ENABLED && (
               <NavItem
                 to="/owner-application/new"
                 icon={<MessageCircle className="h-3.5 w-3.5" />}
-                index="04"
+                index="03"
                 label="オーナー申請"
                 sublabel="自分の店舗としてオーナー権限を申請する"
-                animDelay={165}
+                animDelay={110}
               />
-            }
+            )}
             <NavItem
               to="/mypage/contacts"
               icon={<Mail className="h-3.5 w-3.5" />}
-              index="05"
+              index="03"
               label="お問い合わせ履歴"
               sublabel="過去のお問い合わせを確認する"
-              animDelay={220}
+              animDelay={110}
             />
             <NavItem
               to="/mypage/notifications"
               icon={<Bell className="h-3.5 w-3.5" />}
-              index="06"
+              index="04"
               label="通知"
               sublabel="お知らせや申請結果を確認する"
-              animDelay={275}
+              animDelay={165}
             />
             <NavItem
               to="/mypage/security"
               icon={<Shield className="h-3.5 w-3.5" />}
-              index="07"
+              index="05"
               label="セキュリティ設定"
               sublabel="二段階認証の設定"
-              animDelay={330}
+              animDelay={220}
             />
             <NavItem
               to="/mypage/subscription"
               icon={<Crown className="h-3.5 w-3.5" />}
-              index="08"
+              index="06"
               label="プレミアム会員"
               sublabel="サブスクリプションの確認・管理"
-              animDelay={385}
+              animDelay={275}
             />
           </div>
 
