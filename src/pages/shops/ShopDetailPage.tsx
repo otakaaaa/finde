@@ -5,12 +5,10 @@ import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
-import { useFavoriteStatus, useToggleFavorite, useFavoritesCount } from '@/hooks/useFavorites'
+import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserSubscription } from '@/hooks/useUserSubscription'
 import { useUiStore } from '@/store/uiStore'
-import { FREE_PLAN_LIMITS } from '@/lib/planLimits'
 import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { cn } from '@/lib/utils'
@@ -103,8 +101,6 @@ const ShopDetailPage = () => {
   const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
-  const { data: favoritesCount = 0 } = useFavoritesCount()
-  const { isPremium } = useUserSubscription(user?.id)
   const { addToast } = useUiStore()
   const { data: reviews } = useReviews(id ?? '')
   const { data: myReview } = useMyReview(id ?? '')
@@ -113,14 +109,6 @@ const ShopDetailPage = () => {
 
   const handleToggleFavorite = () => {
     if (!user) { navigate('/auth/login'); return }
-    if (!isFavorited && !isPremium && favoritesCount >= FREE_PLAN_LIMITS.favorites) {
-      addToast({
-        title: 'お気に入りの上限に達しました',
-        description: `フリープランは${FREE_PLAN_LIMITS.favorites}件まで。プレミアムプランで無制限に保存できます。`,
-        variant: 'destructive',
-      })
-      return
-    }
     toggleFavorite(isFavorited ?? false)
   }
 

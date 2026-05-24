@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, CreditCard, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users } from 'lucide-react'
+import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,6 @@ interface StatsData {
   shopsPublic: number
   shopsPending: number
   applicationsPending: number
-  subscriptionsActive: number
   reviewsFlagged: number
   contactsPending: number
 }
@@ -20,10 +19,9 @@ const useAdminStats = () =>
   useQuery({
     queryKey: ['admin-stats'],
     queryFn: async (): Promise<StatsData> => {
-      const [shopsAll, appsPending, subActive, reviewsFlagged, contactsPending] = await Promise.all([
+      const [shopsAll, appsPending, reviewsFlagged, contactsPending] = await Promise.all([
         supabase.from('shops').select('status') as unknown as Promise<{ data: { status: string }[] | null; error: unknown }>,
         supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending') as unknown as Promise<{ count: number | null; error: unknown }>,
-        supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'flagged') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('contacts').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']) as unknown as Promise<{ count: number | null; error: unknown }>,
       ])
@@ -34,7 +32,6 @@ const useAdminStats = () =>
         shopsPublic: shops.filter((s) => s.status === 'public').length,
         shopsPending: shops.filter((s) => s.status === 'pending').length,
         applicationsPending: appsPending.count ?? 0,
-        subscriptionsActive: subActive.count ?? 0,
         reviewsFlagged: reviewsFlagged.count ?? 0,
         contactsPending: contactsPending.count ?? 0,
       }
@@ -247,13 +244,13 @@ const AdminDashboardPage = () => {
             </div>
 
             {statsLoading ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:gap-4">
-                {[0, 1, 2, 3].map((i) => (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4">
+                {[0, 1, 2].map((i) => (
                   <div key={i} className="h-24 animate-pulse rounded-sm bg-muted" style={{ animationDelay: `${i * 55}ms` }} />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4">
                 <StatCard
                   value={stats?.shopsTotal ?? 0}
                   label="Total Shops"
@@ -269,18 +266,11 @@ const AdminDashboardPage = () => {
                   index={1}
                 />
                 <StatCard
-                  value={stats?.subscriptionsActive ?? 0}
-                  label="Active Subs"
-                  sublabel="有効なサブスク"
-                  accent="success"
-                  index={2}
-                />
-                <StatCard
                   value={stats?.reviewsFlagged ?? 0}
                   label="Flagged Reviews"
                   sublabel="要確認のレビュー"
                   accent={stats?.reviewsFlagged ? 'danger' : 'default'}
-                  index={3}
+                  index={2}
                 />
               </div>
             )}
@@ -327,13 +317,6 @@ const AdminDashboardPage = () => {
                   label="ブランド管理"
                   sublabel="ブランドの追加・統合・管理"
                   animDelay={165}
-                />
-                <NavTile
-                  to="/admin/subscriptions"
-                  icon={<CreditCard className="h-4 w-4" />}
-                  label="サブスクリプション"
-                  sublabel="契約状況の確認"
-                  animDelay={220}
                 />
                 <NavTile
                   to="/admin/contacts"

@@ -29,7 +29,6 @@ const WishesPage = lazy(() => import('@/pages/wishes/WishesPage'))
 const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
 const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingRequestPage'))
-const SubscriptionPage = lazy(() => import('@/pages/mypage/SubscriptionPage'))
 
 // Brand pages
 const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
@@ -46,7 +45,6 @@ const AdminShopNewPage = lazy(() => import('@/pages/admin/AdminShopNewPage'))
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'))
 const AdminBrandsPage = lazy(() => import('@/pages/admin/AdminBrandsPage'))
 const AdminApplicationsPage = lazy(() => import('@/pages/admin/AdminApplicationsPage'))
-const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'))
 const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
 const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
 const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
@@ -146,10 +144,6 @@ const App = () => (
               element={<ProtectedRoute><ListingRequestPage /></ProtectedRoute>}
             />
             <Route
-              path="/mypage/subscription"
-              element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>}
-            />
-            <Route
               path="/owner-application/new"
               element={OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute> : <Navigate to="/" replace />}
             />
@@ -208,10 +202,6 @@ const App = () => (
             <Route
               path="/admin/applications"
               element={<ProtectedRoute requiredRole="admin"><AdminApplicationsPage /></ProtectedRoute>}
-            />
-            <Route
-              path="/admin/subscriptions"
-              element={<ProtectedRoute requiredRole="admin"><AdminSubscriptionsPage /></ProtectedRoute>}
             />
             <Route
               path="/admin/contacts"
