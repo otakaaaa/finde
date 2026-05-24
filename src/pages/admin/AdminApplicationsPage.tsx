@@ -560,7 +560,7 @@ const OwnerDmPane = ({ application, onClose }: OwnerDmPaneProps) => {
             {messages.map((msg) => {
               const isSelf = msg.sender_id === user?.id
               const senderIsAdmin = msg.users?.role === 'admin'
-              const name = senderIsAdmin ? 'フクナビ運営' : (msg.users?.display_name ?? 'ユーザー')
+              const name = senderIsAdmin ? 'FINDE運営' : (msg.users?.display_name ?? 'ユーザー')
               return (
                 <div key={msg.id} className={cn('flex flex-col gap-1', isSelf ? 'items-end' : 'items-start')}>
                   <div className="flex items-center gap-1.5">

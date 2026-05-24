@@ -46,7 +46,7 @@ serve(async (req) => {
   try {
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const fromEmail    = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
-    const siteUrl      = Deno.env.get('SITE_URL') ?? 'https://fukunavi.example.com'
+    const siteUrl      = Deno.env.get('SITE_URL') ?? 'https://finde.example.com'
 
     if (!resendApiKey) throw new Error('RESEND_API_KEY is not set')
 
@@ -94,7 +94,7 @@ serve(async (req) => {
         resendApiKey,
         from:    fromEmail,
         to:      user.email,
-        subject: '【フクナビ】店舗掲載申請が承認されました',
+        subject: '【FINDE】店舗掲載申請が承認されました',
         text: [
           `${displayName} 様`,
           '',
@@ -105,9 +105,9 @@ serve(async (req) => {
           `・承認日時: ${approvedAt}`,
           '',
           ...(dashboardSection ? [dashboardSection, ''] : []),
-          '引き続きフクナビをよろしくお願いいたします。',
+          '引き続きFINDEをよろしくお願いいたします。',
           '',
-          'フクナビ運営チーム',
+          'FINDE運営チーム',
         ].join('\n'),
       })
     } else {
@@ -115,7 +115,7 @@ serve(async (req) => {
         resendApiKey,
         from:    fromEmail,
         to:      user.email,
-        subject: '【フクナビ】店舗掲載申請について',
+        subject: '【FINDE】店舗掲載申請について',
         text: [
           `${displayName} 様`,
           '',
@@ -125,7 +125,7 @@ serve(async (req) => {
           '内容を修正の上、再度申請いただくことも可能です。',
           'ご不明な点はお問い合わせよりご連絡ください。',
           '',
-          'フクナビ運営チーム',
+          'FINDE運営チーム',
         ].join('\n'),
       })
     }

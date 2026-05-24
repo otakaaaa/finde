@@ -24,7 +24,7 @@ const AdminReplyBubble = ({ reply, hideIcon }: { reply: ContactReply; hideIcon: 
     <div className="mb-2 min-w-0 flex-1">
       <div className="mb-1 flex items-center gap-1.5">
         <span className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-sky-600/70">
-          {reply.users?.display_name ?? 'フクナビ運営'}
+          {reply.users?.display_name ?? 'FINDE運営'}
         </span>
         <span className="rounded-sm bg-sky-100 px-1 py-0.5 font-headline text-[7px] font-black uppercase tracking-wider text-sky-500">
           STAFF

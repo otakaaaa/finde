@@ -40,7 +40,7 @@ serve(async (req) => {
   try {
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const fromEmail    = Deno.env.get('FROM_EMAIL') ?? 'onboarding@resend.dev'
-    const siteUrl      = Deno.env.get('SITE_URL') ?? 'https://fukunavi.example.com'
+    const siteUrl      = Deno.env.get('SITE_URL') ?? 'https://finde.example.com'
 
     if (!resendApiKey) throw new Error('RESEND_API_KEY is not set')
 
@@ -66,22 +66,22 @@ serve(async (req) => {
       resendApiKey,
       from:    fromEmail,
       to:      user.email,
-      subject: '【フクナビ】会員登録が完了しました',
+      subject: '【FINDE】会員登録が完了しました',
       text: [
         `${displayName} 様`,
         '',
-        'この度はフクナビにご登録いただきありがとうございます。',
+        'この度はFINDEにご登録いただきありがとうございます。',
         '',
         '■ アカウント情報',
         `・メールアドレス: ${user.email}`,
         `・登録日時: ${createdAt}`,
         '',
-        'フクナビでは、あなたのお気に入りのセレクトショップを見つけることができます。',
+        'FINDEでは、あなたのお気に入りのセレクトショップを見つけることができます。',
         'ぜひウィッシュリストや店舗検索をご活用ください。',
         '',
         'ご不明な点がございましたら、お気軽にお問い合わせください。',
         '',
-        'フクナビ運営チーム',
+        'FINDE運営チーム',
         siteUrl,
       ].join('\n'),
     })

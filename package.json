@@ -1,5 +1,5 @@
 {
-  "name": "fukunavi",
+  "name": "finde",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -16,7 +16,7 @@
     "supabase:functions": "npx supabase functions serve --env-file supabase/.env.local",
     "supabase:setup-storage": "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env 2>/dev/null | grep SERVICE_ROLE_KEY | cut -d= -f2 | tr -d '\"') node scripts/setup-storage.js",
     "supabase:reset": "npx supabase db reset",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name fukunavi"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name finde"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

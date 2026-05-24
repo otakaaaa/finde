@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # 同一ホスト上の異なる Supabase プロジェクトを区別するための文字列。
 # `supabase init` 実行時のカレントディレクトリ名がデフォルト値。
-project_id = "fukunavi"
+project_id = "finde"
 
 [api]
 enabled = true
@@ -158,7 +158,7 @@ enabled = true
 # URL の構築に使用される。
 site_url = "http://localhost:5174"
 # 認証後にリダイレクトが許可される*完全一致* URL のリスト。
-additional_redirect_urls = ["http://localhost:5174", "https://fukunavi.com"]
+additional_redirect_urls = ["http://localhost:5174", "https://finde.com"]
 # トークンの有効期間（秒）。デフォルトは 3600（1時間）、最大 604,800（1週間）。
 jwt_expiry = 3600
 # JWT 発行者 URL。未設定の場合、ローカル API URL（http://127.0.0.1:<port>/auth/v1）がデフォルト。
@@ -233,12 +233,12 @@ otp_expiry = 3600
 
 # アカウント登録時の確認メールテンプレート
 [auth.email.template.confirm_signup]
-subject = "【フクナビ】メールアドレスの確認"
+subject = "【FINDE】メールアドレスの確認"
 content_path = "./supabase/templates/confirm_signup.html"
 
 # パスワードリセットメールテンプレート
 [auth.email.template.recovery]
-subject = "【フクナビ】パスワードリセットのご案内"
+subject = "【FINDE】パスワードリセットのご案内"
 content_path = "./supabase/templates/recovery.html"
 
 # メールテンプレートをカスタマイズする場合はコメントを外す

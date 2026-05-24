@@ -56,7 +56,7 @@ const SecurityPage = () => {
     try {
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        issuer: 'fukunavi',
+        issuer: 'finde',
         friendlyName: 'Authenticator App',
       })
 
