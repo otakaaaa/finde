@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { useCreateWish, useMyWishes } from '@/hooks/useWishes'
-import { useAuth } from '@/hooks/useAuth'
+import { useCreateWish } from '@/hooks/useWishes'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -136,9 +135,7 @@ const selectClass = cn(
 
 const WishNewPage = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
   const { mutate, isPending, error } = useCreateWish()
-  const { data: wishes } = useMyWishes()
   const { data: masterData } = useQuery({
     queryKey: ['master-data'],
     queryFn: async () => {

@@ -8,7 +8,6 @@ import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
-import { useUiStore } from '@/store/uiStore'
 import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { cn } from '@/lib/utils'
@@ -101,7 +100,6 @@ const ShopDetailPage = () => {
   const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
-  const { addToast } = useUiStore()
   const { data: reviews } = useReviews(id ?? '')
   const { data: myReview } = useMyReview(id ?? '')
   const [showReviewForm, setShowReviewForm] = useState(false)

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil } from 'lucide-react'
 import { useMyWishes, useDeleteWish } from '@/hooks/useWishes'
-import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Wish } from '@/types'
 
@@ -228,7 +227,6 @@ const WishCardSkeleton = ({ index }: { index: number }) => (
 )
 
 const WishesPage = () => {
-  const { user } = useAuth()
   const { data: wishes, isLoading, isError } = useMyWishes()
 
   return (
