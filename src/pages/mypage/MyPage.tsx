@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -327,64 +327,72 @@ const MyPage = () => {
 
           <div className="space-y-2">
             <NavItem
+              to="/mypage/profile/edit"
+              icon={<Pencil className="h-3.5 w-3.5" />}
+              index="01"
+              label="プロフィール編集"
+              sublabel="名前を変更する"
+              animDelay={0}
+            />
+            <NavItem
               to="/mypage/favorites"
               icon={<Heart className="h-3.5 w-3.5" />}
-              index="01"
+              index="02"
               label="お気に入り"
               sublabel="保存した店舗を確認する"
-              animDelay={0}
+              animDelay={55}
             />
             {WISH_FEATURE_ENABLED && (
               <NavItem
                 to="/wishes"
                 icon={<List className="h-3.5 w-3.5" />}
-                index="02"
+                index="03"
                 label="ウィッシュリスト"
                 sublabel="探しているアイテムを管理する"
-                animDelay={55}
+                animDelay={110}
               />
             )}
             <NavItem
               to="/listing-request"
               icon={<Store className="h-3.5 w-3.5" />}
-              index="02"
+              index="03"
               label="店舗の掲載申請"
               sublabel="知っている店舗を登録する"
-              animDelay={55}
+              animDelay={110}
             />
             {OWNER_FEATURE_ENABLED && (
               <NavItem
                 to="/owner-application/new"
                 icon={<MessageCircle className="h-3.5 w-3.5" />}
-                index="03"
+                index="04"
                 label="オーナー申請"
                 sublabel="自分の店舗としてオーナー権限を申請する"
-                animDelay={110}
+                animDelay={165}
               />
             )}
             <NavItem
               to="/mypage/contacts"
               icon={<Mail className="h-3.5 w-3.5" />}
-              index="03"
+              index="04"
               label="お問い合わせ履歴"
               sublabel="過去のお問い合わせを確認する"
-              animDelay={110}
+              animDelay={165}
             />
             <NavItem
               to="/mypage/notifications"
               icon={<Bell className="h-3.5 w-3.5" />}
-              index="04"
+              index="05"
               label="通知"
               sublabel="お知らせや申請結果を確認する"
-              animDelay={165}
+              animDelay={220}
             />
             <NavItem
               to="/mypage/security"
               icon={<Shield className="h-3.5 w-3.5" />}
-              index="05"
+              index="06"
               label="セキュリティ設定"
               sublabel="二段階認証の設定"
-              animDelay={220}
+              animDelay={275}
             />
           </div>
 
