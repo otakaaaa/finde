@@ -25,6 +25,7 @@ const SecurityPage = lazy(() => import('@/pages/mypage/SecurityPage'))
 const FavoritesPage = lazy(() => import('@/pages/mypage/FavoritesPage'))
 const ContactsPage = lazy(() => import('@/pages/mypage/ContactsPage'))
 const NotificationsPage = lazy(() => import('@/pages/mypage/NotificationsPage'))
+const ProfileEditPage = lazy(() => import('@/pages/mypage/ProfileEditPage'))
 const WishesPage = lazy(() => import('@/pages/wishes/WishesPage'))
 const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
@@ -126,6 +127,10 @@ const App = () => (
             <Route
               path="/mypage/notifications"
               element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/mypage/profile/edit"
+              element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>}
             />
             <Route
               path="/wishes"
