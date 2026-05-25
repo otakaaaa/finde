@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { ChevronLeft, Search, GitMerge, RotateCcw, Tag, User, Plus, Upload, X, AlertCircle, Check, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -53,12 +53,20 @@ const useAdminBrandCounts = () =>
 const useAdminBrands = (status: string, search: string, page: number, pageSize: number) =>
   useQuery({
     queryKey: ['admin-brands', status, search, page, pageSize],
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       const from = (page - 1) * pageSize
       const to = from + pageSize - 1
+      // count: 'exact' is expensive (full COUNT(*) scan) — only use it when
+      // search is active, since filtered totals can't come from the cached counts.
+      const withCount = search.length > 0
       let query = supabase
         .from('brands')
-        .select('id, name, name_kana, aliases, status, submitted_by, created_at, users ( display_name )', { count: 'exact' })
+        .select(
+          'id, name, name_kana, aliases, status, submitted_by, created_at, users ( display_name )',
+          withCount ? { count: 'exact' } : undefined,
+        )
         .order('created_at', { ascending: false })
         .range(from, to)
 
@@ -67,7 +75,7 @@ const useAdminBrands = (status: string, search: string, page: number, pageSize: 
 
       const { data, count, error } = await (query as unknown as Promise<{ data: BrandRow[] | null; count: number | null; error: { message: string } | null }>)
       if (error) throw new Error(error.message)
-      return { items: data ?? [], totalCount: count ?? 0 }
+      return { items: data ?? [], searchCount: count }
     },
   })
 
@@ -490,13 +498,14 @@ const CsvImportModal = ({ onClose, onSuccess }: CsvImportModalProps) => {
 
 interface BrandCardProps {
   brand: BrandRow
-  index: number
+  displayIndex: number
+  animationIndex: number
   onMerge: (id: string) => void
   onRestore: (id: string) => void
   isUpdating: boolean
 }
 
-const BrandCard = ({ brand, index, onMerge, onRestore, isUpdating }: BrandCardProps) => {
+const BrandCard = ({ brand, displayIndex, animationIndex, onMerge, onRestore, isUpdating }: BrandCardProps) => {
   const conf = STATUS_CONFIG[brand.status]
 
   return (
@@ -505,11 +514,11 @@ const BrandCard = ({ brand, index, onMerge, onRestore, isUpdating }: BrandCardPr
         'wish-card-enter group relative border-l-[3px] bg-white editorial-shadow',
         conf.borderClass,
       )}
-      style={{ animationDelay: `${index * 25}ms` }}
+      style={{ animationDelay: `${animationIndex * 25}ms` }}
     >
       <div className="flex items-center gap-3 px-4 py-3.5">
         <span className="w-7 shrink-0 font-headline text-[10px] font-black tabular-nums text-muted-foreground/25">
-          {String(index + 1).padStart(2, '0')}
+          {String(displayIndex + 1).padStart(2, '0')}
         </span>
 
         <div className="min-w-0 flex-1">
@@ -615,7 +624,10 @@ const AdminBrandsPage = () => {
   const { data: counts } = useAdminBrandCounts()
 
   const brands = data?.items ?? []
-  const totalCount = data?.totalCount ?? 0
+  // When searching, use the count returned from the search query.
+  // Otherwise, use the pre-cached tab counts to avoid an extra COUNT(*) per page turn.
+  const cachedCount = counts?.[statusFilter as keyof BrandCounts] ?? counts?.all ?? 0
+  const totalCount = debouncedSearch ? (data?.searchCount ?? 0) : cachedCount
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const handlePageSizeChange = (size: PageSizeOption) => { setPageSize(size); setPage(1) }
@@ -786,7 +798,8 @@ const AdminBrandsPage = () => {
                 <BrandCard
                   key={brand.id}
                   brand={brand}
-                  index={(page - 1) * pageSize + i}
+                  displayIndex={(page - 1) * pageSize + i}
+                  animationIndex={i}
                   onMerge={(id) => updateBrandStatus({ brandId: id, status: 'merged' })}
                   onRestore={(id) => updateBrandStatus({ brandId: id, status: 'active' })}
                   isUpdating={isUpdating}
