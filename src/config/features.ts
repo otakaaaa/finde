@@ -10,4 +10,4 @@
  *   true  = ウィッシュ機能を有効化。
  */
 export const OWNER_FEATURE_ENABLED = false
-export const WISH_FEATURE_ENABLED = false
+export const WISH_FEATURE_ENABLED = true

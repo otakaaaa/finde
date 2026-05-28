@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useCreateWish } from '@/hooks/useWishes'
+import { BrandSearchInput } from '@/components/wish/BrandSearchInput'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -22,6 +23,7 @@ const wishSchema = z.object({
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean(),
   notifyEmail: z.boolean(),
+  brandId: z.string().optional(),
 })
 
 type WishFormSchema = z.infer<typeof wishSchema>
@@ -153,13 +155,14 @@ const WishNewPage = () => {
     staleTime: Infinity,
   })
 
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<WishFormSchema>({
+  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<WishFormSchema>({
     resolver: zodResolver(wishSchema),
     defaultValues: {
       type: 'brand',
       isPublic: true,
       notifyEmail: true,
       tags: [],
+      brandId: undefined,
     },
   })
 
@@ -168,6 +171,13 @@ const WishNewPage = () => {
   const watchedCondition = watch('condition')
   const watchedIsPublic = watch('isPublic')
   const watchedNotifyEmail = watch('notifyEmail')
+  const watchedBrandId = watch('brandId')
+
+  useEffect(() => {
+    if (watchedType !== 'brand') {
+      setValue('brandId', undefined)
+    }
+  }, [watchedType, setValue])
 
   const onSubmit = (values: WishFormSchema) => {
     mutate(values, {
@@ -175,12 +185,10 @@ const WishNewPage = () => {
     })
   }
 
-
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
-        {/* Decorative watermark */}
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
             className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
@@ -277,11 +285,32 @@ const WishNewPage = () => {
               />
             </section>
 
+            {/* ── 01.5 ブランド（タイプ=brand 時のみ）── */}
+            {watchedType === 'brand' && (
+              <section>
+                <SectionLabel num="01.5" title="ブランド" optional />
+                <Controller
+                  name="brandId"
+                  control={control}
+                  render={({ field }) => (
+                    <BrandSearchInput
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+                {watchedBrandId && (
+                  <p className="mt-2 text-[10px] text-muted-foreground/50">
+                    このブランドを取り扱う店舗がマッチング時に優先表示されます
+                  </p>
+                )}
+              </section>
+            )}
+
             {/* ── 02 基本情報 ──────────────────────────── */}
             <section>
               <SectionLabel num="02" title="基本情報" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {/* Category */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     カテゴリ
@@ -302,7 +331,6 @@ const WishNewPage = () => {
                   )}
                 </div>
 
-                {/* Price Range */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     価格帯
@@ -323,7 +351,6 @@ const WishNewPage = () => {
                   )}
                 </div>
 
-                {/* Area */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     エリア
@@ -350,7 +377,6 @@ const WishNewPage = () => {
             <section>
               <SectionLabel num="03" title="コンディション & 優先度" optional />
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                {/* Condition */}
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     コンディション
@@ -384,7 +410,6 @@ const WishNewPage = () => {
                   />
                 </div>
 
-                {/* Urgency */}
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     優先度
@@ -423,7 +448,6 @@ const WishNewPage = () => {
             <section>
               <SectionLabel num="04" title="サイズ & タグ" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Size */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     サイズ
@@ -436,7 +460,6 @@ const WishNewPage = () => {
                   />
                 </div>
 
-                {/* Tags */}
                 <div>
                   <label className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     <Plus className="h-3 w-3" />
@@ -475,7 +498,6 @@ const WishNewPage = () => {
             <section>
               <SectionLabel num="06" title="オプション" />
               <div className="flex flex-col gap-3 sm:flex-row">
-                {/* isPublic */}
                 <Controller
                   name="isPublic"
                   control={control}
@@ -485,9 +507,7 @@ const WishNewPage = () => {
                       onClick={() => field.onChange(!watchedIsPublic)}
                       className={cn(
                         'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
-                        watchedIsPublic
-                          ? 'border-primary/20 bg-primary/[0.04]'
-                          : 'border-border bg-white',
+                        watchedIsPublic ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white',
                       )}
                     >
                       <div className={cn(
@@ -508,7 +528,6 @@ const WishNewPage = () => {
                   )}
                 />
 
-                {/* notifyEmail */}
                 <Controller
                   name="notifyEmail"
                   control={control}
@@ -518,9 +537,7 @@ const WishNewPage = () => {
                       onClick={() => field.onChange(!watchedNotifyEmail)}
                       className={cn(
                         'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
-                        watchedNotifyEmail
-                          ? 'border-primary/20 bg-primary/[0.04]'
-                          : 'border-border bg-white',
+                        watchedNotifyEmail ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white',
                       )}
                     >
                       <div className={cn(

@@ -194,6 +194,9 @@ export interface Wish {
   note: string | null
   isPublic: boolean
   notifyEmail: boolean
+  status: 'active' | 'closed'
+  brandId: string | null
+  brand: Pick<Brand, 'id' | 'name'> | null
   createdAt: string
   updatedAt: string
 }
@@ -210,11 +213,23 @@ export interface WishFormValues {
   note?: string
   isPublic: boolean
   notifyEmail: boolean
+  brandId?: string
 }
 
-export interface ShopRecommend {
-  shop: Shop
-  matchedConditions: string[]
+export interface MatchShop {
+  id: string
+  name: string
+  area: Area | null
+  priceRange: PriceRange | null
+  averageRating: number | null
+  reviewCount: number
+  coverPhotoPath: string | null
+}
+
+export interface MatchedShop {
+  shop: MatchShop
+  tier: 1 | 2
+  hasBrandMatch: boolean
 }
 
 // ============================================================
