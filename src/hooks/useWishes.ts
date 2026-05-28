@@ -14,11 +14,14 @@ interface WishRow {
   note: string | null
   is_public: boolean
   notify_email: boolean
+  status: 'active' | 'closed'
+  brand_id: string | null
   created_at: string
   updated_at: string
   categories: { id: number; code: string; name: string }
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null }
   areas: { id: number; prefecture: string; city: string; slug: string }
+  brands: { id: string; name: string } | null
 }
 
 const mapWishRow = (row: WishRow): Wish => ({
@@ -35,28 +38,36 @@ const mapWishRow = (row: WishRow): Wish => ({
   note: row.note,
   isPublic: row.is_public,
   notifyEmail: row.notify_email,
+  status: row.status,
+  brandId: row.brand_id,
+  brand: row.brands ?? null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 })
 
-export const useMyWishes = () => {
+const WISH_SELECT = `
+  id, user_id, type, size, tags, condition, urgency,
+  note, is_public, notify_email, status, brand_id,
+  created_at, updated_at,
+  categories ( id, code, name ),
+  price_ranges ( id, label, min_price, max_price ),
+  areas ( id, prefecture, city, slug ),
+  brands ( id, name )
+`
+
+export const useMyWishes = (status: 'active' | 'closed' = 'active') => {
   const { user } = useAuth()
 
   return useQuery({
-    queryKey: ['wishes', user?.id],
+    queryKey: ['wishes', user?.id, status],
     queryFn: async () => {
       if (!user) return []
 
       const { data, error } = await supabase
         .from('wishes')
-        .select(`
-          id, user_id, type, size, tags, condition, urgency,
-          note, is_public, notify_email, created_at, updated_at,
-          categories ( id, code, name ),
-          price_ranges ( id, label, min_price, max_price ),
-          areas ( id, prefecture, city, slug )
-        `)
+        .select(WISH_SELECT)
         .eq('user_id', user.id)
+        .eq('status', status)
         .order('created_at', { ascending: false }) as {
           data: WishRow[] | null
           error: { message: string } | null
@@ -90,6 +101,8 @@ export const useCreateWish = () => {
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,
+        brand_id: values.brandId ?? null,
+        status: 'active',
       } as never) as unknown as { data: unknown; error: { message: string } | null }
 
       if (error) throw new Error(error.message)
@@ -108,13 +121,7 @@ export const useWish = (id: string | undefined) => {
 
       const { data, error } = await supabase
         .from('wishes')
-        .select(`
-          id, user_id, type, size, tags, condition, urgency,
-          note, is_public, notify_email, created_at, updated_at,
-          categories ( id, code, name ),
-          price_ranges ( id, label, min_price, max_price ),
-          areas ( id, prefecture, city, slug )
-        `)
+        .select(WISH_SELECT)
         .eq('id', id)
         .single() as {
           data: WishRow | null
@@ -147,6 +154,7 @@ export const useUpdateWish = () => {
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,
+        brand_id: values.brandId ?? null,
       } as never).eq('id', id) as unknown as { data: unknown; error: { message: string } | null }
 
       if (error) throw new Error(error.message)
@@ -165,6 +173,24 @@ export const useDeleteWish = () => {
   return useMutation({
     mutationFn: async (wishId: string) => {
       const { error } = await supabase.from('wishes').delete().eq('id', wishId)
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishes', user?.id] })
+    },
+  })
+}
+
+export const useCloseWish = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+
+  return useMutation({
+    mutationFn: async (wishId: string) => {
+      const { error } = await supabase
+        .from('wishes')
+        .update({ status: 'closed', updated_at: new Date().toISOString() } as never)
+        .eq('id', wishId)
       if (error) throw new Error(error.message)
     },
     onSuccess: () => {

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil } from 'lucide-react'
-import { useMyWishes, useDeleteWish } from '@/hooks/useWishes'
+import { Plus, Trash2, Globe, Lock, Bell, BellOff, Pencil, Check, Store, ChevronDown, ChevronUp } from 'lucide-react'
+import { useMyWishes, useDeleteWish, useCloseWish } from '@/hooks/useWishes'
+import { WishMatchPanel } from '@/components/wish/WishMatchPanel'
 import { cn } from '@/lib/utils'
 import type { Wish } from '@/types'
 
@@ -40,27 +41,37 @@ const CONDITION_LABEL: Record<NonNullable<Wish['condition']>, string> = {
   used: '中古',
 }
 
+type OverlayState = 'none' | 'delete' | 'close'
+
 const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
-  const { mutate: deleteWish, isPending } = useDeleteWish()
-  const [showConfirm, setShowConfirm] = useState(false)
+  const { mutate: deleteWish, isPending: isDeletePending } = useDeleteWish()
+  const { mutate: closeWish, isPending: isClosePending } = useCloseWish()
+  const [overlay, setOverlay] = useState<OverlayState>('none')
+  const [matchExpanded, setMatchExpanded] = useState(false)
+
   const typeConf = TYPE_CONFIG[wish.type]
   const urgencyConf = wish.urgency ? URGENCY_CONFIG[wish.urgency] : null
+  const isClosed = wish.status === 'closed'
 
   const handleDeleteConfirm = () => {
-    deleteWish(wish.id, { onSettled: () => setShowConfirm(false) })
+    deleteWish(wish.id, { onSettled: () => setOverlay('none') })
+  }
+
+  const handleCloseConfirm = () => {
+    closeWish(wish.id, { onSettled: () => setOverlay('none') })
   }
 
   return (
     <div
       className={cn(
         'wish-card-enter group relative overflow-hidden border-l-[3px] bg-white editorial-shadow',
-        urgencyConf ? urgencyConf.borderClass : 'border-l-border',
+        urgencyConf && !isClosed ? urgencyConf.borderClass : 'border-l-border',
+        isClosed && 'opacity-70',
       )}
       style={{ animationDelay: `${index * 55}ms` }}
     >
-
-      {/* Confirm delete overlay */}
-      {showConfirm && (
+      {/* ── Confirm overlays ────────────────────── */}
+      {overlay === 'delete' && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-white/95 px-6 backdrop-blur-sm">
           <div className="text-center">
             <div className="mb-2 flex items-center justify-center">
@@ -69,24 +80,22 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             <p className="font-headline text-[13px] font-black leading-snug tracking-tight text-foreground">
               このウィッシュを削除しますか？
             </p>
-            <p className="mt-1 text-[10px] text-muted-foreground/50">
-              削除後は元に戻せません
-            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground/50">削除後は元に戻せません</p>
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => setShowConfirm(false)}
-              disabled={isPending}
+              onClick={() => setOverlay('none')}
+              disabled={isDeletePending}
               className="border border-border px-4 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-foreground/20 disabled:opacity-40"
             >
               キャンセル
             </button>
             <button
               onClick={handleDeleteConfirm}
-              disabled={isPending}
+              disabled={isDeletePending}
               className="flex items-center gap-1.5 bg-red-500 px-4 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-40"
             >
-              {isPending && (
+              {isDeletePending && (
                 <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               )}
               削除する
@@ -94,7 +103,41 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           </div>
         </div>
       )}
-      {/* Card watermark */}
+
+      {overlay === 'close' && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-white/95 px-6 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="mb-2 flex items-center justify-center">
+              <Check className="h-4 w-4 text-emerald-500" />
+            </div>
+            <p className="font-headline text-[13px] font-black leading-snug tracking-tight text-foreground">
+              見つかりましたか？
+            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground/50">クローズすると「見つかった」リストに移動します</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setOverlay('none')}
+              disabled={isClosePending}
+              className="border border-border px-4 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-foreground/20 disabled:opacity-40"
+            >
+              キャンセル
+            </button>
+            <button
+              onClick={handleCloseConfirm}
+              disabled={isClosePending}
+              className="flex items-center gap-1.5 bg-emerald-500 px-4 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-40"
+            >
+              {isClosePending && (
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              )}
+              見つかった！
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Card watermark ──────────────────────── */}
       <div className="pointer-events-none absolute right-1 top-0 select-none overflow-hidden">
         <span
           className="font-headline font-black leading-none tracking-tighter text-black/[0.03]"
@@ -105,33 +148,47 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
       </div>
 
       <div className="relative p-4 md:p-5">
-        {/* Header */}
+        {/* ── Header ──────────────────────────────── */}
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center rounded-sm bg-primary/[0.07] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-primary">
-              {typeConf.shortLabel}
-            </span>
+            {isClosed ? (
+              <span className="inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground/50">
+                <Check className="h-2.5 w-2.5" />
+                CLOSED
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-sm bg-primary/[0.07] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-primary">
+                {typeConf.shortLabel}
+              </span>
+            )}
             <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
               {wish.category.name}
             </span>
-            {urgencyConf && (
+            {urgencyConf && !isClosed && (
               <span className={cn('inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold', urgencyConf.badgeClass)}>
                 優先度 {urgencyConf.label}
+              </span>
+            )}
+            {wish.brand && (
+              <span className="inline-flex items-center rounded-sm bg-foreground/[0.05] px-2 py-0.5 text-[10px] font-bold text-foreground/60">
+                {wish.brand.name}
               </span>
             )}
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Link
-              to={`/wishes/${wish.id}/edit`}
-              className="text-muted-foreground/30 transition-colors hover:text-primary group-hover:text-muted-foreground/50"
-              title="編集"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Link>
+            {!isClosed && (
+              <Link
+                to={`/wishes/${wish.id}/edit`}
+                className="text-muted-foreground/30 transition-colors hover:text-primary group-hover:text-muted-foreground/50"
+                title="編集"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Link>
+            )}
             <button
-              onClick={() => setShowConfirm(true)}
-              disabled={isPending}
+              onClick={() => setOverlay('delete')}
+              disabled={isDeletePending}
               className="text-muted-foreground/30 transition-colors hover:text-red-500 disabled:opacity-30 group-hover:text-muted-foreground/50"
               title="削除"
             >
@@ -140,7 +197,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           </div>
         </div>
 
-        {/* Main attributes */}
+        {/* ── Main attributes ─────────────────────── */}
         <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="font-headline text-lg font-black leading-none tracking-tight text-foreground">
             {wish.priceRange.label}
@@ -149,9 +206,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             {wish.area.city}
           </span>
           {wish.size && (
-            <span className="text-xs text-muted-foreground">
-              / {wish.size}
-            </span>
+            <span className="text-xs text-muted-foreground">/ {wish.size}</span>
           )}
           {wish.condition && (
             <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
@@ -160,26 +215,22 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           )}
         </div>
 
-        {/* Note */}
+        {/* ── Note ────────────────────────────────── */}
         {wish.note && (
-          <p className="mb-3 text-xs leading-relaxed text-muted-foreground line-clamp-3">
-            {wish.note}
-          </p>
+          <p className="mb-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground">{wish.note}</p>
         )}
 
-        {/* Tags */}
+        {/* ── Tags ────────────────────────────────── */}
         {wish.tags.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {wish.tags.map((tag, i) => (
-              <span key={i} className="text-[10px] font-medium text-muted-foreground/60">
-                #{tag}
-              </span>
+              <span key={i} className="text-[10px] font-medium text-muted-foreground/60">#{tag}</span>
             ))}
           </div>
         )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-2.5">
+        {/* ── Footer ──────────────────────────────── */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-2.5">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/50">
               {wish.isPublic ? (
@@ -196,11 +247,40 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
               )}
             </span>
           </div>
-          <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">
-            {new Date(wish.createdAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}
-          </span>
+
+          <div className="flex items-center gap-2">
+            {!isClosed && (
+              <button
+                type="button"
+                onClick={() => setOverlay('close')}
+                className="flex items-center gap-1 rounded-sm border border-emerald-200 px-2 py-1 text-[10px] font-bold text-emerald-600 transition-colors hover:bg-emerald-50"
+              >
+                <Check className="h-3 w-3" />
+                見つかった
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setMatchExpanded((v) => !v)}
+              className="flex items-center gap-1 rounded-sm border border-border px-2 py-1 text-[10px] font-bold text-muted-foreground/60 transition-colors hover:border-primary/30 hover:text-primary"
+            >
+              <Store className="h-3 w-3" />
+              {matchExpanded ? '閉じる' : 'マッチ店舗'}
+              {matchExpanded ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
+            </button>
+            <span className="font-headline text-[10px] font-black tabular-nums text-muted-foreground/30">
+              {new Date(wish.createdAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* ── Match panel ─────────────────────────── */}
+      {matchExpanded && (
+        <div className="border-t border-border/50 bg-muted/20 px-4 py-4 md:px-5">
+          <WishMatchPanel wish={wish} />
+        </div>
+      )}
     </div>
   )
 }
@@ -227,13 +307,13 @@ const WishCardSkeleton = ({ index }: { index: number }) => (
 )
 
 const WishesPage = () => {
-  const { data: wishes, isLoading, isError } = useMyWishes()
+  const [statusFilter, setStatusFilter] = useState<'active' | 'closed'>('active')
+  const { data: wishes, isLoading, isError } = useMyWishes(statusFilter)
 
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
-        {/* Decorative watermark */}
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
             className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
@@ -272,11 +352,36 @@ const WishesPage = () => {
         </div>
       </section>
 
+      {/* ── Status tabs ──────────────────────────── */}
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto max-w-6xl px-4 md:px-16">
+          <div className="flex gap-0">
+            {([
+              { value: 'active', label: '探し中' },
+              { value: 'closed', label: '見つかった' },
+            ] as const).map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setStatusFilter(tab.value)}
+                className={cn(
+                  'relative px-4 py-3 text-[11px] font-black uppercase tracking-[0.2em] transition-colors',
+                  statusFilter === tab.value
+                    ? 'text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-primary after:content-[\'\']'
+                    : 'text-muted-foreground/50 hover:text-foreground/70',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── Content ──────────────────────────────── */}
       <div className="bg-background">
         <div className="mx-auto max-w-6xl px-4 py-10 md:px-16 md:py-14">
 
-          {/* Loading skeleton */}
           {isLoading && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -285,7 +390,6 @@ const WishesPage = () => {
             </div>
           )}
 
-          {/* Error */}
           {isError && (
             <div className="border border-border bg-white p-10 text-center">
               <p className="text-sm text-muted-foreground">
@@ -294,29 +398,31 @@ const WishesPage = () => {
             </div>
           )}
 
-          {/* Empty state */}
           {!isLoading && !isError && wishes?.length === 0 && (
             <div className="py-24 text-center">
               <p
                 className="font-headline font-black text-muted-foreground"
                 style={{ fontSize: 'clamp(2rem, 8vw, 5rem)', lineHeight: 1, letterSpacing: '-0.04em' }}
               >
-                0 WISHES
+                {statusFilter === 'active' ? '0 WISHES' : '0 CLOSED'}
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
-                探しているアイテムや条件を登録しましょう
+                {statusFilter === 'active'
+                  ? '探しているアイテムや条件を登録しましょう'
+                  : 'まだ見つかったウィッシュはありません'}
               </p>
-              <Link
-                to="/wishes/new"
-                className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.3em] text-primary underline-offset-2 hover:underline"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                ウィッシュを追加する
-              </Link>
+              {statusFilter === 'active' && (
+                <Link
+                  to="/wishes/new"
+                  className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.3em] text-primary underline-offset-2 hover:underline"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  ウィッシュを追加する
+                </Link>
+              )}
             </div>
           )}
 
-          {/* Grid */}
           {!isLoading && wishes && wishes.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
               {wishes.map((wish, i) => (

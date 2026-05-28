@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag, Trash2, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useWish, useUpdateWish, useDeleteWish } from '@/hooks/useWishes'
+import { BrandSearchInput } from '@/components/wish/BrandSearchInput'
 import { cn } from '@/lib/utils'
 import type { Area, Category, PriceRange } from '@/types'
 
@@ -22,6 +23,7 @@ const wishSchema = z.object({
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean(),
   notifyEmail: z.boolean(),
+  brandId: z.string().optional(),
 })
 
 type WishFormSchema = z.infer<typeof wishSchema>
@@ -158,17 +160,17 @@ const WishEditPage = () => {
     staleTime: Infinity,
   })
 
-  const { register, handleSubmit, control, watch, reset, formState: { errors } } = useForm<WishFormSchema>({
+  const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm<WishFormSchema>({
     resolver: zodResolver(wishSchema),
     defaultValues: {
       type: 'brand',
       isPublic: true,
       notifyEmail: true,
       tags: [],
+      brandId: undefined,
     },
   })
 
-  // Pre-populate form once wish data is loaded
   useEffect(() => {
     if (wish) {
       reset({
@@ -183,6 +185,7 @@ const WishEditPage = () => {
         tags: wish.tags,
         isPublic: wish.isPublic,
         notifyEmail: wish.notifyEmail,
+        brandId: wish.brandId ?? undefined,
       })
     }
   }, [wish, reset])
@@ -192,6 +195,13 @@ const WishEditPage = () => {
   const watchedCondition = watch('condition')
   const watchedIsPublic = watch('isPublic')
   const watchedNotifyEmail = watch('notifyEmail')
+  const watchedBrandId = watch('brandId')
+
+  useEffect(() => {
+    if (watchedType !== 'brand') {
+      setValue('brandId', undefined)
+    }
+  }, [watchedType, setValue])
 
   const onSubmit = (values: WishFormSchema) => {
     if (!id) return
@@ -207,7 +217,6 @@ const WishEditPage = () => {
     })
   }
 
-  // Loading state
   if (isWishLoading) {
     return (
       <div>
@@ -236,7 +245,6 @@ const WishEditPage = () => {
     )
   }
 
-  // Error / Not found state
   if (isWishError || !wish) {
     return (
       <div className="bg-background">
@@ -266,7 +274,6 @@ const WishEditPage = () => {
     <div>
       {/* ── Page header ──────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
-        {/* Decorative watermark */}
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
             className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
@@ -368,11 +375,33 @@ const WishEditPage = () => {
               />
             </section>
 
+            {/* ── 01.5 ブランド（タイプ=brand 時のみ）── */}
+            {watchedType === 'brand' && (
+              <section>
+                <SectionLabel num="01.5" title="ブランド" optional />
+                <Controller
+                  name="brandId"
+                  control={control}
+                  render={({ field }) => (
+                    <BrandSearchInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      initialBrandName={wish.brand?.name}
+                    />
+                  )}
+                />
+                {watchedBrandId && (
+                  <p className="mt-2 text-[10px] text-muted-foreground/50">
+                    このブランドを取り扱う店舗がマッチング時に優先表示されます
+                  </p>
+                )}
+              </section>
+            )}
+
             {/* ── 02 基本情報 ──────────────────────────── */}
             <section>
               <SectionLabel num="02" title="基本情報" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {/* Category */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     カテゴリ
@@ -391,7 +420,6 @@ const WishEditPage = () => {
                   )}
                 </div>
 
-                {/* Price Range */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     価格帯
@@ -410,7 +438,6 @@ const WishEditPage = () => {
                   )}
                 </div>
 
-                {/* Area */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     エリア
@@ -435,7 +462,6 @@ const WishEditPage = () => {
             <section>
               <SectionLabel num="03" title="コンディション & 優先度" optional />
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                {/* Condition */}
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     コンディション
@@ -469,7 +495,6 @@ const WishEditPage = () => {
                   />
                 </div>
 
-                {/* Urgency */}
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     優先度
@@ -508,7 +533,6 @@ const WishEditPage = () => {
             <section>
               <SectionLabel num="04" title="サイズ & タグ" optional />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Size */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     サイズ
@@ -521,7 +545,6 @@ const WishEditPage = () => {
                   />
                 </div>
 
-                {/* Tags */}
                 <div>
                   <label className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     <Plus className="h-3 w-3" />
@@ -560,7 +583,6 @@ const WishEditPage = () => {
             <section>
               <SectionLabel num="06" title="オプション" />
               <div className="flex flex-col gap-3 sm:flex-row">
-                {/* isPublic */}
                 <Controller
                   name="isPublic"
                   control={control}
@@ -570,9 +592,7 @@ const WishEditPage = () => {
                       onClick={() => field.onChange(!watchedIsPublic)}
                       className={cn(
                         'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
-                        watchedIsPublic
-                          ? 'border-primary/20 bg-primary/[0.04]'
-                          : 'border-border bg-white',
+                        watchedIsPublic ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white',
                       )}
                     >
                       <div className={cn(
@@ -593,7 +613,6 @@ const WishEditPage = () => {
                   )}
                 />
 
-                {/* notifyEmail */}
                 <Controller
                   name="notifyEmail"
                   control={control}
@@ -603,9 +622,7 @@ const WishEditPage = () => {
                       onClick={() => field.onChange(!watchedNotifyEmail)}
                       className={cn(
                         'flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all',
-                        watchedNotifyEmail
-                          ? 'border-primary/20 bg-primary/[0.04]'
-                          : 'border-border bg-white',
+                        watchedNotifyEmail ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white',
                       )}
                     >
                       <div className={cn(
@@ -628,7 +645,7 @@ const WishEditPage = () => {
               </div>
             </section>
 
-            {/* ── 送信 ───────────────────────────── */}
+            {/* ── Submit ───────────────────────────── */}
             <div className="border-t border-border pt-8">
               <div className="flex items-center gap-3">
                 <button
