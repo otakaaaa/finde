@@ -42,7 +42,7 @@ type ListingRequestFormValues = z.infer<typeof listingRequestSchema>
 
 const PROCESS_STEPS = [
   { num: '01', label: '申請フォームの送信', desc: '店舗情報を入力して送信' },
-  { num: '02', label: 'FINDE運営による審査', desc: '通常2〜5営業日' },
+  { num: '02', label: 'FINDE運営による審査', desc: '通常 1 ~ 2 週間以内' },
   { num: '03', label: '掲載開始のご連絡', desc: 'メールにてお知らせ' },
 ]
 
@@ -80,7 +80,7 @@ const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
             FINDE運営が内容を確認の上、審査完了後にメールにてご連絡いたします。<br />
-            通常2〜5営業日程度お時間をいただきます。
+            通常 1 ~ 2 週間以内にご連絡いたします。
           </p>
         </div>
 

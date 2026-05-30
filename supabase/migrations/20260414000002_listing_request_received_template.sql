@@ -17,7 +17,7 @@ insert into public.email_templates (slug, name, subject, body, is_active, variab
 ・申請日時: {{submitted_at}}
 
 FINDE運営が内容を確認の上、審査完了後にメールにてご連絡いたします。
-通常2〜5営業日程度お時間をいただきます。
+通常 1 ~ 2 週間以内にご連絡いたします。
 
 ご不明な点がございましたら、お問い合わせよりご連絡ください。
 

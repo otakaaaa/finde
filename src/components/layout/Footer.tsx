@@ -41,7 +41,7 @@ export const Footer = () => (
         className="font-headline font-black tracking-tighter text-white/[0.03]"
         style={{ fontSize: 'clamp(100px, 22vw, 220px)', lineHeight: 0.85 }}
       >
-        服
+        FINDE
       </span>
     </div>
 
