@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Plus, FileSpreadsheet, ChevronLeft, ExternalLink, Pencil, Eye, EyeOff } from 'lucide-react'
+import { Search, Plus, FileSpreadsheet, ChevronLeft, ExternalLink, Pencil, Eye, EyeOff, Tag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -140,6 +140,13 @@ const ShopListRow = ({ shop, index, onStatusChange, isUpdating }: ShopListRowPro
           <ExternalLink className="h-3 w-3" />
         </Link>
         <Link
+          to={`/admin/shops/${shop.id}/brands`}
+          className="flex h-7 w-7 items-center justify-center rounded-sm bg-muted text-muted-foreground"
+          title="ブランド管理"
+        >
+          <Tag className="h-3 w-3" />
+        </Link>
+        <Link
           to={`/admin/shops/${shop.id}/edit`}
           className="flex h-7 w-7 items-center justify-center rounded-sm bg-muted text-muted-foreground"
         >
@@ -177,6 +184,14 @@ const ShopListRow = ({ shop, index, onStatusChange, isUpdating }: ShopListRowPro
           title="店舗ページを開く"
         >
           <ExternalLink className="h-3 w-3" />
+        </Link>
+        <Link
+          to={`/admin/shops/${shop.id}/brands`}
+          className="flex h-7 items-center gap-1 rounded-sm bg-muted px-2 font-headline text-[9px] font-black uppercase tracking-wider text-muted-foreground transition-colors hover:bg-primary hover:text-white"
+          title="ブランド管理"
+        >
+          <Tag className="h-3 w-3" />
+          Brands
         </Link>
         <Link
           to={`/admin/shops/${shop.id}/edit`}

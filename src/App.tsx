@@ -33,6 +33,7 @@ const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingReq
 
 // Brand pages
 const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
+const BrandDetailPage = lazy(() => import('@/pages/brands/BrandDetailPage'))
 
 // Owner pages
 const OwnerDashboardPage = lazy(() => import('@/pages/owner/OwnerDashboardPage'))
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/shops" element={<ShopsPage />} />
             <Route path="/shops/:id" element={<ShopDetailPage />} />
             <Route path="/brands" element={<BrandSearchPage />} />
+            <Route path="/brands/:id" element={<BrandDetailPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
