@@ -11,6 +11,7 @@ const NAV_COLUMNS = [
   {
     label: 'Service',
     links: [
+      { to: '/news', text: 'お知らせ' },
       { to: '/listing-request', text: '店舗掲載申請' },
       { to: '/mypage', text: 'マイページ' },
       { to: '/mypage/favorites', text: 'お気に入り' },

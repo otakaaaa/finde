@@ -315,6 +315,20 @@ export interface Notification {
 }
 
 // ============================================================
+// PressRelease
+// ============================================================
+
+export interface PressRelease {
+  id: string
+  title: string
+  body: string
+  publishedAt: string | null
+  createdBy: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// ============================================================
 // Pagination
 // ============================================================
 
