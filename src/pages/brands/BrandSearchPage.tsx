@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Search, X, ArrowUpRight } from 'lucide-react'
 import { useBrands } from '@/hooks/useBrands'
-import { useUiStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
 import type { Brand } from '@/types'
 
@@ -28,7 +27,6 @@ const sortKeys = (keys: string[]): string[] => {
 
 const BrandSearchPage = () => {
   const navigate = useNavigate()
-  const { setShopFilters } = useUiStore()
   const [query, setQuery] = useState('')
 
   const { data: brands, isLoading } = useBrands()
@@ -47,8 +45,7 @@ const BrandSearchPage = () => {
   const sortedKeys = sortKeys(Object.keys(grouped))
 
   const handleSelect = (brand: Brand) => {
-    setShopFilters({ sort: 'popular', brandId: brand.id, brandName: brand.name })
-    navigate('/shops')
+    navigate(`/brands/${brand.id}`)
   }
 
   return (

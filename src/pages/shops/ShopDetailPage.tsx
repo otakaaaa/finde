@@ -261,11 +261,18 @@ const ShopDetailPage = () => {
             {shop.brands.length > 0 && (
               <section className="mb-10">
                 <SectionLabel>Brands</SectionLabel>
-                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {shop.brands.map((brand) => (
-                    <span key={brand.id} className="font-headline text-sm font-bold">
-                      {brand.name}
-                    </span>
+                    <Link
+                      key={brand.id}
+                      to={`/brands/${brand.id}`}
+                      className="group flex items-center gap-1.5 border border-border bg-white px-3 py-1.5 transition-all hover:border-primary/40 hover:bg-primary/[0.03]"
+                    >
+                      <span className="font-headline text-[12px] font-black tracking-tight text-foreground/70 transition-colors group-hover:text-primary/80">
+                        {brand.name}
+                      </span>
+                      <ArrowUpRight className="h-2.5 w-2.5 shrink-0 text-border transition-colors group-hover:text-primary/50" />
+                    </Link>
                   ))}
                 </div>
               </section>
