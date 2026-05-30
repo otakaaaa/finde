@@ -8,8 +8,9 @@ import { useShops } from '@/hooks/useShops'
 import { useBrands } from '@/hooks/useBrands'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
+import { useLatestPressReleases } from '@/hooks/usePressReleases'
 import { ShopSearchBar } from '@/components/shop/ShopSearchBar'
-import type { Category, CategoryCode, Shop } from '@/types'
+import type { Category, CategoryCode, Shop, PressRelease } from '@/types'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -37,6 +38,26 @@ const useCategories = () =>
     },
     staleTime: Infinity,
   })
+
+const formatNewsDate = (iso: string) => {
+  const d = new Date(iso)
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+}
+
+const NewsListItem = ({ item }: { item: PressRelease }) => (
+  <Link
+    to={`/news/${item.id}`}
+    className="group flex items-center gap-6 border-b border-border/50 py-4 last:border-0 transition-colors hover:bg-muted/30"
+  >
+    <time className="shrink-0 font-headline text-[11px] font-black tabular-nums tracking-wider text-muted-foreground/40">
+      {formatNewsDate(item.publishedAt!)}
+    </time>
+    <p className="flex-1 min-w-0 truncate text-sm font-medium text-foreground/70 transition-colors group-hover:text-foreground">
+      {item.title}
+    </p>
+    <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/20 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary/40" />
+  </Link>
+)
 
 interface FeaturedCardProps {
   shop: Shop
@@ -130,6 +151,7 @@ const TopPage = () => {
   const { data: categories } = useCategories()
   const { data: popularData } = useShops({ sort: 'popular' })
   const { data: brands } = useBrands()
+  const { data: latestNews } = useLatestPressReleases()
   const [brandQuery, setBrandQuery] = useState('')
 
   const featuredShops = popularData?.pages[0]?.items.slice(0, 5) ?? []
@@ -420,6 +442,36 @@ const TopPage = () => {
                 <div key={shop.id}>
                   <FeaturedCard shop={shop} />
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── お知らせ ─────────────────────────────────────── */}
+      {latestNews && latestNews.length > 0 && (
+        <section className="border-b border-border bg-background py-16">
+          <div className="mx-auto max-w-6xl px-8 md:px-16">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+                  — News
+                </span>
+                <h2 className="font-headline mt-2 text-3xl font-black md:text-4xl">
+                  お知らせ
+                </h2>
+              </div>
+              <Link
+                to="/news"
+                className="group flex items-center gap-1 text-sm font-bold text-primary"
+              >
+                すべて見る
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+            <div className="border-t border-border">
+              {latestNews.map((item) => (
+                <NewsListItem key={item.id} item={item} />
               ))}
             </div>
           </div>

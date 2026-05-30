@@ -51,6 +51,9 @@ const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
 const AdminShopEditPage = lazy(() => import('@/pages/admin/AdminShopEditPage'))
 const AdminContactsPage = lazy(() => import('@/pages/admin/AdminContactsPage'))
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
+const AdminNewsPage = lazy(() => import('@/pages/admin/AdminNewsPage'))
+const AdminNewsNewPage = lazy(() => import('@/pages/admin/AdminNewsNewPage'))
+const AdminNewsEditPage = lazy(() => import('@/pages/admin/AdminNewsEditPage'))
 const OwnerApplicationDMPage = lazy(() => import('@/pages/owner-application/OwnerApplicationDMPage'))
 const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/OwnerApplicationNewPage'))
 
@@ -66,6 +69,10 @@ const FaqPage = lazy(() => import('@/pages/faq/FaqPage'))
 
 // About
 const AboutPage = lazy(() => import('@/pages/about/AboutPage'))
+
+// News
+const NewsPage = lazy(() => import('@/pages/news/NewsPage'))
+const NewsDetailPage = lazy(() => import('@/pages/news/NewsDetailPage'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +106,8 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:id" element={<NewsDetailPage />} />
 
             {/* Auth */}
             <Route path="/auth/login" element={<LoginPage />} />
@@ -217,6 +226,18 @@ const App = () => (
             <Route
               path="/admin/users"
               element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/news"
+              element={<ProtectedRoute requiredRole="admin"><AdminNewsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/news/new"
+              element={<ProtectedRoute requiredRole="admin"><AdminNewsNewPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/news/:id/edit"
+              element={<ProtectedRoute requiredRole="admin"><AdminNewsEditPage /></ProtectedRoute>}
             />
           </Route>
         </Routes>

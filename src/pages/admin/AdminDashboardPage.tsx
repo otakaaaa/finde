@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users } from 'lucide-react'
+import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, Newspaper } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -317,6 +317,13 @@ const AdminDashboardPage = () => {
                   label="ブランド管理"
                   sublabel="ブランドの追加・統合・管理"
                   animDelay={165}
+                />
+                <NavTile
+                  to="/admin/news"
+                  icon={<Newspaper className="h-4 w-4" />}
+                  label="お知らせ管理"
+                  sublabel="プレスリリース・お知らせの作成・管理"
+                  animDelay={220}
                 />
                 <NavTile
                   to="/admin/contacts"
