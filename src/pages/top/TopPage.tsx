@@ -184,9 +184,9 @@ const TopPage = () => {
         <div
           aria-hidden
           className="pointer-events-none absolute right-[-2vw] top-[-4vw] select-none font-headline font-black leading-none text-white"
-          style={{ fontSize: 'clamp(12rem, 40vw, 36rem)', opacity: 0.03 }}
+          style={{ fontSize: 'clamp(8rem, 24vw, 24rem)', opacity: 0.03 }}
         >
-          服
+          FINDE
         </div>
 
         {/* Thin horizontal rule at top */}

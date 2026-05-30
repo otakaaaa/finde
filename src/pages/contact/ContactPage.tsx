@@ -219,7 +219,7 @@ const ContactPage = () => {
             </h1>
             <p className="mt-4 max-w-sm text-[11px] leading-[1.8] text-white/40">
               ご不明な点やご要望はお気軽にお問い合わせください。<br />
-              通常 1〜3 営業日以内にご返信いたします。
+              通常 1 週間以内にご返信いたします。
             </p>
           </div>
         </div>
@@ -412,7 +412,7 @@ const ContactPage = () => {
 
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground/40">
                   <Mail className="h-3 w-3" />
-                  <span>通常 1〜3 営業日以内にご返信します</span>
+                  <span>通常 1 週間以内にご返信します</span>
                 </div>
               </div>
             </div>
