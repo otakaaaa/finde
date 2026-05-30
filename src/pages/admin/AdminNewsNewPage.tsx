@@ -25,7 +25,9 @@ const AdminNewsNewPage = () => {
   } = useForm<NewsFormValues>({ resolver: zodResolver(newsSchema) })
 
   const submit = (values: NewsFormValues, publishNow: boolean) => {
-    const publishedAt = publishNow ? new Date().toISOString() : null
+    const publishedAt = publishNow
+      ? (values.publishedAt ? new Date(values.publishedAt).toISOString() : new Date().toISOString())
+      : null
 
     create(
       { title: values.title, body: values.body, publishedAt },
@@ -107,13 +109,16 @@ const AdminNewsNewPage = () => {
             {/* PublishedAt */}
             <div className="space-y-2">
               <label className="block font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">
-                公開日時（空欄 = 下書き）
+                公開日時
               </label>
               <input
                 type="datetime-local"
                 {...register('publishedAt')}
                 className="border border-border bg-white px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
               />
+              <p className="text-[10px] text-muted-foreground/40">
+                空欄の場合は「公開する」押下時に即時公開。未来の日時を指定するとその日時以降に公開されます。
+              </p>
             </div>
 
             {/* Actions */}
@@ -134,7 +139,7 @@ const AdminNewsNewPage = () => {
                 className="inline-flex items-center justify-center gap-2 border border-foreground bg-foreground px-6 py-3 font-headline text-[11px] font-black uppercase tracking-[0.25em] text-background transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 <Globe className="h-3.5 w-3.5" />
-                今すぐ公開
+                公開する
               </button>
             </div>
           </form>

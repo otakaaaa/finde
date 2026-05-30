@@ -28,7 +28,7 @@ const NewsDetailPage = () => {
     )
   }
 
-  if (isError || item === null) {
+  if (isError || item == null) {
     return <Navigate to="/news" replace />
   }
 
