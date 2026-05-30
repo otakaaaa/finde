@@ -9,7 +9,7 @@ import { useBrands } from '@/hooks/useBrands'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { ShopSearchBar } from '@/components/shop/ShopSearchBar'
-import type { Category, CategoryCode, Prefecture, Shop } from '@/types'
+import type { Category, CategoryCode, Shop } from '@/types'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -24,37 +24,6 @@ const CATEGORY_ICONS: Record<CategoryCode, ReactNode> = {
   vintage: <Sparkles className="h-5 w-5" />,
 }
 
-const REGIONS: { label: string; labelEn: string; ids: number[] }[] = [
-  { label: '北海道', labelEn: 'HOKKAIDO', ids: [1] },
-  { label: '東北',   labelEn: 'TOHOKU',   ids: [2, 3, 4, 5, 6, 7] },
-  { label: '関東',   labelEn: 'KANTO',    ids: [8, 9, 10, 11, 12, 13, 14] },
-  { label: '中部',   labelEn: 'CHUBU',    ids: [15, 16, 17, 18, 19, 20, 21, 22, 23] },
-  { label: '近畿',   labelEn: 'KINKI',    ids: [24, 25, 26, 27, 28, 29, 30] },
-  { label: '中国',   labelEn: 'CHUGOKU',  ids: [31, 32, 33, 34, 35] },
-  { label: '四国',   labelEn: 'SHIKOKU',  ids: [36, 37, 38, 39] },
-  { label: '九州・沖縄', labelEn: 'KYUSHU', ids: [40, 41, 42, 43, 44, 45, 46, 47] },
-]
-
-const usePrefectures = () =>
-  useQuery({
-    queryKey: ['prefectures'],
-    queryFn: async () => {
-      const result = await supabase
-        .from('prefectures')
-        .select('id, name, name_en, region, slug')
-        .order('id') as unknown as { data: ({ id: number; name: string; name_en: string; region: string; slug: string })[] | null; error: { message: string } | null }
-      if (result.error) throw new Error(result.error.message)
-      return (result.data ?? []).map((p) => ({
-        id: p.id,
-        name: p.name,
-        nameEn: p.name_en,
-        region: p.region,
-        slug: p.slug,
-      })) as Prefecture[]
-    },
-    staleTime: Infinity,
-  })
-
 const useCategories = () =>
   useQuery({
     queryKey: ['categories'],
@@ -67,32 +36,6 @@ const useCategories = () =>
       return result.data ?? []
     },
     staleTime: Infinity,
-  })
-
-interface TopStats {
-  shopCount: number
-  areaCount: number
-}
-
-const useTopStats = () =>
-  useQuery<TopStats>({
-    queryKey: ['top-stats'],
-    queryFn: async () => {
-      const [shopsRes, areasRes] = await Promise.all([
-        supabase
-          .from('shops')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'public') as unknown as Promise<{ count: number | null; error: { message: string } | null }>,
-        supabase
-          .from('areas')
-          .select('*', { count: 'exact', head: true }) as unknown as Promise<{ count: number | null; error: { message: string } | null }>,
-      ])
-      return {
-        shopCount: shopsRes.count ?? 0,
-        areaCount: areasRes.count ?? 0,
-      }
-    },
-    staleTime: 10 * 60 * 1000,
   })
 
 interface FeaturedCardProps {
@@ -184,9 +127,7 @@ const TopPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { setShopFilters } = useUiStore()
-  const { data: prefectures } = usePrefectures()
   const { data: categories } = useCategories()
-  const { data: stats } = useTopStats()
   const { data: popularData } = useShops({ sort: 'popular' })
   const { data: brands } = useBrands()
   const [brandQuery, setBrandQuery] = useState('')
@@ -195,11 +136,6 @@ const TopPage = () => {
 
   const goWithCategory = (categoryId: number) => {
     setShopFilters({ sort: 'popular', categoryId })
-    navigate('/shops')
-  }
-
-  const goWithPrefecture = (prefectureId: number) => {
-    setShopFilters({ sort: 'popular', prefectureId })
     navigate('/shops')
   }
 
@@ -297,38 +233,36 @@ const TopPage = () => {
         </div>
       </section>
 
-      {/* ── Stats ticker ─────────────────────────────────── */}
-      {stats && (stats.shopCount > 0 || stats.areaCount > 0) && (
-        <section className="overflow-hidden border-b border-border bg-background">
-          <div className="mx-auto max-w-6xl px-4 md:px-16">
-            <div className="grid grid-cols-3 divide-x divide-border">
-              <div className="py-6 pr-4 md:py-8 md:pr-8">
-                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
-                  {stats.shopCount.toLocaleString()}
-                </div>
-                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
-                  掲載店舗数
-                </div>
-              </div>
-              <div className="px-4 py-6 md:px-8 md:py-8">
-                <div className="font-headline font-black tabular-nums leading-none text-[1.75rem] md:text-[2.5rem]">
-                  {stats.areaCount}
-                  <span className="text-base md:text-xl">+</span>
-                </div>
-                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
-                  対象エリア
-                </div>
-              </div>
-              <div className="pl-4 py-6 md:pl-8 md:py-8">
-                <div className="font-headline font-black leading-none text-[1.75rem] md:text-[2.5rem]">無料</div>
-                <div className="mt-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground md:mt-2 md:tracking-[0.3em]">
-                  ご利用料金
-                </div>
-              </div>
-            </div>
+      {/* ── How it works ─────────────────────────────────── */}
+      <section className="border-b border-border bg-background py-16">
+        <div className="mx-auto max-w-6xl px-8 md:px-16">
+          <div className="mb-10">
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+              — How it works
+            </span>
+            <h2 className="font-headline mt-2 text-4xl font-black md:text-5xl">
+              使い方
+            </h2>
           </div>
-        </section>
-      )}
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
+            {([
+              { step: '01', title: 'ブランドを入力', desc: '好きなブランド名を検索する' },
+              { step: '02', title: '取扱い店舗を発見', desc: 'エリアや価格帯で絞り込む' },
+              { step: '03', title: 'お気に入りに保存', desc: '気になる店舗をストックしておく' },
+            ] as const).map(({ step, title, desc }) => (
+              <div key={step} className="flex gap-6">
+                <div className="font-headline text-5xl font-black leading-none text-muted-foreground/20">
+                  {step}
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl font-bold">{title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── Categories — Magazine index style ────────────── */}
       {categories && categories.length > 0 && (
@@ -492,60 +426,34 @@ const TopPage = () => {
         </section>
       )}
 
-      {/* ── Prefectures ──────────────────────────────────── */}
-      {prefectures && prefectures.length > 0 && (
-        <section className="border-b border-border bg-background py-20">
-          <div className="mx-auto max-w-6xl px-8 md:px-16">
-            <div className="mb-10 flex items-end justify-between">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground/50">
-                  — Location
-                </span>
-                <h2 className="font-headline mt-1.5 text-4xl font-black leading-none md:text-5xl">
-                  都道府県から探す
-                </h2>
-              </div>
+      {/* ── Suggest a Shop ───────────────────────────────── */}
+      <section className="border-b border-border bg-foreground py-24">
+        <div className="mx-auto max-w-6xl px-8 md:px-16">
+          <div className="flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+                — Suggest a Shop
+              </span>
+              <h2 className="font-headline mt-4 max-w-lg text-4xl font-black text-white leading-tight md:text-5xl">
+                知っている名店を、<br />みんなと共有しよう。
+              </h2>
+              <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/50">
+                地元の掘り出しもの、行きつけのセレクト。<br />
+                あなたの「好き」がfindeを育てます。
+              </p>
             </div>
-
-            <div className="divide-y divide-border/60">
-              {REGIONS.map((region) => {
-                const regionPrefs = prefectures.filter((p) => region.ids.includes(p.id))
-                return (
-                  <div key={region.label} className="flex gap-4 py-3 sm:gap-8">
-                    {/* Region label */}
-                    <div className="w-16 shrink-0 pt-0.5 sm:w-20">
-                      <div className="font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">
-                        {region.labelEn}
-                      </div>
-                      <div className="mt-0.5 text-[11px] font-bold text-foreground/40">
-                        {region.label}
-                      </div>
-                    </div>
-
-                    {/* Prefecture chips */}
-                    <div className="flex flex-wrap gap-1.5 py-0.5">
-                      {regionPrefs.map((pref) => (
-                        <button
-                          key={pref.id}
-                          type="button"
-                          onClick={() => goWithPrefecture(pref.id)}
-                          className={[
-                            'rounded-sm border border-border/60 px-2.5 py-1 text-[11px] font-bold',
-                            'text-foreground/60 transition-all duration-150',
-                            'hover:border-primary hover:bg-primary hover:text-white',
-                          ].join(' ')}
-                        >
-                          {pref.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="shrink-0">
+              <Link
+                to="/listing-request"
+                className="inline-flex items-center justify-center gap-2 rounded-sm bg-white px-8 py-4 text-sm font-bold text-primary transition-opacity hover:opacity-90"
+              >
+                お店を推薦する
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ── CTA ──────────────────────────────────────────── */}
       {!user && (
