@@ -19,11 +19,11 @@ export interface PrivacyVersion {
 }
 
 export const PRIVACY_VERSIONS: PrivacyVersion[] = [
-  // ── v1: 2026-05-30（現行）────────────────────────────────────────────────
+  // ── v1: 2026-06-08（現行）────────────────────────────────────────────────
   {
-    date: '2026-05-30',
+    date: '2026-06-08',
     label: '第1版',
-    effectiveDate: '2026年5月30日',
+    effectiveDate: '2026年6月8日',
     sections: [
       {
         id: 'overview',
@@ -197,7 +197,7 @@ export const PRIVACY_VERSIONS: PrivacyVersion[] = [
         content: [
           {
             heading: null,
-            body: '個人情報の取り扱いに関するご意見・ご質問・苦情・開示請求その他のお問い合わせは、下記または本サービスのお問い合わせフォームよりご連絡ください。\n\n運営者：FINDE運営事務局\nメールアドレス：[メールアドレス]\n\n原則30日以内にご回答いたします。',
+            body: '個人情報の取り扱いに関するご意見・ご質問・苦情・開示請求その他のお問い合わせは、下記または本サービスのお問い合わせフォームよりご連絡ください。\n\n運営者：FINDE運営事務局\nメールアドレス：support@finde-cloud.com\n\n原則30日以内にご回答いたします。',
           },
         ],
       },
