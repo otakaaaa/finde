@@ -20,9 +20,9 @@ export interface TermsVersion {
 export const VERSIONS: TermsVersion[] = [
   // ── v1: 2026-05-30（現行）────────────────────────────────────────────────
   {
-    date: '2026-05-30',
+    date: '2026-06-08',
     label: '第1版',
-    effectiveDate: '2026年5月30日',
+    effectiveDate: '2026年6月8日',
     sections: [
       {
         id: 'general', num: '01', title: '総則・定義',
