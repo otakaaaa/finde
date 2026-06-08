@@ -233,7 +233,7 @@ otp_expiry = 3600
 
 # アカウント登録時の確認メールテンプレート
 [auth.email.template.confirm_signup]
-subject = "【FINDE】メールアドレスの確認"
+subject = "【FINDE】登録を完了してください"
 content_path = "./supabase/templates/confirm_signup.html"
 
 # パスワードリセットメールテンプレート
