@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil, KeyRound } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -387,12 +387,20 @@ const MyPage = () => {
               animDelay={220}
             />
             <NavItem
+              to="/mypage/account"
+              icon={<KeyRound className="h-3.5 w-3.5" />}
+              index="06"
+              label="アカウント設定"
+              sublabel="メールアドレス・パスワードを変更する"
+              animDelay={275}
+            />
+            <NavItem
               to="/mypage/security"
               icon={<Shield className="h-3.5 w-3.5" />}
-              index="06"
+              index="07"
               label="セキュリティ設定"
               sublabel="二段階認証の設定"
-              animDelay={275}
+              animDelay={330}
             />
           </div>
 

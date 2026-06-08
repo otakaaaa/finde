@@ -43,6 +43,24 @@ const CallbackPage = () => {
         return
       }
 
+      // メール変更確認リンクの処理（token_hash + type=email_change）
+      const searchParams = new URLSearchParams(window.location.search)
+      const tokenHash = searchParams.get('token_hash')
+      const type = searchParams.get('type')
+
+      if (tokenHash && type === 'email_change') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'email_change',
+        })
+        if (error) {
+          navigate('/mypage/account?email_change_error=true')
+        } else {
+          navigate('/mypage/account?email_changed=true')
+        }
+        return
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session?.user) {
