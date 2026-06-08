@@ -27,27 +27,22 @@
               <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:#444444;">
                 あなたにぴったりのセレクトショップや古着屋が、<br />
                 きっと見つかります。<br /><br />
-                下のボタンをクリックして、登録を完了してください。<br />
-                リンクの有効期限は24時間です。
+                以下の6桁のコードをFINDEの認証画面に入力して、<br />
+                登録を完了してください。コードの有効期限は1時間です。
               </p>
 
-              <!-- ボタン -->
+              <!-- 認証コード -->
               <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
                 <tr>
-                  <td style="background-color:#1a1a1a;">
-                    <a href="{{ .ConfirmationURL }}"
-                       style="display:inline-block;padding:16px 40px;font-size:10px;font-weight:900;letter-spacing:0.4em;text-transform:uppercase;color:#ffffff;text-decoration:none;">
-                      メール認証を完了する
-                    </a>
+                  <td style="background-color:#f5f5f5;border:1px solid #e0e0e0;padding:24px 48px;">
+                    <p style="margin:0;font-size:36px;font-weight:900;letter-spacing:0.4em;color:#1a1a1a;text-align:center;">{{ .Token }}</p>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:#888888;">
-                ボタンが機能しない場合は、以下の URL をブラウザに貼り付けてください。
-              </p>
-              <p style="margin:0;font-size:11px;line-height:1.6;color:#aaaaaa;word-break:break-all;">
-                {{ .ConfirmationURL }}
+              <p style="margin:0;font-size:12px;line-height:1.8;color:#aaaaaa;">
+                このコードは1時間で期限切れになります。<br />
+                心当たりがない場合は、このメールを無視してください。
               </p>
             </td>
           </tr>

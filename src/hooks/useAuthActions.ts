@@ -68,7 +68,9 @@ export const useAuthActions = () => {
         if (data.user) {
           localStorage.setItem('pending_welcome_email_uid', data.user.id)
         }
-        navigate('/auth/login?registered=true')
+        // OTPコード入力ページで使用するためメールアドレスを保存
+        localStorage.setItem('pending_confirmation_email', email)
+        navigate('/auth/verify-email')
       }
     } finally {
       setLoading(false)
@@ -176,6 +178,34 @@ export const useAuthActions = () => {
     }
   }
 
+  const verifyEmailOtp = async (email: string, token: string): Promise<boolean> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'signup',
+      })
+      if (error) { setError(error.message); return false }
+      if (data.user) {
+        localStorage.removeItem('pending_confirmation_email')
+        const pendingUid = localStorage.getItem('pending_welcome_email_uid')
+        if (pendingUid === data.user.id) {
+          localStorage.removeItem('pending_welcome_email_uid')
+          await supabase.functions.invoke('send-welcome-email', {
+            body: { user_id: data.user.id },
+          }).catch(() => { /* ウェルカムメール失敗はブロックしない */ })
+        }
+        localStorage.setItem('pending_login_toast', 'true')
+        await redirectByRole(data.user.id)
+      }
+      return true
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signOut = async () => {
     setLoading(true)
     try {
@@ -198,6 +228,7 @@ export const useAuthActions = () => {
     hasPasswordIdentity,
     updateEmail,
     updatePasswordWithCurrent,
+    verifyEmailOtp,
     signOut,
   }
 }
