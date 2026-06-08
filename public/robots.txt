@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Disallow: /auth/
+Disallow: /mypage/
+Disallow: /admin/
+Disallow: /owner/
+Disallow: /wishes/
+Disallow: /owner-application/
+Disallow: /listing-request
+
+Sitemap: https://finde-cloud.com/sitemap.xml
