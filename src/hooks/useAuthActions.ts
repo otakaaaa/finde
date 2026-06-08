@@ -122,6 +122,57 @@ export const useAuthActions = () => {
     }
   }
 
+  const hasPasswordIdentity = async (): Promise<boolean> => {
+    const { data: { user } } = await supabase.auth.getUser()
+    return (user?.identities ?? []).some((identity) => identity.provider === 'email')
+  }
+
+  const updateEmail = async (newEmail: string): Promise<boolean> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { error } = await supabase.auth.updateUser(
+        { email: newEmail },
+        { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      )
+      if (error) { setError(error.message); return false }
+      return true
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updatePasswordWithCurrent = async (
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<boolean> => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const email = user?.email
+      if (!email) {
+        setError('ログインしてください')
+        return false
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      })
+      if (signInError) {
+        setError('現在のパスワードが正しくありません')
+        return false
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+      if (updateError) { setError(updateError.message); return false }
+      return true
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signOut = async () => {
     setLoading(true)
     try {
@@ -141,6 +192,9 @@ export const useAuthActions = () => {
     signInWithGoogle,
     sendPasswordReset,
     updatePassword,
+    hasPasswordIdentity,
+    updateEmail,
+    updatePasswordWithCurrent,
     signOut,
   }
 }
