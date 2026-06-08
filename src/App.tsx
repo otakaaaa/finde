@@ -18,6 +18,7 @@ const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 const CallbackPage = lazy(() => import('@/pages/auth/CallbackPage'))
 const LinkAccountPage = lazy(() => import('@/pages/auth/LinkAccountPage'))
 const MfaChallengePage = lazy(() => import('@/pages/auth/MfaChallengePage'))
+const AuthErrorPage = lazy(() => import('@/pages/auth/AuthErrorPage'))
 
 // User pages (auth required)
 const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/auth/callback" element={<CallbackPage />} />
             <Route path="/auth/link-account" element={<LinkAccountPage />} />
             <Route path="/auth/mfa" element={<MfaChallengePage />} />
+            <Route path="/auth/error" element={<AuthErrorPage />} />
 
             {/* User (auth required) */}
             <Route
