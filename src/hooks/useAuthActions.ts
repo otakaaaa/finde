@@ -63,6 +63,8 @@ export const useAuthActions = () => {
       if (error) { setError(error.message); return }
       // メール確認不要設定の場合はそのままログイン
       if (data.user && data.session) {
+        // メール確認不要設定の場合は即ログイン
+        localStorage.setItem('pending_login_toast', 'true')
         await redirectByRole(data.user.id)
       } else {
         if (data.user) {
