@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -81,7 +81,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5分
+      staleTime: 5 * 60 * 1000,
       retry: 1,
     },
   },
@@ -93,167 +93,83 @@ const PageFallback = () => (
   </div>
 )
 
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <TopPage /> },
+      { path: 'shops', element: <ShopsPage /> },
+      { path: 'shops/:id', element: <ShopDetailPage /> },
+      { path: 'brands', element: <BrandSearchPage /> },
+      { path: 'brands/:id', element: <BrandDetailPage /> },
+      { path: 'contact', element: <ContactPage /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: 'privacy', element: <PrivacyPolicyPage /> },
+      { path: 'faq', element: <FaqPage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: 'news', element: <NewsPage /> },
+      { path: 'news/:id', element: <NewsDetailPage /> },
+
+      // Auth
+      { path: 'auth/login', element: <LoginPage /> },
+      { path: 'auth/register', element: <RegisterPage /> },
+      { path: 'auth/callback', element: <CallbackPage /> },
+      { path: 'auth/link-account', element: <LinkAccountPage /> },
+      { path: 'auth/mfa', element: <MfaChallengePage /> },
+      { path: 'auth/error', element: <AuthErrorPage /> },
+
+      // User (auth required)
+      { path: 'mypage', element: <ProtectedRoute><MyPage /></ProtectedRoute> },
+      { path: 'mypage/security', element: <ProtectedRoute><SecurityPage /></ProtectedRoute> },
+      { path: 'mypage/favorites', element: <ProtectedRoute><FavoritesPage /></ProtectedRoute> },
+      { path: 'mypage/contacts', element: <ProtectedRoute><ContactsPage /></ProtectedRoute> },
+      { path: 'mypage/notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
+      { path: 'mypage/profile/edit', element: <ProtectedRoute><ProfileEditPage /></ProtectedRoute> },
+      { path: 'mypage/account', element: <ProtectedRoute><AccountPage /></ProtectedRoute> },
+
+      // Wishes
+      { path: 'wishes', element: WISH_FEATURE_ENABLED ? <ProtectedRoute><WishesPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'wishes/new', element: WISH_FEATURE_ENABLED ? <ProtectedRoute><WishNewPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'wishes/:id/edit', element: WISH_FEATURE_ENABLED ? <ProtectedRoute><WishEditPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+
+      { path: 'listing-request', element: <ProtectedRoute><ListingRequestPage /></ProtectedRoute> },
+      { path: 'owner-application/new', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'owner-application/:requestId', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+
+      // Owner
+      { path: 'owner', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'owner/shops/:id/edit', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerShopEditPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'owner/shops/:id/brands', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><BrandsManagePage /></ProtectedRoute> : <Navigate to="/" replace /> },
+
+      // Admin
+      { path: 'admin', element: <ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute> },
+      { path: 'admin/shops', element: <ProtectedRoute requiredRole="admin"><AdminShopsPage /></ProtectedRoute> },
+      { path: 'admin/shops/new', element: <ProtectedRoute requiredRole="admin"><AdminShopNewPage /></ProtectedRoute> },
+      { path: 'admin/shops/bulk', element: <ProtectedRoute requiredRole="admin"><AdminShopBulkPage /></ProtectedRoute> },
+      { path: 'admin/shops/:id/edit', element: <ProtectedRoute requiredRole="admin"><AdminShopEditPage /></ProtectedRoute> },
+      { path: 'admin/shops/:id/brands', element: <ProtectedRoute requiredRole="admin"><BrandsManagePage /></ProtectedRoute> },
+      { path: 'admin/reviews', element: <ProtectedRoute requiredRole="admin"><AdminReviewsPage /></ProtectedRoute> },
+      { path: 'admin/brands', element: <ProtectedRoute requiredRole="admin"><AdminBrandsPage /></ProtectedRoute> },
+      { path: 'admin/applications', element: <ProtectedRoute requiredRole="admin"><AdminApplicationsPage /></ProtectedRoute> },
+      { path: 'admin/contacts', element: <ProtectedRoute requiredRole="admin"><AdminContactsPage /></ProtectedRoute> },
+      { path: 'admin/users', element: <ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute> },
+      { path: 'admin/news', element: <ProtectedRoute requiredRole="admin"><AdminNewsPage /></ProtectedRoute> },
+      { path: 'admin/news/new', element: <ProtectedRoute requiredRole="admin"><AdminNewsNewPage /></ProtectedRoute> },
+      { path: 'admin/news/:id/edit', element: <ProtectedRoute requiredRole="admin"><AdminNewsEditPage /></ProtectedRoute> },
+
+      // 404
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+])
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            {/* Layout wrapper */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<TopPage />} />
-              <Route path="/shops" element={<ShopsPage />} />
-              <Route path="/shops/:id" element={<ShopDetailPage />} />
-              <Route path="/brands" element={<BrandSearchPage />} />
-              <Route path="/brands/:id" element={<BrandDetailPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy" element={<PrivacyPolicyPage />} />
-              <Route path="/faq" element={<FaqPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/news" element={<NewsPage />} />
-              <Route path="/news/:id" element={<NewsDetailPage />} />
-
-              {/* Auth */}
-              <Route path="/auth/login" element={<LoginPage />} />
-              <Route path="/auth/register" element={<RegisterPage />} />
-<Route path="/auth/callback" element={<CallbackPage />} />
-              <Route path="/auth/link-account" element={<LinkAccountPage />} />
-              <Route path="/auth/mfa" element={<MfaChallengePage />} />
-              <Route path="/auth/error" element={<AuthErrorPage />} />
-
-              {/* User (auth required) */}
-              <Route
-                path="/mypage"
-                element={<ProtectedRoute><MyPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/security"
-                element={<ProtectedRoute><SecurityPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/favorites"
-                element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/contacts"
-                element={<ProtectedRoute><ContactsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/notifications"
-                element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/profile/edit"
-                element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/mypage/account"
-                element={<ProtectedRoute><AccountPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/wishes"
-                element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishesPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/wishes/new"
-                element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishNewPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/wishes/:id/edit"
-                element={WISH_FEATURE_ENABLED ? <ProtectedRoute><WishEditPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/listing-request"
-                element={<ProtectedRoute><ListingRequestPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/owner-application/new"
-                element={OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/owner-application/:requestId"
-                element={OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-
-              {/* Owner */}
-              <Route
-                path="/owner"
-                element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerDashboardPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/owner/shops/:id/edit"
-                element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerShopEditPage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/owner/shops/:id/brands"
-                element={OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><BrandsManagePage /></ProtectedRoute> : <Navigate to="/" replace />}
-              />
-
-              {/* Admin */}
-              <Route
-                path="/admin"
-                element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/shops"
-                element={<ProtectedRoute requiredRole="admin"><AdminShopsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/shops/new"
-                element={<ProtectedRoute requiredRole="admin"><AdminShopNewPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/shops/bulk"
-                element={<ProtectedRoute requiredRole="admin"><AdminShopBulkPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/shops/:id/edit"
-                element={<ProtectedRoute requiredRole="admin"><AdminShopEditPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/shops/:id/brands"
-                element={<ProtectedRoute requiredRole="admin"><BrandsManagePage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/reviews"
-                element={<ProtectedRoute requiredRole="admin"><AdminReviewsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/brands"
-                element={<ProtectedRoute requiredRole="admin"><AdminBrandsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/applications"
-                element={<ProtectedRoute requiredRole="admin"><AdminApplicationsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/contacts"
-                element={<ProtectedRoute requiredRole="admin"><AdminContactsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/users"
-                element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/news"
-                element={<ProtectedRoute requiredRole="admin"><AdminNewsPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/news/new"
-                element={<ProtectedRoute requiredRole="admin"><AdminNewsNewPage /></ProtectedRoute>}
-              />
-              <Route
-                path="/admin/news/:id/edit"
-                element={<ProtectedRoute requiredRole="admin"><AdminNewsEditPage /></ProtectedRoute>}
-              />
-
-              {/* 404 */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+      <Suspense fallback={<PageFallback />}>
+        <RouterProvider router={router} />
+      </Suspense>
     </QueryClientProvider>
   </ErrorBoundary>
 )
