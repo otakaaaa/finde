@@ -1,18 +1,5 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Link, useSearchParams } from 'react-router'
+import { Link } from 'react-router'
 import { useAuthActions } from '@/hooks/useAuthActions'
-import { cn } from '@/lib/utils'
-
-const loginSchema = z.object({
-  email: z.string().email('有効なメールアドレスを入力してください'),
-  password: z.string().min(1, 'パスワードを入力してください'),
-})
-
-type LoginFormValues = z.infer<typeof loginSchema>
-
-// ── Shared sub-components ──────────────────────────────────────
 
 const GoogleIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -23,50 +10,8 @@ const GoogleIcon = () => (
   </svg>
 )
 
-interface LineFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string
-  fieldId: string
-  error?: string
-  animDelay?: number
-}
-
-const LineField = ({ label, fieldId, error, animDelay = 0, ...props }: LineFieldProps) => (
-  <div className="wish-card-enter" style={{ animationDelay: `${animDelay}ms` }}>
-    <label
-      htmlFor={fieldId}
-      className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/45"
-    >
-      {label}
-    </label>
-    <input
-      id={fieldId}
-      className={cn(
-        'w-full border-b bg-transparent pb-2.5 pt-1 text-[14px] text-foreground placeholder:text-muted-foreground/25',
-        'transition-colors duration-200 focus:outline-none',
-        error ? 'border-red-400 focus:border-red-500' : 'border-border focus:border-foreground',
-      )}
-      {...props}
-    />
-    {error && (
-      <p className="mt-1.5 text-[10px] text-red-500">{error}</p>
-    )}
-  </div>
-)
-
-// ── Page ───────────────────────────────────────────────────────
-
 const LoginPage = () => {
-  const [searchParams] = useSearchParams()
-  const registered = searchParams.get('registered') === 'true'
-
-  const { loading, error, signInWithEmail, signInWithGoogle } = useAuthActions()
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-  })
-
-  const onSubmit = async (values: LoginFormValues) => {
-    await signInWithEmail(values.email, values.password)
-  }
+  const { loading, error, signInWithGoogle } = useAuthActions()
 
   return (
     <div className="flex min-h-[calc(100vh-56px)]">
@@ -74,7 +19,6 @@ const LoginPage = () => {
       {/* ── Left decorative panel ─────────────────── */}
       <div className="relative hidden overflow-hidden bg-primary lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-12">
 
-        {/* Subtle grid texture */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -83,7 +27,6 @@ const LoginPage = () => {
           }}
         />
 
-        {/* Ghost watermark */}
         <div className="pointer-events-none absolute -bottom-4 -left-4 select-none">
           <span
             className="font-headline font-black leading-none tracking-tighter text-white/[0.05]"
@@ -93,14 +36,12 @@ const LoginPage = () => {
           </span>
         </div>
 
-        {/* Top: brand mark */}
         <div className="relative">
           <p className="font-headline text-[9px] font-black uppercase tracking-[0.6em] text-white/30">
             FINDE
           </p>
         </div>
 
-        {/* Center: headline */}
         <div className="relative">
           <div className="mb-6 h-px w-10 bg-white/20" />
           <h2 className="mb-5 font-headline text-[52px] font-black leading-[0.88] tracking-tighter text-white">
@@ -111,7 +52,6 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Bottom: page indicator */}
         <div className="relative flex items-center gap-3">
           <span className="h-[2px] w-6 bg-white/25" />
           <span className="font-headline text-[8px] font-black uppercase tracking-[0.5em] text-white/20">
@@ -123,7 +63,6 @@ const LoginPage = () => {
       {/* ── Right form panel ──────────────────────── */}
       <div className="flex flex-1 flex-col justify-center bg-white px-8 py-12 sm:px-12 md:px-16 lg:px-20">
 
-        {/* Mobile brand header */}
         <div className="mb-10 lg:hidden">
           <p className="mb-1 font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/35">
             FINDE
@@ -135,8 +74,7 @@ const LoginPage = () => {
 
         <div className="mx-auto w-full max-w-[360px]">
 
-          {/* Desktop heading */}
-          <div className="mb-8 hidden lg:block">
+          <div className="mb-10 hidden lg:block">
             <p className="mb-1 font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/35">
               ようこそ
             </p>
@@ -145,108 +83,23 @@ const LoginPage = () => {
             </h1>
           </div>
 
-          {/* Registered notice */}
-          {registered && (
-            <div className="wish-card-enter mb-6 border-l-[3px] border-l-emerald-400 bg-emerald-50 px-4 py-3">
-              <p className="text-[11px] font-medium leading-relaxed text-emerald-700">
-                確認メールを送信しました。メール内のリンクをクリックしてアカウントを有効化してください。
-              </p>
-            </div>
-          )}
-
-          {/* Auth error */}
           {error && (
             <div className="wish-card-enter mb-6 border-l-[3px] border-l-red-400 bg-red-50 px-4 py-3">
               <p className="text-[11px] font-medium text-red-700">{error}</p>
             </div>
           )}
 
-          {/* Google OAuth */}
           <button
             type="button"
             onClick={signInWithGoogle}
             disabled={loading}
-            className="wish-card-enter mb-6 flex w-full items-center justify-center gap-2.5 border border-border py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/60 transition-all hover:border-foreground/25 hover:bg-muted/50 disabled:opacity-50"
-            style={{ animationDelay: '0ms' }}
+            className="wish-card-enter flex w-full items-center justify-center gap-2.5 border border-border py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/60 transition-all hover:border-foreground/25 hover:bg-muted/50 disabled:opacity-50"
           >
             <GoogleIcon />
             Google でログイン
           </button>
 
-          {/* Divider */}
-          <div
-            className="wish-card-enter mb-6 flex items-center gap-3"
-            style={{ animationDelay: '40ms' }}
-          >
-            <span className="flex-1 border-t border-border" />
-            <span className="font-headline text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-              または
-            </span>
-            <span className="flex-1 border-t border-border" />
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <LineField
-              label="メールアドレス"
-              fieldId="email"
-              type="email"
-              placeholder="example@email.com"
-              autoComplete="email"
-              error={errors.email?.message}
-              animDelay={80}
-              {...register('email')}
-            />
-
-            <div className="wish-card-enter" style={{ animationDelay: '120ms' }}>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/45"
-                >
-                  パスワード
-                </label>
-                <Link
-                  to="/auth/forgot-password"
-                  className="font-headline text-[8px] font-black uppercase tracking-[0.25em] text-muted-foreground/35 transition-colors hover:text-primary"
-                >
-                  忘れた方 →
-                </Link>
-              </div>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className={cn(
-                  'w-full border-b bg-transparent pb-2.5 pt-1 text-[14px] text-foreground',
-                  'transition-colors duration-200 focus:outline-none',
-                  errors.password
-                    ? 'border-red-400 focus:border-red-500'
-                    : 'border-border focus:border-foreground',
-                )}
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="mt-1.5 text-[10px] text-red-500">{errors.password.message}</p>
-              )}
-            </div>
-
-            <div className="wish-card-enter pt-2" style={{ animationDelay: '160ms' }}>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary py-4 font-headline text-[10px] font-black uppercase tracking-[0.4em] text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-              >
-                {loading ? 'ログイン中…' : 'ログイン'}
-              </button>
-            </div>
-          </form>
-
-          {/* Footer link */}
-          <p
-            className="wish-card-enter mt-8 text-center font-headline text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/35"
-            style={{ animationDelay: '200ms' }}
-          >
+          <p className="wish-card-enter mt-8 text-center font-headline text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/35">
             初めての方は{' '}
             <Link
               to="/auth/register"
