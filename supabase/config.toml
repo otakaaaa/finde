@@ -217,7 +217,7 @@ secure_password_change = false
 # 次のサインアップ確認メールまたはパスワードリセットメールを送信するまでの最短待機時間。
 max_frequency = "1s"
 # メール OTP に使用する文字数。
-otp_length = 6
+otp_length = 8
 # メール OTP の有効期限（秒）。デフォルトは 1 時間。
 otp_expiry = 3600
 

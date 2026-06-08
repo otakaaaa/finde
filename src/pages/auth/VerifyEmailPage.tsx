@@ -4,7 +4,7 @@ import { useAuthActions } from '@/hooks/useAuthActions'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
-const DIGITS = 6
+const DIGITS = 8
 
 const VerifyEmailPage = () => {
   const storedEmail = localStorage.getItem('pending_confirmation_email') ?? ''
@@ -102,7 +102,7 @@ const VerifyEmailPage = () => {
             FY.
           </h2>
           <p className="max-w-[240px] text-[12px] leading-[1.8] text-white/35">
-            メールに届いた6桁のコードを入力して登録を完了してください。
+            メールに届いた8桁のコードを入力して登録を完了してください。
           </p>
         </div>
 
@@ -158,7 +158,7 @@ const VerifyEmailPage = () => {
             {/* 6桁コード入力 */}
             <div className="wish-card-enter">
               <label className="mb-3 block font-headline text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/45">
-                認証コード（6桁）
+                認証コード（8桁）
               </label>
               <div className="flex gap-2" onPaste={handlePaste}>
                 {digits.map((digit, i) => (
