@@ -43,6 +43,13 @@ const CallbackPage = () => {
         return
       }
 
+      // リンク期限切れ・アクセス拒否エラーはエラー画面へ
+      if (errorCode === 'access_denied') {
+        const errorSubCode = hashParams.get('error_code') ?? 'access_denied'
+        navigate(`/auth/error?code=${encodeURIComponent(errorSubCode)}`, { replace: true })
+        return
+      }
+
       // パスワードリセット確認リンクの処理（type=recovery がハッシュに含まれる）
       // Supabaseクライアントがハッシュからセッションを復元済みのためリセット画面へ転送
       if (hashParams.get('type') === 'recovery') {
