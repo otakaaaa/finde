@@ -14,13 +14,10 @@ const ShopDetailPage = lazy(() => import('@/pages/shops/ShopDetailPage'))
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
-const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
 const CallbackPage = lazy(() => import('@/pages/auth/CallbackPage'))
 const LinkAccountPage = lazy(() => import('@/pages/auth/LinkAccountPage'))
 const MfaChallengePage = lazy(() => import('@/pages/auth/MfaChallengePage'))
 const AuthErrorPage = lazy(() => import('@/pages/auth/AuthErrorPage'))
-const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage'))
 
 // User pages (auth required)
 const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
@@ -120,13 +117,10 @@ const App = () => (
               {/* Auth */}
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/register" element={<RegisterPage />} />
-              <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/auth/callback" element={<CallbackPage />} />
+<Route path="/auth/callback" element={<CallbackPage />} />
               <Route path="/auth/link-account" element={<LinkAccountPage />} />
               <Route path="/auth/mfa" element={<MfaChallengePage />} />
               <Route path="/auth/error" element={<AuthErrorPage />} />
-              <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
 
               {/* User (auth required) */}
               <Route

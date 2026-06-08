@@ -50,13 +50,6 @@ const CallbackPage = () => {
         return
       }
 
-      // パスワードリセット確認リンクの処理（type=recovery がハッシュに含まれる）
-      // Supabaseクライアントがハッシュからセッションを復元済みのためリセット画面へ転送
-      if (hashParams.get('type') === 'recovery') {
-        navigate('/auth/reset-password')
-        return
-      }
-
       // メール変更確認リンクの処理（token_hash + type=email_change）
       const searchParams = new URLSearchParams(window.location.search)
       const tokenHash = searchParams.get('token_hash')
