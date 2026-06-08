@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router'
+import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { ToastStack } from '@/components/ui/Toast'
@@ -31,6 +31,7 @@ const AuthHashRedirector = () => {
 
 export const Layout = () => (
   <div className="flex min-h-screen flex-col bg-background">
+    <ScrollRestoration />
     <AuthHashRedirector />
     <Header />
     <main className="flex-1">
