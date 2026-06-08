@@ -15,7 +15,7 @@ const ProfileEditPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!user) return
 
@@ -33,12 +33,15 @@ const ProfileEditPage = () => {
     setError(null)
     setSuccess(false)
 
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ display_name: trimmed, updated_at: new Date().toISOString() } as never)
-      .eq('id', user.id)
+    const [{ error: dbError }, { error: authError }] = await Promise.all([
+      supabase
+        .from('users')
+        .update({ display_name: trimmed, updated_at: new Date().toISOString() } as never)
+        .eq('id', user.id),
+      supabase.auth.updateUser({ data: { name: trimmed, full_name: trimmed } }),
+    ])
 
-    if (updateError) {
+    if (dbError || authError) {
       setError('更新に失敗しました。再度お試しください。')
       setSaving(false)
       return
