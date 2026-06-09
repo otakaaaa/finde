@@ -34,7 +34,7 @@ export const ShopSearchBar = ({ initialQuery = '', className }: ShopSearchBarPro
           placeholder="ブランド名・店舗名・エリアで検索"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="h-12 w-full bg-transparent pl-11 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none"
+          className="h-12 w-full bg-transparent pl-11 pr-4 text-[16px] placeholder:text-muted-foreground focus:outline-none md:text-sm"
         />
       </div>
       <div className="pr-2">
