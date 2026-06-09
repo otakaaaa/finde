@@ -75,6 +75,13 @@ const CallbackPage = () => {
         return
       }
 
+      // MFAが有効なユーザーはコード確認画面へリダイレクト
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (aalData?.nextLevel === 'aal2' && aalData.nextLevel !== aalData.currentLevel) {
+        navigate('/auth/mfa', { replace: true })
+        return
+      }
+
       await maybeSendWelcomeEmail(session.user.id)
 
       const { data } = await supabase
