@@ -346,7 +346,7 @@ export const Header = () => {
       {/* ── Mobile Overlay ────────────────────────── */}
       <div
         className={cn(
-          'fixed inset-0 z-40 flex flex-col bg-background transition-all duration-300 md:hidden',
+          'fixed inset-0 z-50 flex flex-col bg-background transition-all duration-300 md:hidden',
           menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
         )}
         style={{ top: '56px' }}
