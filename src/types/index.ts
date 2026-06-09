@@ -302,6 +302,7 @@ export type NotificationType =
   | 'admin_review_report'
   | 'review_posted'
   | 'news_published'
+  | 'welcome'
 
 export interface Notification {
   id: string
