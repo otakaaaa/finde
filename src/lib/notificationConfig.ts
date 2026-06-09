@@ -1,4 +1,4 @@
-import { Heart, FileCheck2, Store, Mail, AlertTriangle, Star } from 'lucide-react'
+import { Heart, FileCheck2, Store, Mail, AlertTriangle, Star, Newspaper } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { NotificationType } from '@/types'
 
@@ -45,5 +45,11 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> =
     iconClass: 'text-amber-500',
     bgClass: 'bg-amber-50',
     label: 'レビュー',
+  },
+  news_published: {
+    icon: Newspaper,
+    iconClass: 'text-sky-600',
+    bgClass: 'bg-sky-50',
+    label: 'お知らせ',
   },
 }
