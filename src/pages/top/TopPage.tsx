@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Star, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight, Search, X } from 'lucide-react'
+import { MapPin, Star, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight, Search, X, FileText, Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
 import { useBrands } from '@/hooks/useBrands'
@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useLatestPressReleases } from '@/hooks/usePressReleases'
 import { ShopSearchBar } from '@/components/shop/ShopSearchBar'
+import { WISH_FEATURE_ENABLED } from '@/config/features'
 import type { Category, CategoryCode, Shop, PressRelease } from '@/types'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
@@ -282,6 +283,57 @@ const TopPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* More features */}
+          <div className="mt-14 grid grid-cols-1 gap-4 border-t border-border pt-10 sm:grid-cols-2">
+            <Link
+              to="/listing-request"
+              className="group flex items-start justify-between gap-4 border border-border p-6 transition-colors hover:border-foreground/30 hover:bg-muted/40"
+            >
+              <div className="flex gap-4">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors group-hover:border-foreground/40 group-hover:text-foreground">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="mb-1 text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/50">
+                    — Listing Request
+                  </p>
+                  <h3 className="font-headline text-base font-bold leading-tight">
+                    掲載されていない店舗を申請する
+                  </h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    知っているお店がfindeに載っていない場合は、掲載申請からリクエストできます。
+                  </p>
+                </div>
+              </div>
+              <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
+            </Link>
+
+            {WISH_FEATURE_ENABLED && (
+              <Link
+                to="/wishes"
+                className="group flex items-start justify-between gap-4 border border-border p-6 transition-colors hover:border-foreground/30 hover:bg-muted/40"
+              >
+                <div className="flex gap-4">
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors group-hover:border-foreground/40 group-hover:text-foreground">
+                    <Heart className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/50">
+                      — Wish List
+                    </p>
+                    <h3 className="font-headline text-base font-bold leading-tight">
+                      ウィッシュリストで新着店舗を受け取る
+                    </h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                      ほしいブランドや条件を登録しておくと、マッチする店舗が追加された際に通知が届きます。
+                    </p>
+                  </div>
+                </div>
+                <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
+              </Link>
+            )}
           </div>
         </div>
       </section>
