@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, Newspaper } from 'lucide-react'
+import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, Newspaper, TrendingUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -339,6 +339,13 @@ const AdminDashboardPage = () => {
                   label="ユーザー管理"
                   sublabel="ユーザーの一覧確認・ロール変更"
                   animDelay={330}
+                />
+                <NavTile
+                  to="/admin/analytics"
+                  icon={<TrendingUp className="h-4 w-4" />}
+                  label="アナリティクス"
+                  sublabel="登録・店舗・エンゲージメントの推移を確認"
+                  animDelay={385}
                 />
               </div>
             </section>
