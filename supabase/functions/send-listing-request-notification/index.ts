@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCallerUser, isAdmin } from '../_shared/guards.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -66,6 +67,15 @@ serve(async (req) => {
       .single() as { data: ListingRequestRow | null; error: { message: string } | null }
 
     if (requestErr || !request) throw new Error(requestErr?.message ?? 'Request not found')
+
+    // 申請者本人、または管理者のみ実行を許可する（メール爆撃の防止）。
+    const caller = await getCallerUser(req)
+    if (!caller || (caller.id !== request.submitted_by && !(await isAdmin(supabase, caller.id)))) {
+      return new Response(JSON.stringify({ ok: false, error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const { data: { user }, error: userErr } = await supabase.auth.admin.getUserById(
       request.submitted_by,

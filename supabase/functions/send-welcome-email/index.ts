@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCallerUser } from '../_shared/guards.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +47,15 @@ serve(async (req) => {
 
     const { user_id } = await req.json() as { user_id: string }
     if (!user_id) throw new Error('user_id is required')
+
+    // 任意のユーザーへのメール爆撃を防ぐため、本人のみ実行を許可する。
+    const caller = await getCallerUser(req)
+    if (!caller || caller.id !== user_id) {
+      return new Response(JSON.stringify({ ok: false, error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,

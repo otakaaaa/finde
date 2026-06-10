@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { isServiceRoleRequest } from '../_shared/guards.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -112,6 +113,15 @@ function buildEmailHtml(params: {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // この関数は不特定多数へメールを一斉送信するため、DB トリガー等の
+  // 内部呼び出し（サービスロールキー）からのみ実行を許可する。
+  if (!isServiceRoleRequest(req)) {
+    return new Response(JSON.stringify({ ok: false, error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 
   try {

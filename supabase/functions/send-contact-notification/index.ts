@@ -77,6 +77,17 @@ serve(async (req) => {
 
     if (contactErr || !contact) throw new Error(contactErr?.message ?? 'Contact not found')
 
+    // 問い合わせは匿名でも送信できるため本人特定はできないが、
+    // 既存の contact_id を使った再送（メール爆撃）を防ぐため、
+    // 作成直後（2分以内）のみ確認メールの送信を許可する。
+    const ageMs = Date.now() - new Date(contact.created_at).getTime()
+    if (ageMs > 2 * 60 * 1000) {
+      return new Response(JSON.stringify({ ok: false, error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const categoryLabel = CATEGORY_LABELS[contact.category] ?? contact.category
     const receivedAt = new Date(contact.created_at).toLocaleString('ja-JP', {
       timeZone: 'Asia/Tokyo',

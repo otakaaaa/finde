@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCallerUser, isAdmin } from '../_shared/guards.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -61,6 +62,16 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+
+    // 承認/却下メールはなりすまし・フィッシングに悪用され得るため、
+    // 管理者のみ実行を許可する。
+    const caller = await getCallerUser(req)
+    if (!caller || !(await isAdmin(supabase, caller.id))) {
+      return new Response(JSON.stringify({ ok: false, error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const { data: request, error: requestErr } = await supabase
       .from('shop_listing_requests')
