@@ -6,6 +6,7 @@ import { ToastStack } from '@/components/ui/Toast'
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal'
 import { DeleteAccountModal } from '@/components/auth/DeleteAccountModal'
 import { ReviewReportModal } from '@/components/review/ReviewReportModal'
+import { MaintenanceGuard } from '@/components/MaintenanceGuard'
 
 // /auth/callback 以外のページでSupabaseの認証エラーハッシュを検知し、エラー画面へ転送する
 const AuthHashRedirector = () => {
@@ -34,9 +35,11 @@ export const Layout = () => (
     <ScrollRestoration />
     <AuthHashRedirector />
     <Header />
-    <main className="flex-1">
-      <Outlet />
-    </main>
+    <MaintenanceGuard>
+      <main className="flex-1">
+        <Outlet />
+      </main>
+    </MaintenanceGuard>
     <Footer />
     <ToastStack />
     <LogoutConfirmModal />
