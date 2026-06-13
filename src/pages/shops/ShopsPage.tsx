@@ -3,7 +3,8 @@ import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useUiStore } from '@/store/uiStore'
 import { ShopCard } from '@/components/shop/ShopCard'
 import { cn } from '@/lib/utils'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Play } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import type { ShopFilters } from '@/types'
 
 const SORT_OPTIONS: { value: NonNullable<ShopFilters['sort']>; label: string }[] = [
@@ -49,6 +50,7 @@ const FilterSelect = ({
 )
 
 const ShopsPage = () => {
+  const navigate = useNavigate()
   const { shopFilters, setShopFilters } = useUiStore()
   const {
     data,
@@ -195,6 +197,17 @@ const ShopsPage = () => {
                 </button>
               </>
             )}
+
+            <div className="ml-auto shrink-0 pl-2">
+              <button
+                onClick={() => navigate('/shops/reel')}
+                className="flex h-8 items-center gap-1.5 border border-white/20 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 transition-all hover:border-white/40 hover:text-white/90"
+                aria-label="リール表示"
+              >
+                <Play className="h-3 w-3" />
+                REEL
+              </button>
+            </div>
           </div>
         </div>
       </div>

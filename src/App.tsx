@@ -10,6 +10,7 @@ import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 const TopPage = lazy(() => import('@/pages/top/TopPage'))
 const ShopsPage = lazy(() => import('@/pages/shops/ShopsPage'))
 const ShopDetailPage = lazy(() => import('@/pages/shops/ShopDetailPage'))
+const ShopReelPage = lazy(() => import('@/pages/shops/ShopReelPage'))
 
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
@@ -95,6 +96,8 @@ const PageFallback = () => (
 )
 
 const router = createBrowserRouter([
+  // Fullscreen page — outside Layout (no Header/Footer)
+  { path: '/shops/reel', element: <ShopReelPage /> },
   {
     path: '/',
     element: <Layout />,
