@@ -1,0 +1,15 @@
+# Cloudflare Pages ヘッダ設定
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# ハッシュ付きビルド成果物は内容が変わればファイル名も変わる（content-addressed）。
+# よって安全に長期キャッシュ（immutable）できる。新デプロイ時は新しいファイル名になるため
+# 古いキャッシュが残っても問題にならない。
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML は常に再検証させ、新デプロイを即座に反映する（stale chunk 対策）。
+# ※ Pages Functions ミドルウェアでも no-cache を付与しているが、フォールバックとして明示する。
+/
+  Cache-Control: no-cache, must-revalidate
+/index.html
+  Cache-Control: no-cache, must-revalidate
