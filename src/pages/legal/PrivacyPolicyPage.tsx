@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactElement } from 'react'
 import { cn } from '@/lib/utils'
 import { type PrivacySection, type PrivacyVersion, PRIVACY_VERSIONS } from './privacyVersions'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Icons ─────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,11 @@ const PrivacyPolicyPage = () => {
 
   return (
     <div className="bg-background">
+      <Seo
+        title="プライバシーポリシー"
+        description="FINDEのプライバシーポリシー。お客様の個人情報の取り扱いについてご説明します。"
+        path="/privacy"
+      />
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">

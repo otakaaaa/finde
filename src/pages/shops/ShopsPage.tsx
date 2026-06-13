@@ -5,6 +5,7 @@ import { ShopCard } from '@/components/shop/ShopCard'
 import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import type { ShopFilters } from '@/types'
+import { Seo } from '@/components/seo/Seo'
 
 const SORT_OPTIONS: { value: NonNullable<ShopFilters['sort']>; label: string }[] = [
   { value: 'popular', label: '人気順' },
@@ -74,6 +75,11 @@ const ShopsPage = () => {
 
   return (
     <div>
+      <Seo
+        title="店舗を探す"
+        description="全国のセレクトショップ・古着屋を、地域・カテゴリ・取り扱いブランドで絞り込んで検索。あなたが「探していたお店」がFINDEで見つかります。"
+        path="/shops"
+      />
       {/* ── Page header (scrolls away) ──────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         {/* Decorative watermark */}

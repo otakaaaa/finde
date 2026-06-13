@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Section heading ───────────────────────────────────────────────────────
 
@@ -17,6 +18,11 @@ const SectionHeading = ({ num, title }: { num: string; title: string }) => (
 
 const AboutPage = () => (
   <div className="bg-background">
+    <Seo
+      title="FINDEについて"
+      description="FINDEは、店舗と取り扱いブランドを比較しながら「行きたいお店」が見つかる服屋検索サービスです。サービスの想いと特徴をご紹介します。"
+      path="/about"
+    />
 
     {/* ── Hero ────────────────────────────────────────────── */}
     <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">

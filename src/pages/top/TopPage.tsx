@@ -12,6 +12,7 @@ import { useLatestPressReleases } from '@/hooks/usePressReleases'
 import { ShopSearchBar } from '@/components/shop/ShopSearchBar'
 import { WISH_FEATURE_ENABLED } from '@/config/features'
 import type { Category, CategoryCode, Shop, PressRelease } from '@/types'
+import { Seo } from '@/components/seo/Seo'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -179,6 +180,7 @@ const TopPage = () => {
 
   return (
     <div>
+      <Seo title="セレクトショップ・古着屋検索" path="/" />
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative min-h-[100svh] bg-primary overflow-hidden flex flex-col justify-center pb-16 pt-24">
         {/* Decorative large kanji */}
