@@ -40,6 +40,22 @@ class HeadInjector {
   }
 }
 
+/**
+ * HTML ドキュメントは常に再検証させる。新デプロイ後にユーザーが古い index.html を
+ * 握り続けると、ハッシュ名が変わった旧チャンクの取得に失敗する（stale chunk）。
+ * no-cache を付けることで、ページ遷移/再訪時に最新の HTML を取得させる。
+ * （ハッシュ付き /assets/* は public/_headers 側で immutable に長期キャッシュする）
+ */
+const withHtmlNoCache = (response: Response): Response => {
+  const headers = new Headers(response.headers)
+  headers.set('Cache-Control', 'no-cache, must-revalidate')
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
 export const onRequest = async (context: PagesContext): Promise<Response> => {
   const response = await context.next()
 
@@ -54,12 +70,14 @@ export const onRequest = async (context: PagesContext): Promise<Response> => {
     headTags = buildHeadTags(meta)
   } catch {
     // メタ生成に失敗してもページ配信は止めない
-    return response
+    return withHtmlNoCache(response)
   }
 
-  return new HTMLRewriter()
+  const transformed = new HTMLRewriter()
     .on('head', new HeadInjector(headTags))
     .transform(response)
+
+  return withHtmlNoCache(transformed)
 }
 
 declare const HTMLRewriter: {

@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
+import { isChunkLoadError, reloadOnceForStaleChunk } from '@/lib/chunkReload'
 
 interface Props {
   children: ReactNode
@@ -20,6 +21,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
+    // 旧チャンクの取得失敗（新デプロイ後の stale chunk）は、最新の index.html を
+    // 取得し直せば解消する。`vite:preloadError` を取りこぼした場合のフォールバックとして、
+    // ここでも一度だけ自動リロードを試みる。
+    if (isChunkLoadError(error) && reloadOnceForStaleChunk()) {
+      return
+    }
     console.error('[ErrorBoundary]', error, info)
   }
 
