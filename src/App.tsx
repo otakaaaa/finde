@@ -58,6 +58,7 @@ const AdminNewsEditPage = lazy(() => import('@/pages/admin/AdminNewsEditPage'))
 const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'))
 const OwnerApplicationDMPage = lazy(() => import('@/pages/owner-application/OwnerApplicationDMPage'))
 const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/OwnerApplicationNewPage'))
+const OwnerApplicationListPage = lazy(() => import('@/pages/owner-application/OwnerApplicationListPage'))
 
 // Contact pages
 const ContactPage = lazy(() => import('@/pages/contact/ContactPage'))
@@ -135,6 +136,7 @@ const router = createBrowserRouter([
       { path: 'wishes/:id/edit', element: WISH_FEATURE_ENABLED ? <ProtectedRoute><WishEditPage /></ProtectedRoute> : <Navigate to="/" replace /> },
 
       { path: 'listing-request', element: <ProtectedRoute><ListingRequestPage /></ProtectedRoute> },
+      { path: 'owner-application', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationListPage /></ProtectedRoute> : <Navigate to="/" replace /> },
       { path: 'owner-application/new', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationNewPage /></ProtectedRoute> : <Navigate to="/" replace /> },
       { path: 'owner-application/:requestId', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute><OwnerApplicationDMPage /></ProtectedRoute> : <Navigate to="/" replace /> },
 

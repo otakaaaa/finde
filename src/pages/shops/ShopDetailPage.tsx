@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
-import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight } from 'lucide-react'
+import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight, Store } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { cn } from '@/lib/utils'
+import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import type { BusinessHours } from '@/types'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
@@ -389,6 +390,33 @@ const ShopDetailPage = () => {
                 </div>
               )}
             </div>
+
+            {/* オーナー申請 CTA */}
+            {OWNER_FEATURE_ENABLED && (
+              <div className="mt-4 border border-dashed border-border px-5 py-4">
+                <div className="flex items-start gap-3">
+                  <Store className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                  <div>
+                    <p className="text-[11px] font-bold text-foreground/70">
+                      この店舗のオーナーですか？
+                    </p>
+                    <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground/50">
+                      オーナー登録をすると店舗情報を管理できます
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!user) { navigate('/auth/login'); return }
+                        navigate(`/owner-application/new?shopId=${shop.id}&shopName=${encodeURIComponent(shop.name)}`)
+                      }}
+                      className="mt-2.5 text-[10px] font-bold text-primary underline underline-offset-4 transition-colors hover:text-primary/70"
+                    >
+                      オーナー登録を申請する
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
 
