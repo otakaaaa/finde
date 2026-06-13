@@ -4,6 +4,7 @@ import { Search, X, ArrowUpRight } from 'lucide-react'
 import { useBrands } from '@/hooks/useBrands'
 import { cn } from '@/lib/utils'
 import type { Brand } from '@/types'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Helpers ─────────────────────────────────────────────────────
 
@@ -50,6 +51,11 @@ const BrandSearchPage = () => {
 
   return (
     <div>
+      <Seo
+        title="ブランドから探す"
+        description="取り扱いブランドからセレクトショップ・古着屋を検索。気になるブランドを扱っているお店をFINDEで見つけられます。"
+        path="/brands"
+      />
       {/* ── Page header ──────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">

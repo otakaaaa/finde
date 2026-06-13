@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Section, VERSIONS } from './termsVersions'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
@@ -119,6 +120,11 @@ const TermsPage = () => {
 
   return (
     <div className="bg-background">
+      <Seo
+        title="利用規約"
+        description="FINDEの利用規約。本サービスをご利用いただく前にご確認ください。"
+        path="/terms"
+      />
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { type FaqItem, FAQ_CATEGORIES } from './faqData'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Accordion Item ────────────────────────────────────────────────────────
 
@@ -90,6 +91,11 @@ const FaqPage = () => {
 
   return (
     <div className="bg-background">
+      <Seo
+        title="よくあるご質問"
+        description="FINDEの使い方・店舗掲載・オーナー登録などに関するよくある質問と回答をまとめています。"
+        path="/faq"
+      />
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">

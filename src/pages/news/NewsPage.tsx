@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { ArrowRight, Megaphone } from 'lucide-react'
 import { usePressReleases } from '@/hooks/usePressReleases'
 import { cn } from '@/lib/utils'
+import { Seo } from '@/components/seo/Seo'
 
 const PAGE_SIZE = 10
 
@@ -69,6 +70,11 @@ const NewsPage = () => {
 
   return (
     <div>
+      <Seo
+        title="お知らせ"
+        description="FINDEからのお知らせ・新着情報・アップデートの一覧。"
+        path="/news"
+      />
       {/* ── Page header ────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">

@@ -1,7 +1,9 @@
 import { Link } from 'react-router'
+import { Seo } from '@/components/seo/Seo'
 
 const NotFoundPage = () => (
   <div className="flex min-h-[calc(100vh-56px)]">
+    <Seo title="ページが見つかりません" noindex />
     {/* 左パネル */}
     <div className="relative hidden overflow-hidden bg-primary lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-12">
       <div

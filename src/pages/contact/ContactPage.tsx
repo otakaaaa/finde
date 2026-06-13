@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
+import { Seo } from '@/components/seo/Seo'
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -198,6 +199,11 @@ const ContactPage = () => {
   // ── Form ──────────────────────────────────────────────────────
   return (
     <div>
+      <Seo
+        title="お問い合わせ"
+        description="FINDEへのお問い合わせ・ご要望・店舗情報の修正依頼はこちらのフォームからお送りください。"
+        path="/contact"
+      />
       {/* ── Page header ──────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
