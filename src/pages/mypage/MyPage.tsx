@@ -362,11 +362,11 @@ const MyPage = () => {
             />
             {OWNER_FEATURE_ENABLED && (
               <NavItem
-                to="/owner-application/new"
+                to="/owner-application"
                 icon={<MessageCircle className="h-3.5 w-3.5" />}
                 index="04"
                 label="オーナー申請"
-                sublabel="自分の店舗としてオーナー権限を申請する"
+                sublabel="申請状況の確認・運営とのやり取り"
                 animDelay={165}
               />
             )}

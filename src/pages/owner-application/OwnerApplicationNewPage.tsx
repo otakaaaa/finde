@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -170,11 +170,12 @@ interface ShopSelectorProps {
   value: string | undefined
   onChange: (id: string, name: string) => void
   error?: string
+  initialName?: string
 }
 
-const ShopSelector = ({ value, onChange, error }: ShopSelectorProps) => {
+const ShopSelector = ({ value, onChange, error, initialName = '' }: ShopSelectorProps) => {
   const [query, setQuery] = useState('')
-  const [selectedName, setSelectedName] = useState('')
+  const [selectedName, setSelectedName] = useState(initialName)
   const [showResults, setShowResults] = useState(false)
 
   const { data: results, isFetching } = useShopSearch(query)
@@ -270,9 +271,13 @@ const ShopSelector = ({ value, onChange, error }: ShopSelectorProps) => {
 
 const OwnerApplicationNewPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const prefilledShopId = searchParams.get('shopId') ?? ''
+  const prefilledShopName = searchParams.get('shopName') ?? ''
+
   const { user } = useAuth()
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null)
-  const [selectedShopName, setSelectedShopName] = useState('')
+  const [selectedShopName, setSelectedShopName] = useState(prefilledShopName)
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -332,6 +337,7 @@ const OwnerApplicationNewPage = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       shopType: 'existing',
+      existingShopId: prefilledShopId || undefined,
       categoryIds: [],
       applicantRole: 'owner',
     },
@@ -453,7 +459,8 @@ const OwnerApplicationNewPage = () => {
                 <section>
                   <SectionLabel num="01" title="対象店舗" required />
 
-                  {/* Shop type toggle */}
+                  {/* Shop type toggle — 店舗詳細からの遷移時は非表示 */}
+                  {!prefilledShopId && (
                   <Controller
                     name="shopType"
                     control={control}
@@ -513,12 +520,13 @@ const OwnerApplicationNewPage = () => {
                       </div>
                     )}
                   />
+                  )}
 
                   {/* 既存店舗: 検索 */}
                   {shopType === 'existing' && (
                     <div>
                       <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                        店舗を検索
+                        {prefilledShopId ? '対象店舗' : '店舗を検索'}
                       </label>
                       <Controller
                         name="existingShopId"
@@ -531,6 +539,7 @@ const OwnerApplicationNewPage = () => {
                               setSelectedShopName(name)
                             }}
                             error={errors.existingShopId?.message}
+                            initialName={prefilledShopName}
                           />
                         )}
                       />

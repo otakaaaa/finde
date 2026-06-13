@@ -17,7 +17,7 @@
  *   env: VITE_MAINTENANCE_UNTIL="2026年6月10日 18:00ごろ" で解除見込み日時を設定。
  *   任意の文字列で指定。未設定の場合は「未定」と表示。
  */
-export const OWNER_FEATURE_ENABLED = false
+export const OWNER_FEATURE_ENABLED = true
 export const WISH_FEATURE_ENABLED = true
 export const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === 'true'
 export const MAINTENANCE_UNTIL: string | null = import.meta.env.VITE_MAINTENANCE_UNTIL ?? null
