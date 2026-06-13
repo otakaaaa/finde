@@ -4,6 +4,7 @@ import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
+import { useShopHasOwner } from '@/hooks/useShopHasOwner'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useReviews, useMyReview } from '@/hooks/useReviews'
@@ -98,6 +99,7 @@ const ShopDetailPage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: shop, isLoading, isError } = useShop(id ?? '')
+  const { data: shopHasOwner } = useShopHasOwner(id ?? '')
   const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
@@ -391,8 +393,8 @@ const ShopDetailPage = () => {
               )}
             </div>
 
-            {/* オーナー申請 CTA */}
-            {OWNER_FEATURE_ENABLED && (
+            {/* オーナー申請 CTA — すでにオーナーが紐づいている店舗では非表示 */}
+            {OWNER_FEATURE_ENABLED && !shopHasOwner && (
               <div className="mt-4 border border-dashed border-border px-5 py-4">
                 <div className="flex items-start gap-3">
                   <Store className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
