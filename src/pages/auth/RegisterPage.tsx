@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuthActions } from '@/hooks/useAuthActions'
 
@@ -12,6 +13,19 @@ const GoogleIcon = () => (
 
 const RegisterPage = () => {
   const { loading, error, signInWithGoogle } = useAuthActions()
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false)
+
+  const canSubmit = agreedToTerms && agreedToPrivacy
+  const [showAgreementError, setShowAgreementError] = useState(false)
+
+  const handleSignIn = () => {
+    if (!canSubmit) {
+      setShowAgreementError(true)
+      return
+    }
+    signInWithGoogle()
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-56px)]">
@@ -96,11 +110,60 @@ const RegisterPage = () => {
             </div>
           )}
 
+          {showAgreementError && !canSubmit && (
+            <div className="wish-card-enter mb-4 border-l-[3px] border-l-amber-400 bg-amber-50 px-4 py-3">
+              <p className="text-[11px] font-medium text-amber-700">
+                利用規約とプライバシーポリシーへの同意が必要です
+              </p>
+            </div>
+          )}
+
+          <div className="wish-card-enter mb-6 space-y-3">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => { setAgreedToTerms(e.target.checked); setShowAgreementError(false) }}
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-primary"
+              />
+              <span className="text-[11px] leading-relaxed text-muted-foreground">
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+                >
+                  利用規約
+                </Link>
+                に同意します
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={agreedToPrivacy}
+                onChange={(e) => { setAgreedToPrivacy(e.target.checked); setShowAgreementError(false) }}
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-primary"
+              />
+              <span className="text-[11px] leading-relaxed text-muted-foreground">
+                <Link
+                  to="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+                >
+                  プライバシーポリシー
+                </Link>
+                に同意します
+              </span>
+            </label>
+          </div>
+
           <button
             type="button"
-            onClick={signInWithGoogle}
+            onClick={handleSignIn}
             disabled={loading}
-            className="wish-card-enter flex w-full items-center justify-center gap-2.5 border border-border py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/60 transition-all hover:border-foreground/25 hover:bg-muted/50 disabled:opacity-50"
+            className="wish-card-enter flex w-full items-center justify-center gap-2.5 border border-border py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/60 transition-all hover:border-foreground/25 hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <GoogleIcon />
             Google で登録
