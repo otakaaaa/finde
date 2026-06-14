@@ -17,23 +17,31 @@ const STATIC_ROUTES = [
   '/faq',
   '/about',
   '/news',
+  '/share',
 ]
 
 async function fetchDynamicRoutes(supabaseUrl: string, supabaseKey: string): Promise<string[]> {
   const { createClient } = await import('@supabase/supabase-js')
   const client = createClient(supabaseUrl, supabaseKey)
 
-  const [shopsRes, brandsRes, newsRes] = await Promise.all([
+  const [shopsRes, brandsRes, newsRes, sharesRes] = await Promise.all([
     client.from('shops').select('id').eq('status', 'public'),
     client.from('brands').select('id').eq('status', 'active'),
     client.from('press_releases').select('id').not('published_at', 'is', null),
+    client
+      .from('share_posts')
+      .select('id')
+      .eq('visibility', 'public')
+      .eq('state', 'published')
+      .eq('status', 'published'),
   ])
 
   const shopRoutes = (shopsRes.data ?? []).map((r) => `/shops/${r.id}`)
   const brandRoutes = (brandsRes.data ?? []).map((r) => `/brands/${r.id}`)
   const newsRoutes = (newsRes.data ?? []).map((r) => `/news/${r.id}`)
+  const shareRoutes = (sharesRes.data ?? []).map((r) => `/share/${r.id}`)
 
-  return [...shopRoutes, ...brandRoutes, ...newsRoutes]
+  return [...shopRoutes, ...brandRoutes, ...newsRoutes, ...shareRoutes]
 }
 
 export default defineConfig(async ({ command, mode }) => {
@@ -60,7 +68,7 @@ export default defineConfig(async ({ command, mode }) => {
       sitemap({
         hostname: HOSTNAME,
         dynamicRoutes: [...STATIC_ROUTES, ...dynamicRoutes],
-        exclude: ['/auth/*', '/mypage/*', '/admin/*', '/owner/*', '/wishes/*', '/owner-application/*', '/listing-request'],
+        exclude: ['/auth/*', '/mypage/*', '/admin/*', '/owner/*', '/wishes/*', '/owner-application/*', '/listing-request', '/share/new', '/share/*/edit'],
       }),
     ],
     resolve: {

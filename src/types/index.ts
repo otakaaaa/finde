@@ -303,6 +303,8 @@ export type NotificationType =
   | 'review_posted'
   | 'news_published'
   | 'welcome'
+  | 'share_rated'
+  | 'share_commented'
 
 export interface Notification {
   id: string
@@ -328,6 +330,71 @@ export interface PressRelease {
   createdBy: string | null
   createdAt: string
   updatedAt: string
+}
+
+// ============================================================
+// Share（シャレ活）
+// ============================================================
+
+export type ShareState = 'draft' | 'published'
+// MVP は public/private のみ。followers/mutuals は将来フェーズ。
+export type ShareVisibility = 'public' | 'private'
+export type ShareStatus = 'published' | 'flagged' | 'hidden'
+export type ShareTimelineTab = 'recent' | 'hot'
+
+export interface SharePhoto {
+  id: string
+  postId: string
+  storagePath: string
+  order: number
+  createdAt: string
+}
+
+export interface SharePostShop {
+  id: string
+  name: string
+  coverPhotoPath: string | null
+}
+
+export interface SharePost {
+  id: string
+  userId: string
+  user: Pick<User, 'id' | 'displayName' | 'avatarUrl'>
+  body: string
+  state: ShareState
+  visibility: ShareVisibility
+  status: ShareStatus
+  publishedAt: string | null
+  photos: SharePhoto[]
+  shops: SharePostShop[]
+  impressionCount: number
+  ratingCount: number
+  ratingSum: number
+  commentCount: number
+  bookmarkCount: number
+  averageScore: number | null
+  // 閲覧者依存の状態（ログイン時のみ）
+  myScore: number | null
+  isBookmarked: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShareComment {
+  id: string
+  postId: string
+  userId: string
+  user: Pick<User, 'id' | 'displayName' | 'avatarUrl'>
+  body: string
+  status: 'published' | 'hidden'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShareFormValues {
+  body: string
+  visibility: ShareVisibility
+  shopIds: string[]
 }
 
 // ============================================================

@@ -6,6 +6,7 @@ const NAV_COLUMNS = [
     label: 'Browse',
     links: [
       { to: '/shops', text: '店舗を探す' },
+      { to: '/share', text: 'シャレ活' },
     ],
   },
   {

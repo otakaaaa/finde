@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil, KeyRound } from 'lucide-react'
+import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil, KeyRound, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
@@ -341,6 +341,14 @@ const MyPage = () => {
               label="お気に入り"
               sublabel="保存した店舗を確認する"
               animDelay={55}
+            />
+            <NavItem
+              to="/mypage/share"
+              icon={<Sparkles className="h-3.5 w-3.5" />}
+              index="03"
+              label="シャレ活"
+              sublabel="投稿の管理・下書き・ブックマーク"
+              animDelay={110}
             />
             {WISH_FEATURE_ENABLED && (
               <NavItem

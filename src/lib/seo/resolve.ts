@@ -20,6 +20,11 @@ const STATIC_PAGES: Record<string, { core: string; description: string }> = {
       '取り扱いブランドからセレクトショップ・古着屋を検索。気になるブランドを扱っているお店をFINDEで見つけられます。',
   },
   '/news': { core: 'お知らせ', description: 'FINDEからのお知らせ・新着情報・アップデートの一覧。' },
+  '/share': {
+    core: 'シャレ活',
+    description:
+      'ユーザーのおしゃれな投稿「シャレ活」をチェック。コーデや言動にシャレ度（1〜10）を送り合い、お気に入りはブックマークできます。',
+  },
   '/about': {
     core: 'FINDEについて',
     description:
@@ -64,6 +69,9 @@ const stripMarkdown = (markdown: string): string =>
 
 const shopPhotoUrl = (config: SupabaseConfig, storagePath: string): string =>
   `${config.url}/storage/v1/object/public/shop-photos/${storagePath}?width=1200&resize=cover`
+
+const sharePhotoUrl = (config: SupabaseConfig, storagePath: string): string =>
+  `${config.url}/storage/v1/object/public/share-photos/${storagePath}?width=1200&resize=cover`
 
 /** PostgREST へ GET し、結果配列の先頭を返す（失敗時は null） */
 const fetchOne = async <T>(config: SupabaseConfig, path: string): Promise<T | null> => {
@@ -233,6 +241,62 @@ const resolveNewsMeta = async (
   }
 }
 
+interface ShareRow {
+  id: string
+  body: string
+  published_at: string | null
+  user: { display_name: string | null } | null
+  share_post_photos: { storage_path: string; order: number }[] | null
+}
+
+const resolveShareMeta = async (
+  config: SupabaseConfig,
+  id: string,
+  pathname: string,
+): Promise<PageMeta> => {
+  const select = 'id,body,published_at,user:user_id(display_name),share_post_photos(storage_path,order)'
+  // RLS により公開（public・published）投稿のみ返る。非公開/下書きは null。
+  const post = await fetchOne<ShareRow>(
+    config,
+    `share_posts?id=eq.${encodeURIComponent(id)}&visibility=eq.public&state=eq.published&status=eq.published&select=${encodeURIComponent(select)}`,
+  )
+
+  if (!post) {
+    return { ...defaultMeta(pathname), title: composeTitle('投稿が見つかりません'), noindex: true }
+  }
+
+  const authorName = post.user?.display_name ?? '匿名ユーザー'
+  const firstPhoto = (post.share_post_photos ?? [])
+    .slice()
+    .sort((a, b) => a.order - b.order)[0]
+  const image = firstPhoto ? sharePhotoUrl(config, firstPhoto.storage_path) : undefined
+  const bodyText = post.body.replace(/\s+/g, ' ').trim()
+
+  const jsonLd: Record<string, unknown>[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'SocialMediaPosting',
+      headline: truncate(bodyText, 60),
+      articleBody: post.body,
+      author: { '@type': 'Person', name: authorName },
+      url: `${SITE.url}${pathname}`,
+      ...(post.published_at ? { datePublished: post.published_at } : {}),
+      ...(image ? { image } : {}),
+    },
+  ]
+
+  return {
+    title: composeTitle(`${authorName}さんのシャレ活`),
+    // リンクカードの description は本文より長め（〜200字）
+    description: truncate(bodyText, 200),
+    canonicalPath: pathname,
+    image,
+    type: 'article',
+    noindex: false,
+    jsonLd,
+  }
+}
+
 /**
  * リクエストパスから注入すべきページメタを解決する。
  * Supabase 設定が無い場合や未知ルートはサイト既定のメタにフォールバックする。
@@ -255,6 +319,11 @@ export const resolvePageMeta = async (
     }
   }
 
+  // シャレ活の投稿/編集フォームは認証専用 → インデックスさせない
+  if (normalized === '/share/new' || /^\/share\/[^/]+\/edit$/.test(normalized)) {
+    return { ...defaultMeta(normalized), noindex: true }
+  }
+
   if (config) {
     const shopMatch = normalized.match(/^\/shops\/([^/]+)$/)
     if (shopMatch) return resolveShopMeta(config, shopMatch[1], normalized)
@@ -264,6 +333,10 @@ export const resolvePageMeta = async (
 
     const newsMatch = normalized.match(/^\/news\/([^/]+)$/)
     if (newsMatch) return resolveNewsMeta(config, newsMatch[1], normalized)
+
+    // /share/:id（/share/new も id 扱いだが該当行なしで noindex フォールバック）
+    const shareMatch = normalized.match(/^\/share\/([^/]+)$/)
+    if (shareMatch && shareMatch[1] !== 'new') return resolveShareMeta(config, shareMatch[1], normalized)
   }
 
   return defaultMeta(normalized)

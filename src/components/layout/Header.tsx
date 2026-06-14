@@ -17,6 +17,7 @@ interface NavItem {
 
 const PUBLIC_NAV: NavItem[] = [
   { to: '/shops', label: 'SHOPS', labelJa: '店舗を探す' },
+  { to: '/share', label: 'SHARE', labelJa: 'シャレ活' },
 ]
 
 const USER_NAV: NavItem[] = [
