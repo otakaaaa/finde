@@ -46,6 +46,13 @@ const PROCESS_STEPS = [
   { num: '03', label: '掲載開始のご連絡', desc: 'メールにてお知らせ' },
 ]
 
+const SUBMISSION_GUIDELINES = [
+  '申請できるのは、日本国内に実在する古着屋・セレクトショップです。',
+  '掲載する写真は、ご自身で撮影したものなど、掲載する権利をお持ちの画像のみをご使用ください。',
+  '第三者が運営する店舗も申請いただけますが、店舗からの掲載辞退・削除のご依頼があった場合は対応いたします。',
+  '虚偽・誇大な情報や、店舗と無関係な画像が含まれる場合は、掲載を見送ることがあります。',
+]
+
 // ── Submitted ─────────────────────────────────────────────────
 
 const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
@@ -255,6 +262,27 @@ const ListingRequestPage = () => {
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div className="mb-8">
+                <span className="mb-4 block font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+                  掲載前にご確認ください
+                </span>
+                <ul className="space-y-2.5">
+                  {SUBMISSION_GUIDELINES.map((text, i) => (
+                    <li key={i} className="flex gap-2">
+                      <Check className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
+                      <span className="text-[11px] leading-relaxed text-muted-foreground">{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-[10px] leading-relaxed text-muted-foreground/50">
+                  申請内容は
+                  <Link to="/terms" className="mx-0.5 font-bold text-primary underline-offset-2 hover:underline">
+                    利用規約
+                  </Link>
+                  に従って取り扱われます。
+                </p>
               </div>
 
               <div>
