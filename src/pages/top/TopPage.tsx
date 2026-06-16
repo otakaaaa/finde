@@ -82,7 +82,11 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-muted text-5xl">🏪</div>
+          <img
+            src="/noimage.png"
+            alt={shop.name}
+            className="h-full w-full object-cover"
+          />
         )}
 
         <div className="absolute inset-0 bg-primary/0 transition-all duration-500 group-hover:bg-primary/80" />
