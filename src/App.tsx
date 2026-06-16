@@ -32,6 +32,15 @@ const WishNewPage = lazy(() => import('@/pages/wishes/WishNewPage'))
 const WishEditPage = lazy(() => import('@/pages/wishes/WishEditPage'))
 const ListingRequestPage = lazy(() => import('@/pages/listing-request/ListingRequestPage'))
 
+// Share (シャレ活)
+const ShareTimelinePage = lazy(() => import('@/pages/share/ShareTimelinePage'))
+const SharePostDetailPage = lazy(() => import('@/pages/share/SharePostDetailPage'))
+const SharePostNewPage = lazy(() => import('@/pages/share/SharePostNewPage'))
+const SharePostEditPage = lazy(() => import('@/pages/share/SharePostEditPage'))
+const MySharesPage = lazy(() => import('@/pages/share/MySharesPage'))
+const MyShareDraftsPage = lazy(() => import('@/pages/share/MyShareDraftsPage'))
+const MyShareBookmarksPage = lazy(() => import('@/pages/share/MyShareBookmarksPage'))
+
 // Brand pages
 const BrandSearchPage = lazy(() => import('@/pages/brands/BrandSearchPage'))
 const BrandDetailPage = lazy(() => import('@/pages/brands/BrandDetailPage'))
@@ -56,6 +65,7 @@ const AdminNewsPage = lazy(() => import('@/pages/admin/AdminNewsPage'))
 const AdminNewsNewPage = lazy(() => import('@/pages/admin/AdminNewsNewPage'))
 const AdminNewsEditPage = lazy(() => import('@/pages/admin/AdminNewsEditPage'))
 const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'))
+const AdminShareReportsPage = lazy(() => import('@/pages/admin/AdminShareReportsPage'))
 const OwnerApplicationDMPage = lazy(() => import('@/pages/owner-application/OwnerApplicationDMPage'))
 const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/OwnerApplicationNewPage'))
 const OwnerApplicationListPage = lazy(() => import('@/pages/owner-application/OwnerApplicationListPage'))
@@ -113,6 +123,12 @@ const router = createBrowserRouter([
       { path: 'news', element: <NewsPage /> },
       { path: 'news/:id', element: <NewsDetailPage /> },
 
+      // Share (シャレ活) — 閲覧は公開
+      { path: 'share', element: <ShareTimelinePage /> },
+      { path: 'share/new', element: <ProtectedRoute><SharePostNewPage /></ProtectedRoute> },
+      { path: 'share/:id', element: <SharePostDetailPage /> },
+      { path: 'share/:id/edit', element: <ProtectedRoute><SharePostEditPage /></ProtectedRoute> },
+
       // Auth
       { path: 'auth/login', element: <LoginPage /> },
       { path: 'auth/register', element: <RegisterPage /> },
@@ -129,6 +145,11 @@ const router = createBrowserRouter([
       { path: 'mypage/notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'mypage/profile/edit', element: <ProtectedRoute><ProfileEditPage /></ProtectedRoute> },
       { path: 'mypage/account', element: <ProtectedRoute><AccountPage /></ProtectedRoute> },
+
+      // Share management (本人限定)
+      { path: 'mypage/share', element: <ProtectedRoute><MySharesPage /></ProtectedRoute> },
+      { path: 'mypage/share/drafts', element: <ProtectedRoute><MyShareDraftsPage /></ProtectedRoute> },
+      { path: 'mypage/share/bookmarks', element: <ProtectedRoute><MyShareBookmarksPage /></ProtectedRoute> },
 
       // Wishes
       { path: 'wishes', element: WISH_FEATURE_ENABLED ? <ProtectedRoute><WishesPage /></ProtectedRoute> : <Navigate to="/" replace /> },
@@ -161,6 +182,7 @@ const router = createBrowserRouter([
       { path: 'admin/news/new', element: <ProtectedRoute requiredRole="admin"><AdminNewsNewPage /></ProtectedRoute> },
       { path: 'admin/news/:id/edit', element: <ProtectedRoute requiredRole="admin"><AdminNewsEditPage /></ProtectedRoute> },
       { path: 'admin/analytics', element: <ProtectedRoute requiredRole="admin"><AdminAnalyticsPage /></ProtectedRoute> },
+      { path: 'admin/share-reports', element: <ProtectedRoute requiredRole="admin"><AdminShareReportsPage /></ProtectedRoute> },
 
       // 404
       { path: '*', element: <NotFoundPage /> },
