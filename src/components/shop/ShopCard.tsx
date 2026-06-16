@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { MapPin, Star, ArrowUpRight, Store } from 'lucide-react'
+import { MapPin, Star, ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
 
@@ -31,9 +31,11 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-muted">
-            <Store className="h-12 w-12 text-muted-foreground/20" />
-          </div>
+          <img
+            src="/noimage.png"
+            alt={shop.name}
+            className="h-full w-full object-cover"
+          />
         )}
 
         {/* Dark overlay — fades in on hover */}

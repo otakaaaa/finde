@@ -194,7 +194,11 @@ const ShopDetailPage = () => {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-8xl">🏪</div>
+            <img
+              src="/noimage.png"
+              alt={shop.name}
+              className="h-full w-full object-cover"
+            />
           )}
           {/* Bottom gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />

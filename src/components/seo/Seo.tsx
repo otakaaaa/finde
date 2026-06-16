@@ -33,7 +33,7 @@ export const Seo = ({
 }: SeoProps) => {
   const fullTitle = appendSiteName ? `${title}｜${SITE.name}` : title
   const url = toAbsoluteUrl(path)
-  const imageUrl = image ? toAbsoluteUrl(image) : undefined
+  const imageUrl = toAbsoluteUrl(image ?? SITE.defaultImage)
 
   return (
     <>
@@ -49,13 +49,13 @@ export const Seo = ({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
-      {imageUrl && <meta property="og:image" content={imageUrl} />}
+      <meta property="og:image" content={imageUrl} />
 
       {/* Twitter */}
-      <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+      <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      {imageUrl && <meta name="twitter:image" content={imageUrl} />}
+      <meta name="twitter:image" content={imageUrl} />
     </>
   )
 }
