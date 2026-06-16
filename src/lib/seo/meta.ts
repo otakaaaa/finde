@@ -37,7 +37,7 @@ const serializeJsonLd = (data: Record<string, unknown>): string =>
  */
 export const buildHeadTags = (meta: PageMeta): string => {
   const url = toAbsoluteUrl(meta.canonicalPath)
-  const image = meta.image ? toAbsoluteUrl(meta.image) : undefined
+  const image = toAbsoluteUrl(meta.image ?? SITE.defaultImage)
   const title = escapeHtml(meta.title)
   const description = escapeHtml(meta.description)
   const ssr = 'data-seo-ssr'
@@ -61,19 +61,15 @@ export const buildHeadTags = (meta: PageMeta): string => {
     `<meta ${ssr} property="og:description" content="${description}" />`,
     `<meta ${ssr} property="og:url" content="${escapeHtml(url)}" />`,
   )
-  if (image) {
-    tags.push(`<meta ${ssr} property="og:image" content="${escapeHtml(image)}" />`)
-  }
+  tags.push(`<meta ${ssr} property="og:image" content="${escapeHtml(image)}" />`)
 
   // Twitter
   tags.push(
-    `<meta ${ssr} name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}" />`,
+    `<meta ${ssr} name="twitter:card" content="summary_large_image" />`,
     `<meta ${ssr} name="twitter:title" content="${title}" />`,
     `<meta ${ssr} name="twitter:description" content="${description}" />`,
+    `<meta ${ssr} name="twitter:image" content="${escapeHtml(image)}" />`,
   )
-  if (image) {
-    tags.push(`<meta ${ssr} name="twitter:image" content="${escapeHtml(image)}" />`)
-  }
 
   // JSON-LD
   for (const data of meta.jsonLd ?? []) {
