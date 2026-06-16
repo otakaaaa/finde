@@ -166,9 +166,16 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
             <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
               {STEPS[step].title}
             </h2>
-            {STEPS[step].label && (
-              <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
-                {STEPS[step].label}
+            {STEPS[step].label === 'required' && (
+              <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                必須
+              </span>
+            )}
+            {STEPS[step].label === 'optional' && (
+              <span className="inline-flex items-center gap-1 rounded-sm border border-muted-foreground/20 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground/40">
+                <span className="h-1.5 w-1.5 rounded-full border border-muted-foreground/30" />
+                任意
               </span>
             )}
           </div>
@@ -207,7 +214,24 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
         )}
 
         {step === 2 && (
-          <ShareShopPicker selected={shops} onChange={setShops} />
+          <div>
+            <p className="mb-1.5 text-[12px] leading-relaxed text-muted-foreground/60">
+              投稿に関連するお店を追加できます。訪問したお店や、アイテムを購入したお店など。
+            </p>
+            <p className="mb-5 text-[12px] leading-relaxed text-muted-foreground/60">
+              お店が見つからない場合は、
+              <a
+                href="/listing-request"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-2 hover:opacity-75"
+              >
+                店舗掲載申請
+              </a>
+              からお気軽にご申請ください。
+            </p>
+            <ShareShopPicker selected={shops} onChange={setShops} />
+          </div>
         )}
 
         {step === 3 && (
