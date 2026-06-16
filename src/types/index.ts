@@ -356,6 +356,12 @@ export interface SharePostShop {
   coverPhotoPath: string | null
 }
 
+export interface ShareBookmarkFolder {
+  id: string
+  name: string
+  createdAt: string
+}
+
 export interface SharePost {
   id: string
   userId: string
@@ -376,6 +382,7 @@ export interface SharePost {
   // 閲覧者依存の状態（ログイン時のみ）
   myScore: number | null
   isBookmarked: boolean
+  bookmarkFolderId: string | null
   createdAt: string
   updatedAt: string
 }

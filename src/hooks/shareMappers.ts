@@ -26,6 +26,7 @@ interface SharePostShopRow {
 
 interface ShareBookmarkRow {
   user_id: string
+  folder_id: string | null
 }
 
 export interface SharePostRow {
@@ -73,7 +74,7 @@ export const SHARE_POST_SELECT_BASE = `
 // 投稿/詳細 select（閲覧者のブックマーク有無を含む）
 export const SHARE_POST_SELECT = `
   ${SHARE_POST_SELECT_BASE},
-  bookmarks:share_bookmarks ( user_id )
+  bookmarks:share_bookmarks ( user_id, folder_id )
 ` as const
 
 export const SHARE_COMMENT_SELECT = `
@@ -131,6 +132,7 @@ export const mapSharePostRow = (row: SharePostRow, myScore: number | null): Shar
   averageScore: row.rating_count > 0 ? row.rating_sum / row.rating_count : null,
   myScore,
   isBookmarked: (row.bookmarks?.length ?? 0) > 0,
+  bookmarkFolderId: row.bookmarks?.[0]?.folder_id ?? null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 })
