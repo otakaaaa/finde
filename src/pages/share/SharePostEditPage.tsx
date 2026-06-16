@@ -29,29 +29,25 @@ const SharePostEditPage = () => {
     <div>
       <Seo title="シャレ活を編集" description="シャレ活の投稿を編集します。" path={`/share/${id}/edit`} noindex />
 
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
-        <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
-            EDIT
-          </span>
-        </div>
-        <div className="relative mx-auto max-w-2xl pb-8">
+      {/* Minimal editorial header */}
+      <div className="border-b border-border">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 md:px-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+            className="text-[9px] font-black uppercase tracking-[0.35em] text-muted-foreground/35 transition-colors hover:text-foreground/70"
           >
             ← Back
           </button>
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Share</p>
-          <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">シャレ活を編集</h1>
+          <p className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-foreground/25">
+            — Edit Post —
+          </p>
+          <div className="w-14" />
         </div>
-      </section>
+      </div>
 
-      <div className="bg-background">
-        <div className="mx-auto max-w-2xl px-4 py-10 md:px-8 md:py-14">
-          <SharePostForm mode="edit" initial={post} />
-        </div>
+      <div className="mx-auto max-w-5xl px-4 py-10 md:px-8 md:py-14">
+        <SharePostForm mode="edit" initial={post} />
       </div>
     </div>
   )

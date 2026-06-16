@@ -4,13 +4,12 @@ import { Save, Eye, Send } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useCreateShare, useUpdateShare } from '@/hooks/useShareMutations'
-import { SectionLabel } from '@/components/shop/ShopFormUI'
 import { SharePhotoUpload, type SharePhotoSelection } from '@/components/share/SharePhotoUpload'
 import { ShareVisibilitySelect } from '@/components/share/ShareVisibilitySelect'
 import { ShareShopPicker, type PickedShop } from '@/components/share/ShareShopPicker'
 import { SharePreviewModal } from '@/components/share/SharePreviewModal'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
-import { cn } from '@/lib/utils'
+import { SectionLabel } from '@/components/shop/ShopFormUI'
 import type { SharePost, ShareState, ShareVisibility } from '@/types'
 
 const MAX_BODY = 1000
@@ -108,85 +107,99 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   }
 
   return (
-    <div className="space-y-10">
+    <div>
       {error && (
-        <div className="border border-red-200 bg-red-50 px-4 py-3">
-          <p className="text-xs font-medium text-red-700">{error}</p>
+        <div className="mb-6 border-l-2 border-red-400 bg-red-50/50 py-2 pl-3 pr-4">
+          <p className="text-xs text-red-600">{error}</p>
         </div>
       )}
 
-      {/* 01 本文 */}
-      <section>
-        <SectionLabel num="01" title="本文" required />
-        <textarea
-          rows={5}
-          value={body}
-          maxLength={MAX_BODY}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="今日のおしゃれ、こだわり、言動など…"
-          className="w-full resize-none rounded-sm border border-border bg-white px-3 py-2.5 text-sm leading-relaxed placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
-        />
-        <p className="mt-1 text-right text-[9px] tabular-nums text-muted-foreground/40">
-          {body.length}/{MAX_BODY}
-        </p>
-      </section>
+      <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-10 lg:gap-14">
 
-      {/* 02 写真 */}
-      <section>
-        <SectionLabel num="02" title="写真" optional />
-        <SharePhotoUpload existingPhotos={initial?.photos} onChange={handlePhotoChange} />
-      </section>
+        {/* ── Left: 画像 ─────────────────────────────── */}
+        <div>
+          <SectionLabel num="01" title="写真" optional />
+          <SharePhotoUpload existingPhotos={initial?.photos} onChange={handlePhotoChange} />
+        </div>
 
-      {/* 03 関連店舗 */}
-      <section>
-        <SectionLabel num="03" title="関連店舗" optional />
-        <ShareShopPicker selected={shops} onChange={setShops} />
-      </section>
+        {/* ── Right: Content ──────────────────────────── */}
+        <div className="mt-8 flex flex-col md:mt-0">
 
-      {/* 04 公開範囲 */}
-      <section>
-        <SectionLabel num="04" title="公開範囲" />
-        <ShareVisibilitySelect value={visibility} onChange={setVisibility} />
-      </section>
+          {/* Body */}
+          <div className="border-b border-border pb-6">
+            <SectionLabel num="02" title="本文" required />
+            <textarea
+              rows={8}
+              value={body}
+              maxLength={MAX_BODY}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="今日のおしゃれ、こだわり、言動など…"
+              className="w-full resize-none bg-transparent text-[15px] leading-[1.9] text-foreground/80 placeholder:text-muted-foreground/20 focus:outline-none"
+            />
+            <p className="text-right text-[9px] tabular-nums text-muted-foreground/25">
+              {body.length}
+              <span className="text-muted-foreground/20"> / {MAX_BODY}</span>
+            </p>
+          </div>
 
-      {/* Actions */}
-      <div className="flex flex-wrap items-center gap-3 border-t border-border pt-8">
-        <button
-          type="button"
-          onClick={() => submit('published')}
-          disabled={isPending}
-          className={cn(
-            'inline-flex items-center gap-2 bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
-            'hover:opacity-90 disabled:opacity-40',
-          )}
-        >
-          <Send className="h-3.5 w-3.5" />
-          公開する
-        </button>
-        <button
-          type="button"
-          onClick={() => submit('draft')}
-          disabled={isPending}
-          className="inline-flex items-center gap-2 border border-border px-5 py-3 text-xs font-bold uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:border-foreground disabled:opacity-40"
-        >
-          <Save className="h-3.5 w-3.5" />
-          下書き保存
-        </button>
-        <button
-          type="button"
-          onClick={openPreview}
-          className="inline-flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Eye className="h-3.5 w-3.5" />
-          プレビュー
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors hover:text-foreground"
-        >
-          キャンセル
-        </button>
+          {/* Shop */}
+          <div className="border-b border-border py-5">
+            <SectionLabel num="03" title="関連店舗" optional />
+            <ShareShopPicker selected={shops} onChange={setShops} />
+          </div>
+
+          {/* Visibility */}
+          <div className="border-b border-border py-5">
+            <SectionLabel num="04" title="公開範囲" />
+            <ShareVisibilitySelect value={visibility} onChange={setVisibility} />
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-2 pt-6">
+            <button
+              type="button"
+              onClick={() => submit('published')}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-2.5 bg-foreground py-3.5 text-[11px] font-black uppercase tracking-[0.4em] text-background transition-opacity hover:opacity-80 disabled:opacity-30"
+            >
+              {isPending ? (
+                <span className="opacity-60">投稿中…</span>
+              ) : (
+                <>
+                  {mode === 'create' ? <><Send className="h-3.5 w-3.5" />投稿する</> : <><Save className="h-3.5 w-3.5" />変更を保存</>}
+                </>
+              )}
+            </button>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => submit('draft')}
+                disabled={isPending}
+                className="flex flex-1 items-center justify-center gap-1.5 border border-border py-2.5 text-[9px] font-black uppercase tracking-[0.25em] text-foreground/45 transition-colors hover:border-foreground/20 hover:text-foreground/65 disabled:opacity-30"
+              >
+                <Save className="h-3 w-3" />
+                下書き保存
+              </button>
+              <button
+                type="button"
+                onClick={openPreview}
+                className="flex flex-1 items-center justify-center gap-1.5 border border-border py-2.5 text-[9px] font-black uppercase tracking-[0.25em] text-foreground/45 transition-colors hover:border-foreground/20 hover:text-foreground/65"
+              >
+                <Eye className="h-3 w-3" />
+                プレビュー
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="px-3.5 py-2.5 text-[9px] font-medium text-muted-foreground/35 transition-colors hover:text-foreground/60"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {previewUrls !== null && (

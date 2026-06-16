@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, Newspaper, TrendingUp } from 'lucide-react'
+import { Store, FileText, Star, Tags, ArrowRight, Check, X, AlertTriangle, Mail, Users, Newspaper, TrendingUp, Flag } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -13,17 +13,19 @@ interface StatsData {
   applicationsPending: number
   reviewsFlagged: number
   contactsPending: number
+  shareReportsPending: number
 }
 
 const useAdminStats = () =>
   useQuery({
     queryKey: ['admin-stats'],
     queryFn: async (): Promise<StatsData> => {
-      const [shopsAll, appsPending, reviewsFlagged, contactsPending] = await Promise.all([
+      const [shopsAll, appsPending, reviewsFlagged, contactsPending, shareReports] = await Promise.all([
         supabase.from('shops').select('status') as unknown as Promise<{ data: { status: string }[] | null; error: unknown }>,
         supabase.from('shop_listing_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'flagged') as unknown as Promise<{ count: number | null; error: unknown }>,
         supabase.from('contacts').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']) as unknown as Promise<{ count: number | null; error: unknown }>,
+        supabase.from('share_post_reports').select('id', { count: 'exact', head: true }).not('comment_id', 'is', null) as unknown as Promise<{ count: number | null; error: unknown }>,
       ])
 
       const shops = shopsAll.data ?? []
@@ -34,6 +36,7 @@ const useAdminStats = () =>
         applicationsPending: appsPending.count ?? 0,
         reviewsFlagged: reviewsFlagged.count ?? 0,
         contactsPending: contactsPending.count ?? 0,
+        shareReportsPending: shareReports.count ?? 0,
       }
     },
     staleTime: 60 * 1000,
@@ -346,6 +349,14 @@ const AdminDashboardPage = () => {
                   label="アナリティクス"
                   sublabel="登録・店舗・エンゲージメントの推移を確認"
                   animDelay={385}
+                />
+                <NavTile
+                  to="/admin/share-reports"
+                  icon={<Flag className="h-4 w-4" />}
+                  label="シャレ活 通報"
+                  sublabel="通報されたコメントを確認・対応する"
+                  badge={stats?.shareReportsPending}
+                  animDelay={440}
                 />
               </div>
             </section>

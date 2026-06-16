@@ -24,7 +24,7 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
   return (
     <ImpressionTracker postId={post.id}>
       <article className="wish-card-enter group relative border-l-[3px] border-l-border bg-white editorial-shadow transition-colors hover:border-l-primary">
-        <Link to={`/share/${post.id}`} className="block px-4 py-4 sm:px-5">
+        <Link to={`/share/${post.id}`} className="block px-4 pb-3 pt-4 sm:px-5">
           {/* Header */}
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -59,14 +59,14 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
               loading="lazy"
             />
           )}
-
-          {/* Shops */}
-          {post.shops.length > 0 && (
-            <div className="mt-3">
-              <ShareShopChips shops={post.shops} />
-            </div>
-          )}
         </Link>
+
+        {/* Shops — <a> の入れ子を避けるためカードリンクの外に配置 */}
+        {post.shops.length > 0 && (
+          <div className="px-4 pb-3 sm:px-5">
+            <ShareShopChips shops={post.shops} />
+          </div>
+        )}
 
         {/* Metrics footer */}
         <div className="flex items-center gap-4 border-t border-border px-4 py-2.5 sm:px-5">

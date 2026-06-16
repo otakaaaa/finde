@@ -65,6 +65,7 @@ const AdminNewsPage = lazy(() => import('@/pages/admin/AdminNewsPage'))
 const AdminNewsNewPage = lazy(() => import('@/pages/admin/AdminNewsNewPage'))
 const AdminNewsEditPage = lazy(() => import('@/pages/admin/AdminNewsEditPage'))
 const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'))
+const AdminShareReportsPage = lazy(() => import('@/pages/admin/AdminShareReportsPage'))
 const OwnerApplicationDMPage = lazy(() => import('@/pages/owner-application/OwnerApplicationDMPage'))
 const OwnerApplicationNewPage = lazy(() => import('@/pages/owner-application/OwnerApplicationNewPage'))
 const OwnerApplicationListPage = lazy(() => import('@/pages/owner-application/OwnerApplicationListPage'))
@@ -181,6 +182,7 @@ const router = createBrowserRouter([
       { path: 'admin/news/new', element: <ProtectedRoute requiredRole="admin"><AdminNewsNewPage /></ProtectedRoute> },
       { path: 'admin/news/:id/edit', element: <ProtectedRoute requiredRole="admin"><AdminNewsEditPage /></ProtectedRoute> },
       { path: 'admin/analytics', element: <ProtectedRoute requiredRole="admin"><AdminAnalyticsPage /></ProtectedRoute> },
+      { path: 'admin/share-reports', element: <ProtectedRoute requiredRole="admin"><AdminShareReportsPage /></ProtectedRoute> },
 
       // 404
       { path: '*', element: <NotFoundPage /> },

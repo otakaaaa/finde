@@ -16,7 +16,6 @@ export const ShareShopChips = ({ shops }: ShareShopChipsProps) => {
         <Link
           key={shop.id}
           to={`/shops/${shop.id}`}
-          onClick={(e) => e.stopPropagation()}
           className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-white py-1 pl-1 pr-2.5 text-[10px] font-bold text-foreground/70 transition-colors hover:border-primary/40 hover:text-primary"
         >
           {shop.coverPhotoPath ? (
