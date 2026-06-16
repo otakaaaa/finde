@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from 'react'
+import { Fragment, useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Save, Eye, Send } from 'lucide-react'
+import { Save, Eye, Send, Check } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useCreateShare, useUpdateShare } from '@/hooks/useShareMutations'
@@ -9,10 +9,17 @@ import { ShareVisibilitySelect } from '@/components/share/ShareVisibilitySelect'
 import { ShareShopPicker, type PickedShop } from '@/components/share/ShareShopPicker'
 import { SharePreviewModal } from '@/components/share/SharePreviewModal'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
-import { SectionLabel } from '@/components/shop/ShopFormUI'
+import { cn } from '@/lib/utils'
 import type { SharePost, ShareState, ShareVisibility } from '@/types'
 
 const MAX_BODY = 1000
+
+const STEPS = [
+  { num: '01', title: '写真', label: 'optional' },
+  { num: '02', title: '本文', label: 'required' },
+  { num: '03', title: '関連店舗', label: 'optional' },
+  { num: '04', title: '公開範囲', label: '' },
+]
 
 interface SharePostFormProps {
   mode: 'create' | 'edit'
@@ -26,6 +33,7 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   const create = useCreateShare()
   const update = useUpdateShare()
 
+  const [step, setStep] = useState(0)
   const [body, setBody] = useState(initial?.body ?? '')
   const [visibility, setVisibility] = useState<ShareVisibility>(initial?.visibility ?? 'public')
   const [shops, setShops] = useState<PickedShop[]>(
@@ -42,6 +50,8 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   const handlePhotoChange = useCallback((next: SharePhotoSelection) => setSelection(next), [])
 
   const isPending = create.isPending || update.isPending
+  const isFirstStep = step === 0
+  const isLastStep = step === STEPS.length - 1
 
   const validate = (): string | null => {
     const trimmed = body.trim()
@@ -50,18 +60,29 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
     return null
   }
 
+  const goNext = () => {
+    if (step === 1) {
+      const err = validate()
+      if (err) { setError(err); return }
+    }
+    setError(null)
+    setStep((s) => Math.min(s + 1, STEPS.length - 1))
+  }
+
+  const goPrev = () => {
+    setError(null)
+    setStep((s) => Math.max(s - 1, 0))
+  }
+
   const submit = (state: ShareState) => {
     const validationError = validate()
-    if (validationError) {
-      setError(validationError)
-      return
-    }
+    if (validationError) { setError(validationError); return }
     setError(null)
 
     const shopIds = shops.map((s) => s.id)
     const onSuccess = (postId: string) => {
       addToast({
-        title: state === 'draft' ? '下書きを保存しました' : '投稿を公開しました',
+        title: state === 'draft' ? '下書きを保存しました' : mode === 'create' ? '投稿を公開しました' : '変更を保存しました',
         variant: 'default',
       })
       navigate(state === 'draft' ? '/mypage/share/drafts' : `/share/${postId}`)
@@ -107,55 +128,98 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-lg">
+
+      {/* ── ステップインジケーター ── */}
+      <div className="mb-10">
+        {/* ドット + 接続線 */}
+        <div className="flex items-center">
+          {STEPS.map((s, i) => (
+            <Fragment key={s.num}>
+              <div
+                className={cn(
+                  'flex h-7 w-7 shrink-0 items-center justify-center font-headline text-[10px] font-black tabular-nums transition-colors',
+                  i === step
+                    ? 'bg-foreground text-background'
+                    : i < step
+                      ? 'bg-primary/80 text-white'
+                      : 'bg-muted text-muted-foreground/30',
+                )}
+              >
+                {i < step ? <Check className="h-3.5 w-3.5" /> : s.num}
+              </div>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={cn('h-px flex-1 transition-colors', i < step ? 'bg-primary/40' : 'bg-border')}
+                />
+              )}
+            </Fragment>
+          ))}
+        </div>
+
+        {/* ステップ名 */}
+        <div className="mt-5">
+          {/* <p className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/35">
+            Step {step + 1} / {STEPS.length}
+          </p> */}
+          <div className="mt-1 flex items-baseline gap-2.5">
+            <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+              {STEPS[step].title}
+            </h2>
+            {STEPS[step].label && (
+              <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+                {STEPS[step].label}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── エラー ── */}
       {error && (
         <div className="mb-6 border-l-2 border-red-400 bg-red-50/50 py-2 pl-3 pr-4">
           <p className="text-xs text-red-600">{error}</p>
         </div>
       )}
 
-      <div className="md:grid md:grid-cols-[2fr_3fr] md:gap-10 lg:gap-14">
-
-        {/* ── Left: 画像 ─────────────────────────────── */}
-        <div>
-          <SectionLabel num="01" title="写真" optional />
+      {/* ── ステップコンテンツ ── */}
+      <div key={step} className="wish-card-enter min-h-[200px]">
+        {step === 0 && (
           <SharePhotoUpload existingPhotos={initial?.photos} onChange={handlePhotoChange} />
-        </div>
+        )}
 
-        {/* ── Right: Content ──────────────────────────── */}
-        <div className="mt-8 flex flex-col md:mt-0">
-
-          {/* Body */}
-          <div className="border-b border-border pb-6">
-            <SectionLabel num="02" title="本文" required />
+        {step === 1 && (
+          <div>
             <textarea
-              rows={8}
+              rows={10}
               value={body}
               maxLength={MAX_BODY}
               onChange={(e) => setBody(e.target.value)}
               placeholder="今日のおしゃれ、こだわり、言動など…"
-              className="w-full resize-none bg-transparent text-[15px] leading-[1.9] text-foreground/80 placeholder:text-muted-foreground/20 focus:outline-none"
+              autoFocus
+              className="w-full resize-none border-b border-border bg-transparent py-2 text-[15px] leading-[1.9] text-foreground/80 placeholder:text-muted-foreground/20 focus:border-foreground/30 focus:outline-none"
             />
-            <p className="text-right text-[9px] tabular-nums text-muted-foreground/25">
+            <p className="mt-2 text-right text-[9px] tabular-nums text-muted-foreground/30">
               {body.length}
               <span className="text-muted-foreground/20"> / {MAX_BODY}</span>
             </p>
           </div>
+        )}
 
-          {/* Shop */}
-          <div className="border-b border-border py-5">
-            <SectionLabel num="03" title="関連店舗" optional />
-            <ShareShopPicker selected={shops} onChange={setShops} />
-          </div>
+        {step === 2 && (
+          <ShareShopPicker selected={shops} onChange={setShops} />
+        )}
 
-          {/* Visibility */}
-          <div className="border-b border-border py-5">
-            <SectionLabel num="04" title="公開範囲" />
-            <ShareVisibilitySelect value={visibility} onChange={setVisibility} />
-          </div>
+        {step === 3 && (
+          <ShareVisibilitySelect value={visibility} onChange={setVisibility} />
+        )}
+      </div>
 
-          {/* Actions */}
-          <div className="space-y-2 pt-6">
+      {/* ── ナビゲーション ── */}
+      <div className="mt-10 space-y-2.5">
+        {isLastStep ? (
+          /* 最終ステップ */
+          <>
             <button
               type="button"
               onClick={() => submit('published')}
@@ -166,12 +230,21 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
                 <span className="opacity-60">投稿中…</span>
               ) : (
                 <>
-                  {mode === 'create' ? <><Send className="h-3.5 w-3.5" />投稿する</> : <><Save className="h-3.5 w-3.5" />変更を保存</>}
+                  <Send className="h-3.5 w-3.5" />
+                  {mode === 'create' ? '投稿する' : '変更を保存'}
                 </>
               )}
             </button>
 
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={isPending}
+                className="px-3.5 py-2.5 text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/35 transition-colors hover:text-foreground/70 disabled:opacity-30"
+              >
+                ← 前へ
+              </button>
               <button
                 type="button"
                 onClick={() => submit('draft')}
@@ -189,17 +262,29 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
                 <Eye className="h-3 w-3" />
                 プレビュー
               </button>
+            </div>
+          </>
+        ) : (
+          /* 途中ステップ */
+          <div className="flex items-center gap-3">
+            {!isFirstStep && (
               <button
                 type="button"
-                onClick={() => navigate(-1)}
-                className="px-3.5 py-2.5 text-[9px] font-medium text-muted-foreground/35 transition-colors hover:text-foreground/60"
+                onClick={goPrev}
+                className="px-3.5 py-3 text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/35 transition-colors hover:text-foreground/70"
               >
-                ✕
+                ← 前へ
               </button>
-            </div>
+            )}
+            <button
+              type="button"
+              onClick={goNext}
+              className="flex flex-1 items-center justify-center gap-2 bg-foreground py-3.5 text-[11px] font-black uppercase tracking-[0.35em] text-background transition-opacity hover:opacity-80"
+            >
+              次へ →
+            </button>
           </div>
-
-        </div>
+        )}
       </div>
 
       {previewUrls !== null && (
