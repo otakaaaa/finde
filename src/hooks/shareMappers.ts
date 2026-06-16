@@ -65,7 +65,7 @@ export const SHARE_POST_SELECT_BASE = `
   id, user_id, body, state, visibility, status, published_at,
   impression_count, rating_count, rating_sum, comment_count, bookmark_count,
   created_at, updated_at,
-  user:users ( id, display_name, avatar_url ),
+  user:users!user_id ( id, display_name, avatar_url ),
   photos:share_post_photos ( id, post_id, storage_path, order, created_at ),
   shops:share_post_shops ( shops ( id, name, shop_photos ( storage_path, order ) ) )
 ` as const
@@ -78,7 +78,7 @@ export const SHARE_POST_SELECT = `
 
 export const SHARE_COMMENT_SELECT = `
   id, post_id, user_id, body, status, created_at, updated_at,
-  user:users ( id, display_name, avatar_url )
+  user:users!user_id ( id, display_name, avatar_url )
 ` as const
 
 const EMPTY_USER = { id: '', displayName: null, avatarUrl: null }

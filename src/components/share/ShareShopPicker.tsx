@@ -63,15 +63,17 @@ export const ShareShopPicker = ({ selected, onChange }: ShareShopPickerProps) =>
       )}
 
       {!atMax ? (
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/40" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="店舗名で検索（2文字以上）"
-            className="h-10 w-full rounded-sm border border-border bg-white pl-9 pr-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
-          />
+        <div>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/40" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="店舗名で検索（2文字以上）"
+              className="h-10 w-full rounded-sm border border-border bg-white pl-9 pr-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+            />
+          </div>
           {debounced.trim().length >= 2 && (
             <div className="mt-1 overflow-hidden rounded-sm border border-border bg-white">
               {isFetching ? (

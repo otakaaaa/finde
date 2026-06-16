@@ -17,6 +17,7 @@ interface SearchResultRow {
   shop_tags: { tags: { id: number; name: string; slug: string } }[]
   shop_photos: { id: string; shop_id: string; storage_path: string; order: number; created_at: string }[]
   shop_brands: { brands: { id: string; name: string; name_kana: string | null; aliases: string[]; status: string; merged_into: string | null; submitted_by: string | null; created_at: string } }[]
+  rank: number
 }
 
 const mapSearchResult = (row: SearchResultRow): Shop => ({
@@ -78,7 +79,7 @@ export const useShopSearch = (query: string) => {
       if (!query.trim()) return []
 
       const { data, error } = await supabase.rpc('search_shops', {
-        search_query: query,
+        p_query: query,
       } as never) as unknown as { data: SearchResultRow[] | null; error: { message: string } | null }
 
       if (error) throw new Error(error.message)
