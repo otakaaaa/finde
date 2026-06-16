@@ -35,7 +35,7 @@ describe('mapSharePostRow', () => {
   })
 
   it('isBookmarked は bookmarks 行の有無で決まる', () => {
-    expect(mapSharePostRow(baseRow({ bookmarks: [{ user_id: 'u9' }] }), null).isBookmarked).toBe(true)
+    expect(mapSharePostRow(baseRow({ bookmarks: [{ user_id: 'u9', folder_id: null }] }), null).isBookmarked).toBe(true)
     expect(mapSharePostRow(baseRow({ bookmarks: [] }), null).isBookmarked).toBe(false)
     expect(mapSharePostRow(baseRow({ bookmarks: null }), null).isBookmarked).toBe(false)
   })
