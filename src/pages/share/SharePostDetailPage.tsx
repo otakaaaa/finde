@@ -4,7 +4,7 @@ import { ArrowRight, Pencil, MessageCircle, Eye, Lock, X, Sparkles } from 'lucid
 import { useAuth } from '@/hooks/useAuth'
 import { useSharePost } from '@/hooks/useSharePosts'
 import { useRateShare } from '@/hooks/useShareRatings'
-import { SharePhotoCarousel } from '@/components/share/SharePhotoCarousel'
+import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import { ShareShopChips } from '@/components/share/ShareShopChips'
 import { ShareScore } from '@/components/share/ShareScore'
 import { ShareBookmarkButton } from '@/components/share/ShareBookmarkButton'
@@ -171,7 +171,7 @@ const SharePostDetailPage = () => {
           {/* 写真 */}
           {photoUrls.length > 0 && (
             <div className="-mx-5 mt-4">
-              <SharePhotoCarousel urls={photoUrls} />
+              <SharePhotoGallery urls={photoUrls} />
             </div>
           )}
 

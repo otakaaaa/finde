@@ -49,6 +49,7 @@ export const SharePhotoUpload = ({ existingPhotos = [], onChange }: SharePhotoUp
   ]
 
   const total = items.length
+  const overLimit = total > SHARE_PHOTO_MAX_COUNT
   const canAdd = total < SHARE_PHOTO_MAX_COUNT
 
   const removeItem = (item: DisplayItem) => {
@@ -94,6 +95,11 @@ export const SharePhotoUpload = ({ existingPhotos = [], onChange }: SharePhotoUp
 
   return (
     <div className="space-y-2">
+      {overLimit && (
+        <p className="border-l-2 border-red-400 bg-red-50/50 py-1.5 pl-3 pr-4 text-[11px] font-medium text-red-600">
+          画像は最大{SHARE_PHOTO_MAX_COUNT}枚までです。{total - SHARE_PHOTO_MAX_COUNT}枚削除してください。
+        </p>
+      )}
       {total === 0 ? (
         <label className={cn(
           'flex min-h-[340px] cursor-pointer flex-col items-center justify-center gap-4',
