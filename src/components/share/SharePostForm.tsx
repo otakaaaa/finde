@@ -8,7 +8,7 @@ import { SharePhotoUpload, type SharePhotoSelection } from '@/components/share/S
 import { ShareVisibilitySelect } from '@/components/share/ShareVisibilitySelect'
 import { ShareShopPicker, type PickedShop } from '@/components/share/ShareShopPicker'
 import { SharePreviewModal } from '@/components/share/SharePreviewModal'
-import { getSharePhotoUrl } from '@/components/share/sharePhoto'
+import { getSharePhotoUrl, SHARE_PHOTO_MAX_COUNT } from '@/components/share/sharePhoto'
 import { cn } from '@/lib/utils'
 import type { SharePost, ShareState, ShareVisibility } from '@/types'
 
@@ -61,6 +61,13 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   }
 
   const goNext = () => {
+    if (step === 0) {
+      const photoCount = selection.keepPhotoIds.length + selection.newFiles.length
+      if (photoCount > SHARE_PHOTO_MAX_COUNT) {
+        setError(`画像は最大${SHARE_PHOTO_MAX_COUNT}枚までです。${photoCount - SHARE_PHOTO_MAX_COUNT}枚削除してください。`)
+        return
+      }
+    }
     if (step === 1) {
       const err = validate()
       if (err) { setError(err); return }
