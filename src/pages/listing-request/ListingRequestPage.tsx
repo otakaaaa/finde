@@ -33,8 +33,16 @@ import type { Brand } from '@/types'
 
 const BUCKET = 'shop-photos'
 
-// shopFormSchema を拡張して note フィールドを追加
+// shopFormSchema を拡張して掲載申請専用のバリデーションを追加
 const listingRequestSchema = shopFormSchema.extend({
+  cityId: z.number({
+    required_error:    '市区町村を選択してください',
+    invalid_type_error: '市区町村を選択してください',
+  }),
+  priceRangeId: z.number({
+    required_error:    '価格帯を選択してください',
+    invalid_type_error: '価格帯を選択してください',
+  }),
   note: z.string().max(500).optional(),
 })
 
@@ -210,21 +218,24 @@ const ListingRequestPage = () => {
           </span>
         </div>
         <div className="relative mx-auto max-w-5xl">
-          <div className="flex items-end justify-between pb-6">
+          <div className="flex items-end justify-between pb-8">
             <div>
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+                className="mb-4 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
               >
                 ← Back
               </button>
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-                — MYPAGE
+                — Shop Application
               </p>
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
                 店舗掲載申請
               </h1>
+              <p className="mt-3 text-sm text-white/50">
+                FINDEへの店舗掲載をご希望の方はこちらからお申し込みください
+              </p>
             </div>
           </div>
         </div>
@@ -232,25 +243,26 @@ const ListingRequestPage = () => {
 
       {/* ── Two-column layout ─────────────────────── */}
       <div className="bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-14">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
+        <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-16">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[300px_1fr] lg:gap-14">
 
             {/* ── Left sidebar (info) ──────────────── */}
             <aside className="lg:sticky lg:top-8 lg:self-start">
-              <div className="mb-8">
+
+              {/* 申請について */}
+              <div className="mb-6 border-l-[3px] border-l-primary/30 bg-white px-4 py-5 editorial-shadow">
                 <div className="mb-3 flex items-center gap-2">
-                  <Store className="h-3.5 w-3.5 text-muted-foreground/40" />
-                  <span className="font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+                  <Store className="h-4 w-4 text-primary/50" />
+                  <span className="font-headline text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground/50">
                     掲載申請について
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  FINDEに掲載したい店舗を申請してください。<br />
-                  FINDE運営が確認後、掲載いたします。
+                <p className="text-[13px] leading-relaxed text-foreground/70">
+                  FINDEに掲載したい店舗を申請してください。FINDE運営が確認後、掲載いたします。
                 </p>
                 {OWNER_FEATURE_ENABLED && (
-                  <div className="mt-4 rounded-sm border border-border bg-muted/30 px-3 py-3">
-                    <p className="text-[10px] leading-relaxed text-muted-foreground/60">
+                  <div className="mt-4 border-t border-border pt-4">
+                    <p className="text-xs leading-relaxed text-muted-foreground/70">
                       店舗のオーナー・スタッフの方は
                       <Link
                         to="/owner-application/new"
@@ -258,25 +270,53 @@ const ListingRequestPage = () => {
                       >
                         オーナー申請
                       </Link>
-                      からご申請ください。ダッシュボードから店舗情報を管理できます。
+                      からご申請ください。
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="mb-8">
-                <span className="mb-4 block font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+              {/* 申請の流れ */}
+              <div className="mb-6">
+                <p className="mb-4 font-headline text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground/40">
+                  申請の流れ
+                </p>
+                <div>
+                  {PROCESS_STEPS.map((step, i) => (
+                    <div key={step.num} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
+                          <span className="font-headline text-[10px] font-black tabular-nums">{step.num}</span>
+                        </div>
+                        {i < PROCESS_STEPS.length - 1 && (
+                          <div className="my-1.5 w-px flex-1 bg-border" style={{ minHeight: '24px' }} />
+                        )}
+                      </div>
+                      <div className="pb-5">
+                        <p className="font-headline text-[13px] font-black tracking-tight text-foreground/80">
+                          {step.label}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground/60">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ガイドライン */}
+              <div className="rounded-sm border border-border bg-muted/20 px-4 py-5">
+                <p className="mb-4 font-headline text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground/50">
                   掲載前にご確認ください
-                </span>
-                <ul className="space-y-2.5">
+                </p>
+                <ul className="space-y-3.5">
                   {SUBMISSION_GUIDELINES.map((text, i) => (
-                    <li key={i} className="flex gap-2">
-                      <Check className="mt-0.5 h-3 w-3 shrink-0 text-primary/50" />
-                      <span className="text-[11px] leading-relaxed text-muted-foreground">{text}</span>
+                    <li key={i} className="flex gap-3">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/60" />
+                      <span className="text-xs leading-relaxed text-foreground/65">{text}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-4 text-[10px] leading-relaxed text-muted-foreground/50">
+                <p className="mt-5 border-t border-border pt-4 text-[11px] leading-relaxed text-muted-foreground/50">
                   申請内容は
                   <Link to="/terms" className="mx-0.5 font-bold text-primary underline-offset-2 hover:underline">
                     利用規約
@@ -284,39 +324,14 @@ const ListingRequestPage = () => {
                   に従って取り扱われます。
                 </p>
               </div>
-
-              <div>
-                <span className="mb-4 block font-headline text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
-                  申請の流れ
-                </span>
-                <div className="space-y-0">
-                  {PROCESS_STEPS.map((step, i) => (
-                    <div key={step.num} className="flex gap-3">
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
-                          <span className="font-headline text-[9px] font-black tabular-nums">{step.num}</span>
-                        </div>
-                        {i < PROCESS_STEPS.length - 1 && (
-                          <div className="my-1 w-px flex-1 bg-border" style={{ minHeight: '20px' }} />
-                        )}
-                      </div>
-                      <div className="pb-5">
-                        <p className="font-headline text-[11px] font-black tracking-tight text-foreground/70">
-                          {step.label}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground/50">{step.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </aside>
 
             {/* ── Form ─────────────────────────────── */}
             <div>
               {error && (
-                <div className="mb-8 border border-red-200 bg-red-50 px-4 py-3">
-                  <p className="text-xs font-medium text-red-700">{(error as Error).message}</p>
+                <div className="mb-8 border-l-[3px] border-l-red-400 bg-red-50 px-4 py-4">
+                  <p className="mb-0.5 font-headline text-[10px] font-black uppercase tracking-[0.2em] text-red-600/70">エラー</p>
+                  <p className="text-sm text-red-700">{(error as Error).message}</p>
                 </div>
               )}
 
@@ -329,12 +344,14 @@ const ListingRequestPage = () => {
                     num="02"
                     prefectures={masterData?.prefectures ?? []}
                     cities={masterData?.cities ?? []}
+                    cityRequired
                     animationDelay="40ms"
                   />
 
                   <PriceRangeSection
                     num="03"
                     priceRanges={masterData?.priceRanges ?? []}
+                    priceRangeRequired
                     animationDelay="60ms"
                   />
 
