@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
-import { ArrowRight, Pencil, Eye, Lock } from 'lucide-react'
+import { ArrowRight, Pencil, MessageCircle, Eye, Lock } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSharePost } from '@/hooks/useSharePosts'
 import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'

@@ -75,7 +75,10 @@ export const useSharePostsByShop = (shopId: string) =>
       const { data: links, error: linksError } = await supabase
         .from('share_post_shops')
         .select('post_id')
-        .eq('shop_id', shopId)
+        .eq('shop_id', shopId) as unknown as {
+          data: { post_id: string }[] | null
+          error: { message: string } | null
+        }
 
       if (linksError) throw new Error(linksError.message)
       if (!links || links.length === 0) return []
