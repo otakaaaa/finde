@@ -8,6 +8,7 @@ interface AddressSectionProps {
   num: string
   prefectures: Prefecture[]
   cities: City[]
+  cityRequired?: boolean
   animationDelay?: string
 }
 
@@ -15,6 +16,7 @@ export const AddressSection = ({
   num,
   prefectures,
   cities,
+  cityRequired = false,
   animationDelay = '40ms',
 }: AddressSectionProps) => {
   const { register, watch, formState: { errors } } = useFormContext<ShopFormValues>()
@@ -37,9 +39,9 @@ export const AddressSection = ({
               ))}
             </select>
           </Field>
-          <Field label="市区町村" optional>
+          <Field label="市区町村" optional={!cityRequired} error={errors.cityId?.message}>
             <select
-              className={selectClass}
+              className={cn(selectClass, errors.cityId && 'border-red-400')}
               disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
               {...register('cityId', { valueAsNumber: true })}
             >
