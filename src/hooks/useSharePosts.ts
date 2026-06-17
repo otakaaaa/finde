@@ -66,3 +66,38 @@ export const useMyDrafts = () => {
     enabled: !!user,
   })
 }
+
+/** 店舗に関連付けられた公開投稿一覧 */
+export const useSharePostsByShop = (shopId: string) =>
+  useQuery({
+    queryKey: ['share-posts-by-shop', shopId],
+    queryFn: async (): Promise<SharePost[]> => {
+      const { data: links, error: linksError } = await supabase
+        .from('share_post_shops')
+        .select('post_id')
+        .eq('shop_id', shopId) as unknown as {
+          data: { post_id: string }[] | null
+          error: { message: string } | null
+        }
+
+      if (linksError) throw new Error(linksError.message)
+      if (!links || links.length === 0) return []
+
+      const postIds = links.map((l) => l.post_id)
+
+      const { data, error } = await supabase
+        .from('share_posts')
+        .select(SHARE_POST_SELECT)
+        .in('id', postIds)
+        .eq('state', 'published')
+        .eq('visibility', 'public')
+        .order('published_at', { ascending: false }) as unknown as {
+          data: SharePostRow[] | null
+          error: { message: string } | null
+        }
+
+      if (error) throw new Error(error.message)
+      return (data ?? []).map((row) => mapSharePostRow(row, null))
+    },
+    enabled: !!shopId,
+  })

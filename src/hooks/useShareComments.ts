@@ -43,6 +43,7 @@ export const useAddComment = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: ['share-comments', postId] })
       queryClient.invalidateQueries({ queryKey: ['share-post', postId] })
       queryClient.invalidateQueries({ queryKey: ['share-timeline'] })
+      queryClient.invalidateQueries({ queryKey: ['share-posts-by-shop'] })
     },
   })
 }
@@ -62,6 +63,7 @@ export const useDeleteComment = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: ['share-comments', postId] })
       queryClient.invalidateQueries({ queryKey: ['share-post', postId] })
       queryClient.invalidateQueries({ queryKey: ['share-timeline'] })
+      queryClient.invalidateQueries({ queryKey: ['share-posts-by-shop'] })
     },
   })
 }
