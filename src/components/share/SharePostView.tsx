@@ -1,5 +1,5 @@
 import { MessageCircle, Eye, Bookmark, Lock } from 'lucide-react'
-import { SharePhotoCarousel } from '@/components/share/SharePhotoCarousel'
+import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import { ShareShopChips } from '@/components/share/ShareShopChips'
 import { ShareScore } from '@/components/share/ShareScore'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
@@ -45,7 +45,7 @@ export const SharePostView = ({ post, preview = false }: SharePostViewProps) => 
     {/* Photos */}
     {post.photos.length > 0 && (
       <div className="mt-4 -mx-5">
-        <SharePhotoCarousel urls={post.photos.map((p) => getSharePhotoUrl(p.storagePath, { width: 1200, height: 1200 }))} />
+        <SharePhotoGallery urls={post.photos.map((p) => getSharePhotoUrl(p.storagePath, { width: 1200, height: 1200 }))} />
       </div>
     )}
 

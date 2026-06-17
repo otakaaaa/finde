@@ -25,4 +25,4 @@ export const getShopCoverUrl = (path: string) =>
 
 /** 1枚あたりの最大サイズ（5 MiB、バケット制限と一致） */
 export const SHARE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
-export const SHARE_PHOTO_MAX_COUNT = 5
+export const SHARE_PHOTO_MAX_COUNT = 4

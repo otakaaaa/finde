@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { MessageCircle, Eye, Lock } from 'lucide-react'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
+import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import { ShareScore } from '@/components/share/ShareScore'
 import { ShareShopChips } from '@/components/share/ShareShopChips'
 import { ShareBookmarkButton } from '@/components/share/ShareBookmarkButton'
@@ -19,7 +20,7 @@ interface SharePostCardProps {
 }
 
 export const SharePostCard = ({ post, showVisibility = false }: SharePostCardProps) => {
-  const cover = post.photos[0]
+  const photoUrls = post.photos.map((p) => getSharePhotoUrl(p.storagePath, { width: 800, height: 800 }))
 
   return (
     <ImpressionTracker postId={post.id}>
@@ -49,17 +50,17 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
           <p className="line-clamp-4 whitespace-pre-wrap text-[13px] leading-[1.8] text-foreground/75">
             {post.body}
           </p>
-
-          {/* Cover photo */}
-          {cover && (
-            <img
-              src={getSharePhotoUrl(cover.storagePath, { width: 700, height: 500 })}
-              alt=""
-              className="mt-3 max-h-80 w-full rounded-sm border border-border object-cover"
-              loading="lazy"
-            />
-          )}
         </Link>
+
+        {/* Photos — Link の外に出して stopPropagation でナビゲーションをブロック */}
+        {photoUrls.length > 0 && (
+          <div
+            className="px-4 sm:px-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SharePhotoGallery urls={photoUrls} className="mt-3 overflow-hidden rounded-sm border border-border" />
+          </div>
+        )}
 
         {/* Shops — <a> の入れ子を避けるためカードリンクの外に配置 */}
         {post.shops.length > 0 && (

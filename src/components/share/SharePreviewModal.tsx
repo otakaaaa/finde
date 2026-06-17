@@ -1,5 +1,5 @@
 import { X, Lock, Globe, Store } from 'lucide-react'
-import { SharePhotoCarousel } from '@/components/share/SharePhotoCarousel'
+import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import type { ShareVisibility } from '@/types'
 import type { PickedShop } from '@/components/share/ShareShopPicker'
 
@@ -61,7 +61,7 @@ export const SharePreviewModal = ({
 
         {photoUrls.length > 0 && (
           <div className="mt-4 -mx-5">
-            <SharePhotoCarousel urls={photoUrls} />
+            <SharePhotoGallery urls={photoUrls} />
           </div>
         )}
 
