@@ -12,6 +12,8 @@ import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
 import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
+import { useSharePostsByShop } from '@/hooks/useSharePosts'
+import { SharePostCard } from '@/components/share/SharePostCard'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import type { BusinessHours } from '@/types'
@@ -106,6 +108,7 @@ const ShopDetailPage = () => {
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
   const { data: reviews } = useReviews(id ?? '')
   const { data: myReview } = useMyReview(id ?? '')
+  const { data: sharePosts } = useSharePostsByShop(id ?? '')
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
 
@@ -449,6 +452,43 @@ const ShopDetailPage = () => {
             )}
           </aside>
         </div>
+
+        {/* ── シャレ活 ──────────────────────────────────── */}
+        <section className="mt-16 border-t border-border pt-12">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <SectionLabel>シャレ活</SectionLabel>
+              <p className="mt-1 font-headline text-2xl font-black leading-none">
+                {(sharePosts?.length ?? 0) > 0 ? (
+                  <>
+                    {sharePosts!.length}
+                    <span className="ml-1.5 text-base font-bold text-muted-foreground">件</span>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground/30">0</span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          {(sharePosts?.length ?? 0) === 0 ? (
+            <div className="py-16 text-center">
+              <p
+                className="font-headline font-black text-muted-foreground/20"
+                style={{ fontSize: 'clamp(3rem, 10vw, 6rem)', lineHeight: 1, letterSpacing: '-0.04em' }}
+              >
+                0
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">まだシャレ活の投稿がありません</p>
+            </div>
+          ) : (
+            <div className="gap-3 divide-y divide-border border-t border-border">
+              {sharePosts!.map((post) => (
+                <SharePostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* ── Reviews ───────────────────────────────────── */}
         <section className="mt-16 border-t border-border pt-12">

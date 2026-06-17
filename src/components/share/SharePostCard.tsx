@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { MessageCircle, Eye, Lock } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
 import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import { ShareScore } from '@/components/share/ShareScore'
 import { ShareShopChips } from '@/components/share/ShareShopChips'
 import { ShareBookmarkButton } from '@/components/share/ShareBookmarkButton'
+import { ShareRatingPopover } from '@/components/share/ShareRatingPopover'
+import { ShareCommentSheet } from '@/components/share/ShareCommentSheet'
 import { ImpressionTracker } from '@/components/share/ImpressionTracker'
 import type { SharePost } from '@/types'
 
@@ -20,6 +24,11 @@ interface SharePostCardProps {
 }
 
 export const SharePostCard = ({ post, showVisibility = false }: SharePostCardProps) => {
+  const { user } = useAuth()
+  const [ratingOpen, setRatingOpen] = useState(false)
+  const [commentsOpen, setCommentsOpen] = useState(false)
+
+  const isOwn = user?.id === post.userId
   const photoUrls = post.photos.map((p) => getSharePhotoUrl(p.storagePath, { width: 800, height: 800 }))
 
   return (
@@ -64,25 +73,59 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
 
         {/* Shops — <a> の入れ子を避けるためカードリンクの外に配置 */}
         {post.shops.length > 0 && (
-          <div className="px-4 pb-3 sm:px-5">
+          <div className="px-4 py-3 sm:px-5">
             <ShareShopChips shops={post.shops} />
           </div>
         )}
 
         {/* Metrics footer */}
         <div className="flex items-center gap-4 border-t border-border px-4 py-2.5 sm:px-5">
-          <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} />
-          <span className="inline-flex items-center gap-1 text-[10px] font-black tabular-nums text-muted-foreground/50">
+          {/* シャレ度 — 自分の投稿以外はポップオーバートリガー */}
+          {isOwn ? (
+            <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} />
+          ) : (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setRatingOpen((v) => !v)}
+                className="inline-flex items-center gap-1 transition-opacity hover:opacity-70"
+                aria-label="シャレ度を送る"
+                aria-expanded={ratingOpen}
+              >
+                <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} />
+              </button>
+              {ratingOpen && (
+                <ShareRatingPopover post={post} onClose={() => setRatingOpen(false)} />
+              )}
+            </div>
+          )}
+
+          {/* コメント — ボトムシートトリガー */}
+          <button
+            type="button"
+            onClick={() => setCommentsOpen(true)}
+            className="inline-flex items-center gap-1 text-[10px] font-black tabular-nums text-muted-foreground/50 transition-colors hover:text-foreground"
+            aria-label="コメントを見る"
+          >
             <MessageCircle className="h-3.5 w-3.5" />
             {post.commentCount}
-          </span>
+          </button>
+
           <ShareBookmarkButton post={post} />
+
           <span className="ml-auto inline-flex items-center gap-1 text-[10px] tabular-nums text-muted-foreground/40">
             <Eye className="h-3.5 w-3.5" />
             {post.impressionCount}
           </span>
         </div>
       </article>
+
+      <ShareCommentSheet
+        postId={post.id}
+        commentCount={post.commentCount}
+        isOpen={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
+      />
     </ImpressionTracker>
   )
 }

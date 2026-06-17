@@ -24,6 +24,7 @@ export const useRateShare = (postId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['share-post', postId] })
       queryClient.invalidateQueries({ queryKey: ['share-timeline'] })
+      queryClient.invalidateQueries({ queryKey: ['share-posts-by-shop'] })
     },
   })
 }
