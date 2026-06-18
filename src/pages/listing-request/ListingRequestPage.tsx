@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowRight, Check, Store } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { useAuth } from '@/hooks/useAuth'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { SectionLabel, Field } from '@/components/shop/ShopFormUI'
@@ -30,8 +31,6 @@ import {
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import type { Brand } from '@/types'
-
-const BUCKET = 'shop-photos'
 
 // shopFormSchema を拡張して掲載申請専用のバリデーションを追加
 const listingRequestSchema = shopFormSchema.extend({
@@ -175,17 +174,15 @@ const ListingRequestPage = () => {
       const files = pendingFilesRef.current
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-        const path = `listing-requests/${request.id}/${crypto.randomUUID()}.${ext}`
-        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
-        if (storageErr) throw new Error(storageErr.message)
+        const path = `listing-requests/${request.id}/${crypto.randomUUID()}.webp`
+        await uploadToR2('shop-photos', path, file)
         const { error: photoErr } = await supabase
           .from('listing_request_photos')
           .insert({ request_id: request.id, storage_path: path, order: i } as never) as unknown as {
             error: { message: string } | null
           }
         if (photoErr) {
-          await supabase.storage.from(BUCKET).remove([path])
+          await deleteFromR2('shop-photos', [path])
           throw new Error(photoErr.message)
         }
       }

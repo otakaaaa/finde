@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -14,8 +15,6 @@ import {
   DEFAULT_SHOP_FORM_VALUES,
   type ShopFormValues,
 } from '@/components/shop/form/shopFormSchema'
-
-const BUCKET = 'shop-photos'
 
 const AdminShopNewPage = () => {
   const navigate = useNavigate()
@@ -69,17 +68,15 @@ const AdminShopNewPage = () => {
       const files = pendingFilesRef.current
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-        const path = `${shop.id}/${crypto.randomUUID()}.${ext}`
-        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
-        if (storageErr) throw new Error(storageErr.message)
+        const path = `${shop.id}/${crypto.randomUUID()}.webp`
+        await uploadToR2('shop-photos', path, file)
         const { error: photoErr } = await supabase
           .from('shop_photos')
           .insert({ shop_id: shop.id, storage_path: path, order: i } as never) as unknown as {
             error: { message: string } | null
           }
         if (photoErr) {
-          await supabase.storage.from(BUCKET).remove([path])
+          await deleteFromR2('shop-photos', [path])
           throw new Error(photoErr.message)
         }
       }

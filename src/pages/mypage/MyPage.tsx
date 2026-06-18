@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Heart, List, Store, LogOut, ChevronRight, ArrowUpRight, Camera, Trash2, MessageCircle, Mail, Bell, Shield, Pencil, KeyRound, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getR2Url, uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
@@ -149,20 +150,15 @@ const MyPage = () => {
     const path = `${user.id}/avatar`
     const previousAvatarPath = getAvatarStoragePath(currentUserRow?.avatar_url ?? user.avatarUrl)
 
-    const { error: uploadError } = await supabase.storage
-      .from(AVATAR_BUCKET)
-      .upload(path, file, {
-        upsert: true,
-        contentType: file.type,
-      })
-
-    if (uploadError) {
+    try {
+      await uploadToR2('user-avatars', path, file)
+    } catch {
       setUploadError('アップロードに失敗しました')
       setUploading(false)
       return
     }
 
-    const cacheBustedAvatarUrl = `${supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl}?t=${Date.now()}`
+    const cacheBustedAvatarUrl = `${getR2Url('user-avatars', path)}?t=${Date.now()}`
 
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
@@ -175,14 +171,14 @@ const MyPage = () => {
       .single() as unknown as { data: { id: string; avatar_url: string | null } | null; error: { message: string } | null }
 
     if (updateError || !updatedUser) {
-      await supabase.storage.from(AVATAR_BUCKET).remove([path])
+      await deleteFromR2('user-avatars', [path])
       setUploadError('プロフィールの更新に失敗しました')
       setUploading(false)
       return
     }
 
     if (previousAvatarPath && previousAvatarPath !== path) {
-      await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath])
+      await deleteFromR2('user-avatars', [previousAvatarPath])
     }
 
     await refreshUser()

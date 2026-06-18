@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { uploadToR2, deleteFromR2 } from '@/lib/r2'
 import type { ShareState, ShareVisibility } from '@/types'
 
 const BUCKET = 'share-photos'
@@ -38,11 +39,9 @@ const uploadPhotos = async (
 ): Promise<void> => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-    const path = `${userId}/${postId}/${crypto.randomUUID()}.${ext}`
+    const path = `${userId}/${postId}/${crypto.randomUUID()}.webp`
 
-    const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
-    if (storageErr) throw new Error(storageErr.message)
+    await uploadToR2(BUCKET, path, file)
 
     const { error: rowErr } = await supabase
       .from('share_post_photos')
@@ -50,7 +49,7 @@ const uploadPhotos = async (
         error: { message: string } | null
       }
     if (rowErr) {
-      await supabase.storage.from(BUCKET).remove([path])
+      await deleteFromR2(BUCKET, [path])
       throw new Error(rowErr.message)
     }
   }
@@ -146,7 +145,7 @@ export const useUpdateShare = () => {
       }
 
       if (removed.length > 0) {
-        await supabase.storage.from(BUCKET).remove(removed.map((p) => p.storage_path))
+        await deleteFromR2(BUCKET, removed.map((p) => p.storage_path))
         await supabase
           .from('share_post_photos')
           .delete()
@@ -176,7 +175,7 @@ export const useDeleteShare = () => {
         .eq('post_id', postId) as { data: { storage_path: string }[] | null; error: unknown }
 
       if (photos && photos.length > 0) {
-        await supabase.storage.from(BUCKET).remove(photos.map((p) => p.storage_path))
+        await deleteFromR2(BUCKET, photos.map((p) => p.storage_path))
       }
 
       const { error } = await supabase

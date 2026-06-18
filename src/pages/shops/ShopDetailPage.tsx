@@ -18,10 +18,9 @@ import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import type { BusinessHours } from '@/types'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
+import { getR2Url } from '@/lib/r2'
 
-const getPhotoUrl = (storagePath: string, width = 1600) =>
-  `${SUPABASE_URL}/storage/v1/object/public/shop-photos/${storagePath}?width=${width}&resize=cover`
+const getPhotoUrl = (storagePath: string) => getR2Url('shop-photos', storagePath)
 
 const DAY_LABELS: Record<keyof BusinessHours, string> = {
   mon: 'M', tue: 'T', wed: 'W', thu: 'T', fri: 'F', sat: 'S', sun: 'S',
@@ -164,7 +163,7 @@ const ShopDetailPage = () => {
     ]
       .filter(Boolean)
       .join('')
-  const seoImage = shop.photos[0] ? getPhotoUrl(shop.photos[0].storagePath, 1200) : undefined
+  const seoImage = shop.photos[0] ? getPhotoUrl(shop.photos[0].storagePath) : undefined
 
   return (
     <div className="bg-background">
@@ -243,7 +242,7 @@ const ShopDetailPage = () => {
                 )}
               >
                 <img
-                  src={getPhotoUrl(photo.storagePath, 200)}
+                  src={getPhotoUrl(photo.storagePath)}
                   alt=""
                   className="h-full w-full object-cover"
                 />
