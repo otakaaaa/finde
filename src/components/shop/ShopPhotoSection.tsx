@@ -3,14 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
+import { getR2Url, uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { SectionLabel } from '@/components/shop/ShopFormUI'
 import { cn } from '@/lib/utils'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 const BUCKET = 'shop-photos'
-const getPhotoUrl = (storagePath: string) =>
-  `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`
+const getPhotoUrl = (storagePath: string) => getR2Url(BUCKET, storagePath)
 
 interface PhotoRow {
   id: string
@@ -54,8 +53,7 @@ export const ShopPhotoSection = ({ shopId, num, animationDelay = '0ms' }: ShopPh
 
   const { mutate: deletePhoto, isPending: isDeleting } = useMutation({
     mutationFn: async ({ photoId, storagePath }: { photoId: string; storagePath: string }) => {
-      const { error: storageError } = await supabase.storage.from(BUCKET).remove([storagePath])
-      if (storageError) throw new Error(storageError.message)
+      await deleteFromR2(BUCKET, [storagePath])
       const { error: dbError } = await supabase
         .from('shop_photos')
         .delete()
@@ -78,17 +76,15 @@ export const ShopPhotoSection = ({ shopId, num, animationDelay = '0ms' }: ShopPh
       const maxOrder = photos.length > 0 ? Math.max(...photos.map((p) => p.order)) : -1
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-        const path = `${shopId}/${crypto.randomUUID()}.${ext}`
-        const { error: storageErr } = await supabase.storage.from(BUCKET).upload(path, file)
-        if (storageErr) throw new Error(storageErr.message)
+        const path = `${shopId}/${crypto.randomUUID()}.webp`
+        await uploadToR2(BUCKET, path, file)
         const { error: dbErr } = await supabase
           .from('shop_photos')
           .insert({ shop_id: shopId, storage_path: path, order: maxOrder + 1 + i } as never) as unknown as {
             error: { message: string } | null
           }
         if (dbErr) {
-          await supabase.storage.from(BUCKET).remove([path])
+          await deleteFromR2(BUCKET, [path])
           throw new Error(dbErr.message)
         }
       }

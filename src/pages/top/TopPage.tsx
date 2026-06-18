@@ -14,10 +14,9 @@ import { WISH_FEATURE_ENABLED } from '@/config/features'
 import type { Category, CategoryCode, Shop, PressRelease } from '@/types'
 import { Seo } from '@/components/seo/Seo'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
+import { getR2Url } from '@/lib/r2'
 
-const getPhotoUrl = (storagePath: string) =>
-  `${SUPABASE_URL}/storage/v1/object/public/shop-photos/${storagePath}?width=600&height=450&resize=cover`
+const getPhotoUrl = (storagePath: string) => getR2Url('shop-photos', storagePath)
 
 const CATEGORY_ICONS: Record<CategoryCode, ReactNode> = {
   mens: <Shirt className="h-5 w-5" />,

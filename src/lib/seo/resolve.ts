@@ -67,11 +67,13 @@ const stripMarkdown = (markdown: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const shopPhotoUrl = (config: SupabaseConfig, storagePath: string): string =>
-  `${config.url}/storage/v1/object/public/shop-photos/${storagePath}?width=1200&resize=cover`
+const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL as string
 
-const sharePhotoUrl = (config: SupabaseConfig, storagePath: string): string =>
-  `${config.url}/storage/v1/object/public/share-photos/${storagePath}?width=1200&resize=cover`
+const shopPhotoUrl = (_config: SupabaseConfig, storagePath: string): string =>
+  `${R2_PUBLIC_URL}/shop-photos/${storagePath}`
+
+const sharePhotoUrl = (_config: SupabaseConfig, storagePath: string): string =>
+  `${R2_PUBLIC_URL}/share-photos/${storagePath}`
 
 /** PostgREST へ GET し、結果配列の先頭を返す（失敗時は null） */
 const fetchOne = async <T>(config: SupabaseConfig, path: string): Promise<T | null> => {

@@ -4,10 +4,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import type { Review } from '@/types'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
+import { getR2Url } from '@/lib/r2'
 
-const getPhotoUrl = (storagePath: string) =>
-  `${SUPABASE_URL}/storage/v1/object/public/review-photos/${storagePath}?width=300&height=300&resize=cover`
+const getPhotoUrl = (storagePath: string) => getR2Url('review-photos', storagePath)
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString('ja-JP', {
