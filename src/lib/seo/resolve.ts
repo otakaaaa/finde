@@ -67,7 +67,7 @@ const stripMarkdown = (markdown: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL as string
+const R2_PUBLIC_URL = (import.meta.env?.VITE_R2_PUBLIC_URL ?? '') as string
 
 const shopPhotoUrl = (_config: SupabaseConfig, storagePath: string): string =>
   `${R2_PUBLIC_URL}/shop-photos/${storagePath}`
