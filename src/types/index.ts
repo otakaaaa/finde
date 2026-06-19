@@ -2,6 +2,8 @@
 // Primitive types
 // ============================================================
 
+export type SizeGroup = 'general' | 'bottoms' | 'shoes' | 'none'
+
 export type UserRole = 'user' | 'shop_owner' | 'admin'
 export type ShopStatus = 'public' | 'private' | 'pending'
 export type ReviewStatus = 'published' | 'flagged' | 'hidden'
@@ -62,11 +64,20 @@ export interface Category {
   name: string
 }
 
+export interface Size {
+  id: number
+  code: string
+  label: string
+  sizeGroup: SizeGroup
+  order: number
+}
+
 export interface ItemCategory {
   id: number
   code: string
   name: string
   order: number
+  sizeGroup: SizeGroup
 }
 
 export interface ItemType {
@@ -212,7 +223,8 @@ export interface Wish {
   itemType: ItemType | null
   priceRange: PriceRange
   area: Area
-  size: string | null
+  sizeId: number | null
+  size: Size | null
   tags: string[]
   urgency: WishUrgency | null
   note: string | null
@@ -232,7 +244,7 @@ export interface WishFormValues {
   itemTypeId?: number
   priceRangeId: number
   areaId: number
-  size?: string
+  sizeId?: number
   tags?: string[]
   urgency?: WishUrgency
   note?: string
@@ -262,7 +274,7 @@ export interface ShopItem {
   brand: Pick<Brand, 'id' | 'name'> | null
   name: string
   description: string | null
-  sizes: string[]
+  sizeIds: number[]
   isAvailable: boolean
   materials: Pick<MaterialType, 'id' | 'name'>[]
   photos: ShopItemPhoto[]
@@ -276,7 +288,7 @@ export interface ShopItemFormValues {
   brandId?: string
   name: string
   description?: string
-  sizes: string[]
+  sizeIds: number[]
   materialTypeIds: number[]
   isAvailable: boolean
 }

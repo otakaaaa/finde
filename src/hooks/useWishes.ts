@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import type { Wish, WishFormValues } from '@/types'
+import type { Wish, WishFormValues, SizeGroup } from '@/types'
 
 interface WishRow {
   id: string
@@ -9,7 +9,7 @@ interface WishRow {
   type: string
   item_category_id: number | null
   item_type_id: number | null
-  size: string | null
+  size_id: number | null
   tags: string[]
   urgency: string | null
   note: string | null
@@ -23,8 +23,9 @@ interface WishRow {
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null }
   areas: { id: number; prefecture: string; city: string; slug: string }
   brands: { id: string; name: string } | null
-  item_categories: { id: number; code: string; name: string; order: number } | null
+  item_categories: { id: number; code: string; name: string; order: number; size_group: string } | null
   item_types: { id: number; item_category_id: number; code: string; name: string; order: number } | null
+  sizes: { id: number; code: string; label: string; size_group: string; order: number } | null
 }
 
 const mapWishRow = (row: WishRow): Wish => ({
@@ -33,14 +34,15 @@ const mapWishRow = (row: WishRow): Wish => ({
   type: row.type as Wish['type'],
   category: { id: row.categories.id, code: row.categories.code as Wish['category']['code'], name: row.categories.name },
   itemCategory: row.item_categories
-    ? { id: row.item_categories.id, code: row.item_categories.code, name: row.item_categories.name, order: row.item_categories.order }
+    ? { id: row.item_categories.id, code: row.item_categories.code, name: row.item_categories.name, order: row.item_categories.order, sizeGroup: row.item_categories.size_group as SizeGroup }
     : null,
   itemType: row.item_types
     ? { id: row.item_types.id, itemCategoryId: row.item_types.item_category_id, code: row.item_types.code, name: row.item_types.name, order: row.item_types.order }
     : null,
   priceRange: { id: row.price_ranges.id, label: row.price_ranges.label, minPrice: row.price_ranges.min_price, maxPrice: row.price_ranges.max_price },
   area: { id: row.areas.id, prefecture: row.areas.prefecture, city: row.areas.city, slug: row.areas.slug },
-  size: row.size,
+  sizeId: row.size_id,
+  size: row.sizes ? { id: row.sizes.id, code: row.sizes.code, label: row.sizes.label, sizeGroup: row.sizes.size_group as SizeGroup, order: row.sizes.order } : null,
   tags: row.tags ?? [],
   urgency: row.urgency as Wish['urgency'],
   note: row.note,
@@ -55,15 +57,16 @@ const mapWishRow = (row: WishRow): Wish => ({
 
 const WISH_SELECT = `
   id, user_id, type, item_category_id, item_type_id,
-  size, tags, urgency,
+  size_id, tags, urgency,
   note, is_public, notify_email, status, brand_id,
   created_at, updated_at,
   categories ( id, code, name ),
   price_ranges ( id, label, min_price, max_price ),
   areas ( id, prefecture, city, slug ),
   brands ( id, name ),
-  item_categories ( id, code, name, order ),
-  item_types ( id, item_category_id, code, name, order )
+  item_categories ( id, code, name, order, size_group ),
+  item_types ( id, item_category_id, code, name, order ),
+  sizes ( id, code, label, size_group, order )
 `
 
 export const useMyWishes = (status: 'active' | 'closed' = 'active') => {
@@ -107,7 +110,7 @@ export const useCreateWish = () => {
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
         area_id: values.areaId,
-        size: values.size ?? null,
+        size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
         urgency: values.urgency ?? null,
         note: values.note ?? null,
@@ -161,7 +164,7 @@ export const useUpdateWish = () => {
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
         area_id: values.areaId,
-        size: values.size ?? null,
+        size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
         urgency: values.urgency ?? null,
         note: values.note ?? null,

@@ -9,7 +9,7 @@ create table public.shop_items (
   brand_id     uuid        references public.brands(id),
   name         text        not null,
   description  text,
-  sizes        text[]      not null default '{}',
+  size_ids     int[]       not null default '{}',
   is_available boolean     not null default true,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()

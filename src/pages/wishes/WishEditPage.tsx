@@ -8,8 +8,9 @@ import { ChevronLeft, X, Plus, Globe, Lock, Bell, BellOff, Tag, Trash2, AlertTri
 import { supabase } from '@/lib/supabase'
 import { useWish, useUpdateWish, useDeleteWish } from '@/hooks/useWishes'
 import { BrandSearchInput } from '@/components/wish/BrandSearchInput'
+import { useSizes } from '@/hooks/useSizes'
 import { cn } from '@/lib/utils'
-import type { Area, PriceRange, ItemCategory, ItemType } from '@/types'
+import type { Area, PriceRange, ItemCategory, ItemType, SizeGroup } from '@/types'
 
 const wishSchema = z.object({
   categoryId: z.number().default(1),
@@ -17,7 +18,7 @@ const wishSchema = z.object({
   itemTypeId: z.number().optional(),
   priceRangeId: z.number({ required_error: '価格帯を選択してください' }),
   areaId: z.number({ required_error: 'エリアを選択してください' }),
-  size: z.string().optional(),
+  sizeId: z.number().optional(),
   note: z.string().max(500, '500文字以内で入力してください').optional(),
   urgency: z.enum(['low', 'medium', 'high']).optional(),
   tags: z.array(z.string()).optional(),
@@ -122,12 +123,12 @@ const WishEditPage = () => {
       const [areas, priceRanges, itemCategories] = await Promise.all([
         supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{ data: Area[] | null }>,
         supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{ data: { id: number; label: string; min_price: number | null; max_price: number | null }[] | null }>,
-        supabase.from('item_categories').select('id, code, name, order').order('order') as unknown as Promise<{ data: ItemCategory[] | null }>,
+        supabase.from('item_categories').select('id, code, name, order, size_group').order('order') as unknown as Promise<{ data: ({ id: number; code: string; name: string; order: number; size_group: string })[] | null }>,
       ])
       return {
         areas: areas.data ?? [],
         priceRanges: (priceRanges.data ?? []).map((p) => ({ id: p.id, label: p.label, minPrice: p.min_price, maxPrice: p.max_price })) as PriceRange[],
-        itemCategories: itemCategories.data ?? [],
+        itemCategories: (itemCategories.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name, order: c.order, sizeGroup: c.size_group as SizeGroup })) as ItemCategory[],
       }
     },
     staleTime: Infinity,
@@ -149,7 +150,7 @@ const WishEditPage = () => {
         itemTypeId: wish!.itemType?.id,
         priceRangeId: wish!.priceRange.id,
         areaId: wish!.area.id,
-        size: wish!.size ?? undefined,
+        sizeId: wish!.sizeId ?? undefined,
         note: wish!.note ?? undefined,
         urgency: wish!.urgency ?? undefined,
         tags: wish!.tags,
@@ -165,8 +166,13 @@ const WishEditPage = () => {
 
   const watchedItemCategoryId = watch('itemCategoryId')
   const watchedItemTypeId = watch('itemTypeId')
+  const watchedSizeId = watch('sizeId')
   const watchedUrgency = watch('urgency')
   const watchedIsPublic = watch('isPublic')
+
+  const { data: sizes } = useSizes()
+  const selectedCategoryObj = masterData?.itemCategories.find((c) => c.id === watchedItemCategoryId)
+  const sizeGroup: SizeGroup = selectedCategoryObj?.sizeGroup ?? 'general'
   const watchedNotifyEmail = watch('notifyEmail')
 
   const { data: itemTypes } = useQuery({
@@ -387,10 +393,28 @@ const WishEditPage = () => {
             </section>
 
             {/* ── 05 サイズ ───────────────────────────── */}
-            <section>
-              <SectionLabel num="05" title="サイズ" optional />
-              <input type="text" placeholder="例: M, 175cm, 28inch" className="h-10 w-full rounded-sm border border-border bg-white px-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50" {...register('size')} />
-            </section>
+            {sizeGroup !== 'none' && (
+              <section>
+                <SectionLabel num="05" title="サイズ" optional />
+                <div className="flex flex-wrap gap-2">
+                  {(sizes?.bySizeGroup[sizeGroup] ?? []).map((size) => (
+                    <button
+                      key={size.id}
+                      type="button"
+                      onClick={() => setValue('sizeId', watchedSizeId === size.id ? undefined : size.id)}
+                      className={cn(
+                        'rounded-sm border px-3 py-1.5 text-xs font-bold transition-all',
+                        watchedSizeId === size.id
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+                      )}
+                    >
+                      {size.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* ── 06 優先度 & タグ & メモ ──────────────── */}
             <section>

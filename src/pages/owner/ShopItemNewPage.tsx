@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useItemCategoriesWithTypes } from '@/hooks/useShopItemTypes'
 import { useCreateShopItem } from '@/hooks/useShopItems'
+import { useSizes } from '@/hooks/useSizes'
 import { cn } from '@/lib/utils'
 import type { Brand, MaterialType } from '@/types'
 
@@ -93,8 +94,7 @@ const ShopItemNewPage = () => {
   const [name, setName] = useState('')
   const [nameManuallyEdited, setNameManuallyEdited] = useState(false)
   const [description, setDescription] = useState('')
-  const [sizeInput, setSizeInput] = useState('')
-  const [sizes, setSizes] = useState<string[]>([])
+  const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([])
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<Set<number>>(new Set())
   const [photos, setPhotos] = useState<PhotoPreview[]>([])
   const [isAvailable, setIsAvailable] = useState(true)
@@ -147,15 +147,10 @@ const ShopItemNewPage = () => {
   const selectedCategory = categories?.find((c) => c.id === selectedCategoryId)
   const filteredBrands = (brandResults ?? []).filter((b) => b.id !== selectedBrand?.id)
 
-  const addSize = () => {
-    const trimmed = sizeInput.trim().toUpperCase()
-    if (trimmed && !sizes.includes(trimmed)) {
-      setSizes((prev) => [...prev, trimmed])
-    }
-    setSizeInput('')
-  }
+  const { data: sizes } = useSizes()
 
-  const removeSize = (s: string) => setSizes((prev) => prev.filter((x) => x !== s))
+  const toggleSize = (id: number) =>
+    setSelectedSizeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
 
   const toggleMaterial = (id: number) => {
     setSelectedMaterialIds((prev) => {
@@ -222,7 +217,7 @@ const ShopItemNewPage = () => {
           brandId: selectedBrand?.id,
           name: name.trim(),
           description: description.trim() || undefined,
-          sizes,
+          sizeIds: selectedSizeIds,
           materialTypeIds: Array.from(selectedMaterialIds),
           isAvailable,
         },
@@ -408,38 +403,28 @@ const ShopItemNewPage = () => {
           </section>
 
           {/* ── 06 Sizes ─────────────────────────────── */}
-          <section>
-            <SectionLabel index="06" label="サイズ" note="任意" />
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={sizeInput}
-                onChange={(e) => setSizeInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addSize() } }}
-                placeholder="S, M, L, XL, 36, 38…"
-                className="h-10 flex-1 border border-border bg-white px-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
-              />
-              <button
-                type="button"
-                onClick={addSize}
-                className="h-10 border border-border bg-white px-3 text-xs font-bold text-muted-foreground/60 hover:text-foreground"
-              >
-                追加
-              </button>
-            </div>
-            {sizes.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {sizes.map((s) => (
-                  <span key={s} className="flex items-center gap-1 border border-border bg-white px-2 py-1 text-[11px] font-bold">
-                    {s}
-                    <button type="button" onClick={() => removeSize(s)} className="text-muted-foreground/30 hover:text-red-500">
-                      <X className="h-2.5 w-2.5" />
-                    </button>
-                  </span>
+          {selectedCategory?.sizeGroup && selectedCategory.sizeGroup !== 'none' && (
+            <section>
+              <SectionLabel index="06" label="サイズ" note="任意" />
+              <div className="flex flex-wrap gap-2">
+                {(sizes?.bySizeGroup[selectedCategory.sizeGroup] ?? []).map((size) => (
+                  <button
+                    key={size.id}
+                    type="button"
+                    onClick={() => toggleSize(size.id)}
+                    className={cn(
+                      'rounded-sm border px-3 py-1.5 text-xs font-bold transition-all',
+                      selectedSizeIds.includes(size.id)
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+                    )}
+                  >
+                    {size.label}
+                  </button>
                 ))}
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
           {/* ── 07 Materials ─────────────────────────── */}
           <section>

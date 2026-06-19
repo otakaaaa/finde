@@ -25,7 +25,7 @@ interface ShopItemRow {
   brand_id: string | null
   name: string
   description: string | null
-  sizes: string[]
+  size_ids: number[]
   is_available: boolean
   created_at: string
   updated_at: string
@@ -36,7 +36,7 @@ interface ShopItemRow {
 }
 
 const SHOP_ITEM_SELECT = `
-  id, shop_id, item_type_id, brand_id, name, description, sizes, is_available, created_at, updated_at,
+  id, shop_id, item_type_id, brand_id, name, description, size_ids, is_available, created_at, updated_at,
   item_types ( id, code, name, item_category_id ),
   brands ( id, name ),
   shop_item_photos ( id, shop_item_id, storage_path, order, created_at ),
@@ -54,7 +54,7 @@ const mapRow = (row: ShopItemRow): ShopItem => ({
   brand: row.brands ?? null,
   name: row.name,
   description: row.description,
-  sizes: row.sizes,
+  sizeIds: row.size_ids,
   isAvailable: row.is_available,
   materials: row.shop_item_materials.map((m) => ({ id: m.material_types.id, name: m.material_types.name })),
   photos: row.shop_item_photos
@@ -128,7 +128,7 @@ export const useCreateShopItem = () => {
           brand_id: values.brandId ?? null,
           name: values.name,
           description: values.description ?? null,
-          sizes: values.sizes,
+          size_ids: values.sizeIds,
           is_available: values.isAvailable,
         } as never)
         .select('id')
@@ -200,7 +200,7 @@ export const useUpdateShopItem = () => {
           brand_id: values.brandId ?? null,
           name: values.name,
           description: values.description ?? null,
-          sizes: values.sizes,
+          size_ids: values.sizeIds,
           is_available: values.isAvailable,
         } as never)
         .eq('id', itemId) as unknown as { error: { message: string } | null }

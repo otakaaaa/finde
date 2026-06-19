@@ -217,7 +217,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             {wish.area.city}
           </span>
           {wish.size && (
-            <span className="text-xs text-muted-foreground">/ {wish.size}</span>
+            <span className="text-xs text-muted-foreground">/ {wish.size.label}</span>
           )}
         </div>
 
