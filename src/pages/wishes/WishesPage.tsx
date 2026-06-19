@@ -48,11 +48,6 @@ const URGENCY_CONFIG: Record<NonNullable<Wish['urgency']>, UrgencyConfig> = {
   },
 }
 
-const CONDITION_LABEL: Record<NonNullable<Wish['condition']>, string> = {
-  new: '新品',
-  used: '中古',
-}
-
 type OverlayState = 'none' | 'delete' | 'close'
 
 const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
@@ -223,11 +218,6 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           </span>
           {wish.size && (
             <span className="text-xs text-muted-foreground">/ {wish.size}</span>
-          )}
-          {wish.condition && (
-            <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
-              {CONDITION_LABEL[wish.condition]}
-            </span>
           )}
         </div>
 

@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useItemCategoriesWithTypes } from '@/hooks/useShopItemTypes'
 import { useCreateShopItem } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
-import type { Brand, MaterialType, ShopItemCondition } from '@/types'
+import type { Brand, MaterialType } from '@/types'
 
 // ── Sub-types ───────────────────────────────────────────────────
 
@@ -93,7 +93,6 @@ const ShopItemNewPage = () => {
   const [name, setName] = useState('')
   const [nameManuallyEdited, setNameManuallyEdited] = useState(false)
   const [description, setDescription] = useState('')
-  const [condition, setCondition] = useState<ShopItemCondition>('unknown')
   const [sizeInput, setSizeInput] = useState('')
   const [sizes, setSizes] = useState<string[]>([])
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<Set<number>>(new Set())
@@ -223,7 +222,6 @@ const ShopItemNewPage = () => {
           brandId: selectedBrand?.id,
           name: name.trim(),
           description: description.trim() || undefined,
-          condition,
           sizes,
           materialTypeIds: Array.from(selectedMaterialIds),
           isAvailable,
@@ -409,35 +407,9 @@ const ShopItemNewPage = () => {
             />
           </section>
 
-          {/* ── 06 Condition ─────────────────────────── */}
+          {/* ── 06 Sizes ─────────────────────────────── */}
           <section>
-            <SectionLabel index="06" label="状態" note="任意" />
-            <div className="flex gap-2">
-              {([
-                { value: 'new',     label: '新品' },
-                { value: 'used',    label: '中古' },
-                { value: 'unknown', label: '不明' },
-              ] as { value: ShopItemCondition; label: string }[]).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCondition(value)}
-                  className={cn(
-                    'rounded-sm border px-4 py-2 text-xs font-bold transition-all',
-                    condition === value
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-border bg-white text-foreground/70 hover:border-primary/30',
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* ── 07 Sizes ─────────────────────────────── */}
-          <section>
-            <SectionLabel index="07" label="サイズ" note="任意" />
+            <SectionLabel index="06" label="サイズ" note="任意" />
             <div className="flex gap-2">
               <input
                 type="text"
@@ -469,9 +441,9 @@ const ShopItemNewPage = () => {
             )}
           </section>
 
-          {/* ── 08 Materials ─────────────────────────── */}
+          {/* ── 07 Materials ─────────────────────────── */}
           <section>
-            <SectionLabel index="08" label="素材" note="任意" />
+            <SectionLabel index="07" label="素材" note="任意" />
             <div className="flex flex-wrap gap-2">
               {(materials ?? []).map((m) => (
                 <button
@@ -543,7 +515,7 @@ const ShopItemNewPage = () => {
 
           {/* ── 09 Photos ────────────────────────────── */}
           <section>
-            <SectionLabel index="09" label="写真" note={`任意 (最大10枚 · ${photos.length}/10)`} />
+            <SectionLabel index="08" label="写真" note={`任意 (最大10枚 · ${photos.length}/10)`} />
 
             {photos.length > 0 && (
               <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
@@ -591,7 +563,7 @@ const ShopItemNewPage = () => {
 
           {/* ── 10 Availability ──────────────────────── */}
           <section>
-            <SectionLabel index="10" label="公開設定" />
+            <SectionLabel index="09" label="公開設定" />
             <button
               type="button"
               onClick={() => setIsAvailable((prev) => !prev)}

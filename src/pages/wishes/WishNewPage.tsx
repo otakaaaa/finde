@@ -19,7 +19,6 @@ const wishSchema = z.object({
   areaId: z.number({ required_error: 'エリアを選択してください' }),
   size: z.string().optional(),
   note: z.string().max(500, '500文字以内で入力してください').optional(),
-  condition: z.enum(['new', 'used']).optional(),
   urgency: z.enum(['low', 'medium', 'high']).optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean(),
@@ -143,7 +142,6 @@ const WishNewPage = () => {
   const watchedItemCategoryId = watch('itemCategoryId')
   const watchedItemTypeId = watch('itemTypeId')
   const watchedUrgency = watch('urgency')
-  const watchedCondition = watch('condition')
   const watchedIsPublic = watch('isPublic')
   const watchedNotifyEmail = watch('notifyEmail')
 
@@ -340,51 +338,15 @@ const WishNewPage = () => {
               </div>
             </section>
 
-            {/* ── 05 コンディション & サイズ ───────────── */}
+            {/* ── 05 サイズ ───────────────────────────── */}
             <section>
-              <SectionLabel num="05" title="コンディション & サイズ" optional />
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    コンディション
-                  </label>
-                  <Controller
-                    name="condition"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex gap-2">
-                        {([undefined, 'new', 'used'] as const).map((val) => (
-                          <button
-                            key={String(val)}
-                            type="button"
-                            onClick={() => field.onChange(val)}
-                            className={cn(
-                              'flex-1 rounded-sm border py-2 text-[11px] font-bold transition-all',
-                              watchedCondition === val
-                                ? 'border-primary bg-primary text-white'
-                                : 'border-border bg-white text-muted-foreground hover:border-primary/30',
-                            )}
-                          >
-                            {val === undefined ? '指定なし' : val === 'new' ? '新品' : '中古'}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    サイズ
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="例: M, 175cm, 28inch"
-                    className="h-10 w-full rounded-sm border border-border bg-white px-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                    {...register('size')}
-                  />
-                </div>
-              </div>
+              <SectionLabel num="05" title="サイズ" optional />
+              <input
+                type="text"
+                placeholder="例: M, 175cm, 28inch"
+                className="h-10 w-full rounded-sm border border-border bg-white px-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                {...register('size')}
+              />
             </section>
 
             {/* ── 06 優先度 & タグ & メモ ──────────────── */}

@@ -9,8 +9,6 @@ create table public.shop_items (
   brand_id     uuid        references public.brands(id),
   name         text        not null,
   description  text,
-  condition    text        not null default 'unknown'
-                             check (condition in ('new', 'used', 'unknown')),
   sizes        text[]      not null default '{}',
   is_available boolean     not null default true,
   created_at   timestamptz not null default now(),

@@ -8,7 +8,6 @@ export type ReviewStatus = 'published' | 'flagged' | 'hidden'
 /** @deprecated type 軸は item_category_id / item_type_id に移行予定 */
 export type WishType = 'brand' | 'item' | 'condition'
 export type WishUrgency = 'low' | 'medium' | 'high'
-export type WishCondition = 'new' | 'used'
 export type SubscriptionPlan = 'monthly' | 'yearly'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 export type ReportReason = 'false_info' | 'harassment' | 'irrelevant' | 'other'
@@ -215,7 +214,6 @@ export interface Wish {
   area: Area
   size: string | null
   tags: string[]
-  condition: WishCondition | null
   urgency: WishUrgency | null
   note: string | null
   isPublic: boolean
@@ -236,7 +234,6 @@ export interface WishFormValues {
   areaId: number
   size?: string
   tags?: string[]
-  condition?: WishCondition
   urgency?: WishUrgency
   note?: string
   isPublic: boolean
@@ -247,8 +244,6 @@ export interface WishFormValues {
 // ============================================================
 // Shop Item
 // ============================================================
-
-export type ShopItemCondition = 'new' | 'used' | 'unknown'
 
 export interface ShopItemPhoto {
   id: string
@@ -267,7 +262,6 @@ export interface ShopItem {
   brand: Pick<Brand, 'id' | 'name'> | null
   name: string
   description: string | null
-  condition: ShopItemCondition
   sizes: string[]
   isAvailable: boolean
   materials: Pick<MaterialType, 'id' | 'name'>[]
@@ -282,7 +276,6 @@ export interface ShopItemFormValues {
   brandId?: string
   name: string
   description?: string
-  condition: ShopItemCondition
   sizes: string[]
   materialTypeIds: number[]
   isAvailable: boolean
