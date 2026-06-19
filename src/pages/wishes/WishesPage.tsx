@@ -12,6 +12,18 @@ const TYPE_CONFIG: Record<Wish['type'], { label: string; shortLabel: string }> =
   condition: { label: 'CONDITION', shortLabel: 'コンディション' },
 }
 
+const getWishWatermark = (wish: Wish): string =>
+  wish.itemCategory ? wish.itemCategory.code.toUpperCase() : TYPE_CONFIG[wish.type].label
+
+const getWishTypeBadge = (wish: Wish): string =>
+  wish.itemCategory ? wish.itemCategory.name : TYPE_CONFIG[wish.type].shortLabel
+
+const getWishCategoryBadge = (wish: Wish): string | null => {
+  if (wish.itemType) return wish.itemType.name
+  if (wish.itemCategory) return null  // itemCategory はステータスバッジで表示済み
+  return wish.category.name
+}
+
 interface UrgencyConfig {
   label: string
   borderClass: string
@@ -49,9 +61,11 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
   const [overlay, setOverlay] = useState<OverlayState>('none')
   const [matchExpanded, setMatchExpanded] = useState(false)
 
-  const typeConf = TYPE_CONFIG[wish.type]
   const urgencyConf = wish.urgency ? URGENCY_CONFIG[wish.urgency] : null
   const isClosed = wish.status === 'closed'
+  const watermark = getWishWatermark(wish)
+  const typeBadge = getWishTypeBadge(wish)
+  const categoryBadge = getWishCategoryBadge(wish)
 
   const handleDeleteConfirm = () => {
     deleteWish(wish.id, { onSettled: () => setOverlay('none') })
@@ -143,7 +157,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           className="font-headline font-black leading-none tracking-tighter text-black/[0.03]"
           style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
         >
-          {typeConf.label}
+          {watermark}
         </span>
       </div>
 
@@ -158,12 +172,14 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
               </span>
             ) : (
               <span className="inline-flex items-center rounded-sm bg-primary/[0.07] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-primary">
-                {typeConf.shortLabel}
+                {typeBadge}
               </span>
             )}
-            <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
-              {wish.category.name}
-            </span>
+            {categoryBadge && (
+              <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
+                {categoryBadge}
+              </span>
+            )}
             {urgencyConf && !isClosed && (
               <span className={cn('inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold', urgencyConf.badgeClass)}>
                 優先度 {urgencyConf.label}

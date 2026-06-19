@@ -5,6 +5,7 @@
 export type UserRole = 'user' | 'shop_owner' | 'admin'
 export type ShopStatus = 'public' | 'private' | 'pending'
 export type ReviewStatus = 'published' | 'flagged' | 'hidden'
+/** @deprecated type 軸は item_category_id / item_type_id に移行予定 */
 export type WishType = 'brand' | 'item' | 'condition'
 export type WishUrgency = 'low' | 'medium' | 'high'
 export type WishCondition = 'new' | 'used'
@@ -60,6 +61,29 @@ export interface Category {
   id: number
   code: CategoryCode
   name: string
+}
+
+export interface ItemCategory {
+  id: number
+  code: string
+  name: string
+  order: number
+}
+
+export interface ItemType {
+  id: number
+  itemCategoryId: number
+  code: string
+  name: string
+  order: number
+}
+
+export interface MaterialType {
+  id: number
+  code: string
+  name: string
+  order: number
+  isActive: boolean
 }
 
 export interface Tag {
@@ -185,6 +209,8 @@ export interface Wish {
   userId: string
   type: WishType
   category: Category
+  itemCategory: ItemCategory | null
+  itemType: ItemType | null
   priceRange: PriceRange
   area: Area
   size: string | null
@@ -204,6 +230,8 @@ export interface Wish {
 export interface WishFormValues {
   type: WishType
   categoryId: number
+  itemCategoryId?: number
+  itemTypeId?: number
   priceRangeId: number
   areaId: number
   size?: string
@@ -214,6 +242,50 @@ export interface WishFormValues {
   isPublic: boolean
   notifyEmail: boolean
   brandId?: string
+}
+
+// ============================================================
+// Shop Item
+// ============================================================
+
+export type ShopItemCondition = 'new' | 'used' | 'unknown'
+
+export interface ShopItemPhoto {
+  id: string
+  shopItemId: string
+  storagePath: string
+  order: number
+  createdAt: string
+}
+
+export interface ShopItem {
+  id: string
+  shopId: string
+  itemTypeId: number | null
+  itemType: Pick<ItemType, 'id' | 'code' | 'name' | 'itemCategoryId'> | null
+  brandId: string | null
+  brand: Pick<Brand, 'id' | 'name'> | null
+  name: string
+  description: string | null
+  condition: ShopItemCondition
+  sizes: string[]
+  isAvailable: boolean
+  materials: Pick<MaterialType, 'id' | 'name'>[]
+  photos: ShopItemPhoto[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShopItemFormValues {
+  itemCategoryId?: number
+  itemTypeId?: number
+  brandId?: string
+  name: string
+  description?: string
+  condition: ShopItemCondition
+  sizes: string[]
+  materialTypeIds: number[]
+  isAvailable: boolean
 }
 
 export interface MatchShop {

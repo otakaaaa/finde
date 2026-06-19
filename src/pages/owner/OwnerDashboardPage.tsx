@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
-  ArrowUpRight,
+  ArrowUpRight, Package, TrendingUp,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
@@ -233,13 +233,29 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   animDelay={55}
                 />
                 <ActionCard
+                  to={`/owner/shops/${shop.id}/items`}
+                  icon={<Package className="h-4 w-4" />}
+                  index="03"
+                  title="アイテムを管理"
+                  desc="取り扱いアイテムを登録してマッチング精度を上げる"
+                  animDelay={110}
+                />
+                <ActionCard
+                  to={`/owner/shops/${shop.id}/wish-analytics`}
+                  icon={<TrendingUp className="h-4 w-4" />}
+                  index="04"
+                  title="ウィッシュ分析"
+                  desc="同エリアのウィッシュ需要を確認してマッチング精度を上げる"
+                  animDelay={165}
+                />
+                <ActionCard
                   to={`/shops/${shop.id}`}
                   icon={<ExternalLink className="h-4 w-4" />}
-                  index="03"
+                  index="05"
                   title="公開ページを確認"
                   desc="ユーザーに表示されているページを見る"
                   external
-                  animDelay={110}
+                  animDelay={220}
                 />
               </div>
 

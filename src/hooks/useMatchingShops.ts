@@ -14,26 +14,13 @@ interface MatchShopRow {
   shop_photos: { storage_path: string; order: number }[]
 }
 
-const priceOverlaps = (shopRange: PriceRange | null, wishRange: PriceRange): boolean => {
-  if (!shopRange) return false
-  const sMin = shopRange.minPrice ?? 0
-  const sMax = shopRange.maxPrice ?? Number.MAX_SAFE_INTEGER
-  const wMin = wishRange.minPrice ?? 0
-  const wMax = wishRange.maxPrice ?? Number.MAX_SAFE_INTEGER
-  return sMin <= wMax && sMax >= wMin
-}
+const toShopPriceRange = (row: MatchShopRow['price_ranges']): PriceRange | null =>
+  row
+    ? { id: row.id, label: row.label, minPrice: row.min_price, maxPrice: row.max_price }
+    : null
 
 const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; tier2: MatchedShop[] }> => {
-  // Step 1: カテゴリ一致の shop_id を取得
-  const { data: catData } = await supabase
-    .from('shop_categories')
-    .select('shop_id')
-    .eq('category_id', wish.category.id) as unknown as { data: { shop_id: string }[] | null }
-
-  const categoryShopIds = catData?.map((c) => c.shop_id) ?? []
-  if (categoryShopIds.length === 0) return { tier1: [], tier2: [] }
-
-  // Step 2: 同じ都道府県の area_id を取得
+  // 都道府県内の area_id 一覧を取得（エリアは必須フィルタ）
   const { data: areaData } = await supabase
     .from('areas')
     .select('id')
@@ -42,17 +29,35 @@ const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; t
   const prefAreaIds = areaData?.map((a) => a.id) ?? []
   if (prefAreaIds.length === 0) return { tier1: [], tier2: [] }
 
-  // Step 3: brand_id が設定されている場合、ブランド一致の shop_id を取得
-  let brandShopIdSet: Set<string> | null = null
-  if (wish.brandId) {
-    const { data: brandData } = await supabase
-      .from('shop_brands')
-      .select('shop_id')
-      .eq('brand_id', wish.brandId) as unknown as { data: { shop_id: string }[] | null }
-    brandShopIdSet = new Set(brandData?.map((b) => b.shop_id) ?? [])
-  }
+  // アイテムタイプ・アイテムカテゴリ・ブランド一致の shop_id をまとめて取得
+  const [itemTypeResult, itemCategoryResult, brandResult] = await Promise.all([
+    wish.itemType
+      ? supabase.from('shop_item_types').select('shop_id').eq('item_type_id', wish.itemType.id) as unknown as Promise<{ data: { shop_id: string }[] | null }>
+      : Promise.resolve({ data: null }),
 
-  // Step 4: 店舗フェッチ（都道府県内 × カテゴリ一致）
+    wish.itemCategory
+      ? supabase
+          .from('shop_item_types')
+          .select('shop_id, item_types!inner(item_category_id)')
+          .eq('item_types.item_category_id', wish.itemCategory.id) as unknown as Promise<{ data: { shop_id: string }[] | null }>
+      : Promise.resolve({ data: null }),
+
+    wish.brandId
+      ? supabase.from('shop_brands').select('shop_id').eq('brand_id', wish.brandId) as unknown as Promise<{ data: { shop_id: string }[] | null }>
+      : Promise.resolve({ data: null }),
+  ])
+
+  const itemTypeShopIds = itemTypeResult.data
+    ? new Set(itemTypeResult.data.map((r) => r.shop_id))
+    : null
+  const itemCategoryShopIds = itemCategoryResult.data
+    ? new Set(itemCategoryResult.data.map((r) => r.shop_id))
+    : null
+  const brandShopIds = brandResult.data
+    ? new Set(brandResult.data.map((r) => r.shop_id))
+    : null
+
+  // 都道府県内の公開店舗を取得
   const { data: shopData, error } = await supabase
     .from('shops')
     .select(`
@@ -63,62 +68,63 @@ const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; t
       shop_photos ( storage_path, order )
     `)
     .eq('status', 'public')
-    .in('id', categoryShopIds)
     .in('area_id', prefAreaIds)
-    .limit(60) as unknown as { data: MatchShopRow[] | null; error: { message: string } | null }
+    .limit(100) as unknown as { data: MatchShopRow[] | null; error: { message: string } | null }
 
   if (error) throw new Error(error.message)
 
-  // Step 5: クライアントサイドで Tier 分類
+  const hasSpecificCriteria = !!(wish.itemType || wish.itemCategory || wish.brandId)
+
+  // スコアリング
+  const scored = (shopData ?? []).map((row) => {
+    let score = 0
+    if (itemTypeShopIds?.has(row.id))     score += 3
+    if (brandShopIds?.has(row.id))        score += 3
+    if (itemCategoryShopIds?.has(row.id)) score += 2
+    if (row.price_range_id === wish.priceRange.id) score += 2
+    if (row.area_id === wish.area.id)     score += 1
+    return { row, score }
+  })
+
+  // 特定条件がある場合はスコア0を除外
+  const candidates = hasSpecificCriteria
+    ? scored.filter((s) => s.score > 0)
+    : scored
+
+  candidates.sort((a, b) => b.score - a.score)
+
   const tier1: MatchedShop[] = []
   const tier2: MatchedShop[] = []
 
-  for (const row of shopData ?? []) {
-    const shopPriceRange: PriceRange | null = row.price_ranges
-      ? {
-          id: row.price_ranges.id,
-          label: row.price_ranges.label,
-          minPrice: row.price_ranges.min_price,
-          maxPrice: row.price_ranges.max_price,
-        }
-      : null
-
-    const isExactArea = row.area_id === wish.area.id
-    const isExactPrice = row.price_range_id === wish.priceRange.id
-    const hasBrandMatch = brandShopIdSet !== null ? brandShopIdSet.has(row.id) : false
-
+  for (const { row, score } of candidates) {
     const sortedPhotos = [...row.shop_photos].sort((a, b) => a.order - b.order)
-
     const shop = {
       id: row.id,
       name: row.name,
       area: row.areas,
-      priceRange: shopPriceRange,
+      priceRange: toShopPriceRange(row.price_ranges),
       averageRating: row.average_rating,
       reviewCount: row.review_count,
       coverPhotoPath: sortedPhotos[0]?.storage_path ?? null,
     }
+    const hasBrandMatch = brandShopIds?.has(row.id) ?? false
 
-    if (isExactArea && isExactPrice) {
+    if (score >= 3) {
       tier1.push({ shop, tier: 1, hasBrandMatch })
-    } else if (priceOverlaps(shopPriceRange, wish.priceRange)) {
+    } else {
       tier2.push({ shop, tier: 2, hasBrandMatch })
     }
   }
 
-  // ブランド一致を先頭に並べる
-  const sortByBrand = (a: MatchedShop, b: MatchedShop) =>
-    (b.hasBrandMatch ? 1 : 0) - (a.hasBrandMatch ? 1 : 0)
-
   return {
-    tier1: tier1.sort(sortByBrand).slice(0, 6),
-    tier2: tier2.sort(sortByBrand).slice(0, 6),
+    tier1: tier1.slice(0, 6),
+    tier2: tier2.slice(0, 6),
   }
 }
 
 export const useMatchingShops = (wish: Wish) =>
   useQuery({
-    queryKey: ['matching-shops', wish.id],
+    queryKey: ['matching-shops', wish.id, wish.itemType?.id, wish.itemCategory?.id, wish.brandId],
     queryFn: () => fetchMatchingShops(wish),
     staleTime: 5 * 60 * 1000,
     enabled: !!wish.id,
