@@ -96,6 +96,7 @@ const ShopItemNewPage = () => {
   const [description, setDescription] = useState('')
   const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([])
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<Set<number>>(new Set())
+  const [materialPercentages, setMaterialPercentages] = useState<Map<number, number | null>>(new Map())
   const [photos, setPhotos] = useState<PhotoPreview[]>([])
   const [isAvailable, setIsAvailable] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -155,11 +156,22 @@ const ShopItemNewPage = () => {
   const toggleMaterial = (id: number) => {
     setSelectedMaterialIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+        setMaterialPercentages((p) => { const m = new Map(p); m.delete(id); return m })
+      } else {
+        next.add(id)
+      }
       return next
     })
   }
+
+  const setMaterialPercentage = (id: number, value: number | null) =>
+    setMaterialPercentages((prev) => { const next = new Map(prev); next.set(id, value); return next })
+
+  const materialPercentageTotal = Array.from(selectedMaterialIds).reduce(
+    (sum, id) => sum + (materialPercentages.get(id) ?? 0), 0,
+  )
 
   const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
@@ -219,6 +231,7 @@ const ShopItemNewPage = () => {
           description: description.trim() || undefined,
           sizeIds: selectedSizeIds,
           materialTypeIds: Array.from(selectedMaterialIds),
+          materialPercentages: Object.fromEntries(materialPercentages.entries()),
           isAvailable,
         },
         photoFiles: photos.map((p) => p.file),
@@ -446,6 +459,38 @@ const ShopItemNewPage = () => {
                 </button>
               ))}
             </div>
+
+            {/* 比率入力 */}
+            {selectedMaterialIds.size > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+                  素材比率（任意）
+                </p>
+                {(materials ?? []).filter((m) => selectedMaterialIds.has(m.id)).map((m) => (
+                  <div key={m.id} className="flex items-center gap-3">
+                    <span className="w-28 truncate text-xs font-bold text-foreground/70">{m.name}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={materialPercentages.get(m.id) ?? ''}
+                      onChange={(e) => {
+                        const raw = parseInt(e.target.value, 10)
+                        setMaterialPercentage(m.id, Number.isNaN(raw) ? null : Math.min(100, Math.max(1, raw)))
+                      }}
+                      placeholder="—"
+                      className="h-8 w-16 border border-border bg-white px-2 text-center text-xs font-bold placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <span className="text-xs text-muted-foreground/50">%</span>
+                  </div>
+                ))}
+                {materialPercentageTotal > 0 && (
+                  <p className={cn('text-[10px] font-bold', materialPercentageTotal === 100 ? 'text-emerald-600' : 'text-amber-600')}>
+                    合計: {materialPercentageTotal}%{materialPercentageTotal === 100 ? ' ✓' : ' （100%を目安に入力してください）'}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Material request */}
             <div className="mt-4 border border-dashed border-border p-4">

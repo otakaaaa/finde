@@ -276,7 +276,7 @@ export interface ShopItem {
   description: string | null
   sizeIds: number[]
   isAvailable: boolean
-  materials: Pick<MaterialType, 'id' | 'name'>[]
+  materials: { id: number; name: string; percentage: number | null }[]
   photos: ShopItemPhoto[]
   createdAt: string
   updatedAt: string
@@ -290,6 +290,7 @@ export interface ShopItemFormValues {
   description?: string
   sizeIds: number[]
   materialTypeIds: number[]
+  materialPercentages?: Record<number, number | null>
   isAvailable: boolean
 }
 

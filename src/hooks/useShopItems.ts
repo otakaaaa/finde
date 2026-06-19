@@ -15,6 +15,7 @@ interface ShopItemPhotoRow {
 
 interface ShopItemMaterialRow {
   material_type_id: number
+  percentage: number | null
   material_types: { id: number; name: string }
 }
 
@@ -40,7 +41,7 @@ const SHOP_ITEM_SELECT = `
   item_types ( id, code, name, item_category_id ),
   brands ( id, name ),
   shop_item_photos ( id, shop_item_id, storage_path, order, created_at ),
-  shop_item_materials ( material_type_id, material_types ( id, name ) )
+  shop_item_materials ( material_type_id, percentage, material_types ( id, name ) )
 `.trim()
 
 const mapRow = (row: ShopItemRow): ShopItem => ({
@@ -56,7 +57,7 @@ const mapRow = (row: ShopItemRow): ShopItem => ({
   description: row.description,
   sizeIds: row.size_ids,
   isAvailable: row.is_available,
-  materials: row.shop_item_materials.map((m) => ({ id: m.material_types.id, name: m.material_types.name })),
+  materials: row.shop_item_materials.map((m) => ({ id: m.material_types.id, name: m.material_types.name, percentage: m.percentage })),
   photos: row.shop_item_photos
     .sort((a, b) => a.order - b.order)
     .map((p) => ({
@@ -142,7 +143,11 @@ export const useCreateShopItem = () => {
         const { error: matErr } = await supabase
           .from('shop_item_materials')
           .insert(
-            values.materialTypeIds.map((mid) => ({ shop_item_id: itemId, material_type_id: mid })) as never,
+            values.materialTypeIds.map((mid) => ({
+              shop_item_id: itemId,
+              material_type_id: mid,
+              percentage: values.materialPercentages?.[mid] ?? null,
+            })) as never,
           ) as unknown as { error: { message: string } | null }
         if (matErr) throw new Error(matErr.message)
       }
@@ -212,7 +217,11 @@ export const useUpdateShopItem = () => {
         const { error: matErr } = await supabase
           .from('shop_item_materials')
           .insert(
-            values.materialTypeIds.map((mid) => ({ shop_item_id: itemId, material_type_id: mid })) as never,
+            values.materialTypeIds.map((mid) => ({
+              shop_item_id: itemId,
+              material_type_id: mid,
+              percentage: values.materialPercentages?.[mid] ?? null,
+            })) as never,
           ) as unknown as { error: { message: string } | null }
         if (matErr) throw new Error(matErr.message)
       }
