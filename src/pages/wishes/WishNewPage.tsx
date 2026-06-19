@@ -20,7 +20,6 @@ const wishSchema = z.object({
   areaId: z.number({ required_error: 'エリアを選択してください' }),
   sizeId: z.number().optional(),
   note: z.string().max(500, '500文字以内で入力してください').optional(),
-  urgency: z.enum(['low', 'medium', 'high']).optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean(),
   notifyEmail: z.boolean(),
@@ -29,11 +28,6 @@ const wishSchema = z.object({
 
 type WishFormSchema = z.infer<typeof wishSchema>
 
-const URGENCY_OPTIONS = [
-  { value: 'low'    as const, label: '低', activeClass: 'bg-emerald-50 border-emerald-300 text-emerald-700' },
-  { value: 'medium' as const, label: '中', activeClass: 'bg-amber-50 border-amber-400 text-amber-700' },
-  { value: 'high'   as const, label: '高', activeClass: 'bg-red-50 border-red-400 text-red-700' },
-]
 
 const SectionLabel = ({
   num,
@@ -143,7 +137,6 @@ const WishNewPage = () => {
   const watchedItemCategoryId = watch('itemCategoryId')
   const watchedItemTypeId = watch('itemTypeId')
   const watchedSizeId = watch('sizeId')
-  const watchedUrgency = watch('urgency')
   const watchedIsPublic = watch('isPublic')
   const watchedNotifyEmail = watch('notifyEmail')
 
@@ -369,42 +362,10 @@ const WishNewPage = () => {
               </section>
             )}
 
-            {/* ── 06 優先度 & タグ & メモ ──────────────── */}
+            {/* ── 06 タグ & メモ ──────────────── */}
             <section>
-              <SectionLabel num="06" title="優先度 & タグ & メモ" optional />
+              <SectionLabel num="06" title="タグ & メモ" optional />
               <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                    優先度
-                  </label>
-                  <Controller
-                    name="urgency"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex gap-2">
-                        {[
-                          { value: undefined, label: '指定なし', activeClass: 'border-primary bg-primary text-white' },
-                          ...URGENCY_OPTIONS,
-                        ].map((opt) => (
-                          <button
-                            key={String(opt.value)}
-                            type="button"
-                            onClick={() => field.onChange(opt.value)}
-                            className={cn(
-                              'flex-1 rounded-sm border py-2 text-[11px] font-bold transition-all',
-                              watchedUrgency === opt.value
-                                ? (opt.activeClass ?? 'border-primary bg-primary text-white')
-                                : 'border-border bg-white text-muted-foreground hover:border-primary/30',
-                            )}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  />
-                </div>
-
                 <div>
                   <label className="mb-1.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
                     <Plus className="h-3 w-3" />

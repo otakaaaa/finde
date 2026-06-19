@@ -11,7 +11,6 @@ interface WishRow {
   item_type_id: number | null
   size_id: number | null
   tags: string[]
-  urgency: string | null
   note: string | null
   is_public: boolean
   notify_email: boolean
@@ -44,7 +43,6 @@ const mapWishRow = (row: WishRow): Wish => ({
   sizeId: row.size_id,
   size: row.sizes ? { id: row.sizes.id, code: row.sizes.code, label: row.sizes.label, sizeGroup: row.sizes.size_group as SizeGroup, order: row.sizes.order } : null,
   tags: row.tags ?? [],
-  urgency: row.urgency as Wish['urgency'],
   note: row.note,
   isPublic: row.is_public,
   notifyEmail: row.notify_email,
@@ -57,7 +55,7 @@ const mapWishRow = (row: WishRow): Wish => ({
 
 const WISH_SELECT = `
   id, user_id, type, item_category_id, item_type_id,
-  size_id, tags, urgency,
+  size_id, tags,
   note, is_public, notify_email, status, brand_id,
   created_at, updated_at,
   categories ( id, code, name ),
@@ -112,7 +110,6 @@ export const useCreateWish = () => {
         area_id: values.areaId,
         size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
-        urgency: values.urgency ?? null,
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,
@@ -166,7 +163,6 @@ export const useUpdateWish = () => {
         area_id: values.areaId,
         size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
-        urgency: values.urgency ?? null,
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,

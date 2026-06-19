@@ -24,29 +24,6 @@ const getWishCategoryBadge = (wish: Wish): string | null => {
   return wish.category.name
 }
 
-interface UrgencyConfig {
-  label: string
-  borderClass: string
-  badgeClass: string
-}
-
-const URGENCY_CONFIG: Record<NonNullable<Wish['urgency']>, UrgencyConfig> = {
-  low: {
-    label: '低',
-    borderClass: 'border-l-emerald-300',
-    badgeClass: 'bg-emerald-50 text-emerald-700',
-  },
-  medium: {
-    label: '中',
-    borderClass: 'border-l-amber-400',
-    badgeClass: 'bg-amber-50 text-amber-700',
-  },
-  high: {
-    label: '高',
-    borderClass: 'border-l-red-400',
-    badgeClass: 'bg-red-50 text-red-700',
-  },
-}
 
 type OverlayState = 'none' | 'delete' | 'close'
 
@@ -56,7 +33,6 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
   const [overlay, setOverlay] = useState<OverlayState>('none')
   const [matchExpanded, setMatchExpanded] = useState(false)
 
-  const urgencyConf = wish.urgency ? URGENCY_CONFIG[wish.urgency] : null
   const isClosed = wish.status === 'closed'
   const watermark = getWishWatermark(wish)
   const typeBadge = getWishTypeBadge(wish)
@@ -74,7 +50,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
     <div
       className={cn(
         'wish-card-enter group relative overflow-hidden border-l-[3px] bg-white editorial-shadow',
-        urgencyConf && !isClosed ? urgencyConf.borderClass : 'border-l-border',
+        'border-l-border',
         isClosed && 'opacity-70',
       )}
       style={{ animationDelay: `${index * 55}ms` }}
@@ -173,11 +149,6 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             {categoryBadge && (
               <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
                 {categoryBadge}
-              </span>
-            )}
-            {urgencyConf && !isClosed && (
-              <span className={cn('inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold', urgencyConf.badgeClass)}>
-                優先度 {urgencyConf.label}
               </span>
             )}
             {wish.brand && (

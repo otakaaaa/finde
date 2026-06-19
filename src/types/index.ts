@@ -9,7 +9,6 @@ export type ShopStatus = 'public' | 'private' | 'pending'
 export type ReviewStatus = 'published' | 'flagged' | 'hidden'
 /** @deprecated type 軸は item_category_id / item_type_id に移行予定 */
 export type WishType = 'brand' | 'item' | 'condition'
-export type WishUrgency = 'low' | 'medium' | 'high'
 export type SubscriptionPlan = 'monthly' | 'yearly'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 export type ReportReason = 'false_info' | 'harassment' | 'irrelevant' | 'other'
@@ -226,7 +225,6 @@ export interface Wish {
   sizeId: number | null
   size: Size | null
   tags: string[]
-  urgency: WishUrgency | null
   note: string | null
   isPublic: boolean
   notifyEmail: boolean
@@ -246,7 +244,6 @@ export interface WishFormValues {
   areaId: number
   sizeId?: number
   tags?: string[]
-  urgency?: WishUrgency
   note?: string
   isPublic: boolean
   notifyEmail: boolean
