@@ -116,23 +116,22 @@ export const useUpdateShop = () => {
   return useMutation({
     mutationFn: async ({ shopId, categoryIds, ...updates }: ShopUpdateInput) => {
       const { error } = await supabase
-        .from('shops')
-        .update({
-          ...(updates.name !== undefined && { name: updates.name }),
-          description: updates.description,
-          ...(updates.prefectureId !== undefined && { prefecture_id: updates.prefectureId }),
-          ...(updates.cityId !== undefined && { city_id: updates.cityId ?? null }),
-          address: updates.address || null,
-          ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
-          phone: updates.phone || null,
-          website_url: updates.websiteUrl || null,
-          instagram_url: updates.instagramUrl || null,
-          twitter_url: updates.twitterUrl || null,
-          tiktok_url: updates.tiktokUrl || null,
-          business_hours: updates.businessHours ?? null,
-          closed_days: updates.closedDays ?? [],
-        } as never)
-        .eq('id', shopId) as unknown as { data: unknown; error: { message: string } | null }
+        .rpc('update_shop_as_owner' as never, {
+          p_shop_id:        shopId,
+          p_name:           updates.name ?? null,
+          p_description:    updates.description ?? null,
+          p_prefecture_id:  updates.prefectureId ?? null,
+          p_city_id:        updates.cityId ?? null,
+          p_address:        updates.address || null,
+          p_price_range_id: updates.priceRangeId ?? null,
+          p_phone:          updates.phone || null,
+          p_website_url:    updates.websiteUrl || null,
+          p_instagram_url:  updates.instagramUrl || null,
+          p_twitter_url:    updates.twitterUrl || null,
+          p_tiktok_url:     updates.tiktokUrl || null,
+          p_business_hours: updates.businessHours ?? null,
+          p_closed_days:    updates.closedDays ?? [],
+        } as never) as unknown as { error: { message: string } | null }
 
       if (error) throw new Error(error.message)
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,9 +29,14 @@ const OwnerShopEditPage = () => {
     defaultValues: DEFAULT_SHOP_FORM_VALUES,
   })
 
+  const initializedShopId = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (shop) methods.reset(shopToFormValues(shop))
-  }, [shop, methods])
+    if (shop && masterData && shop.id !== initializedShopId.current) {
+      initializedShopId.current = shop.id
+      methods.reset(shopToFormValues(shop))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shop, masterData])
 
   const onSubmit = (values: ShopFormValues) => {
     if (!id) return

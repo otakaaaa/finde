@@ -1,4 +1,4 @@
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, Controller } from 'react-hook-form'
 import { SectionLabel, Field, inputClass, selectClass } from '@/components/shop/ShopFormUI'
 import { cn } from '@/lib/utils'
 import type { ShopFormValues } from '@/components/shop/form/shopFormSchema'
@@ -19,7 +19,7 @@ export const AddressSection = ({
   cityRequired = false,
   animationDelay = '40ms',
 }: AddressSectionProps) => {
-  const { register, watch, formState: { errors } } = useFormContext<ShopFormValues>()
+  const { register, watch, control, formState: { errors } } = useFormContext<ShopFormValues>()
   const watchedPrefectureId = watch('prefectureId')
   const citiesForPrefecture = cities.filter((c) => c.prefectureId === watchedPrefectureId)
 
@@ -40,16 +40,25 @@ export const AddressSection = ({
             </select>
           </Field>
           <Field label="市区町村" optional={!cityRequired} error={errors.cityId?.message}>
-            <select
-              className={cn(selectClass, errors.cityId && 'border-red-400')}
-              disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
-              {...register('cityId', { valueAsNumber: true })}
-            >
-              <option value="">選択してください</option>
-              {citiesForPrefecture.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <Controller
+              name="cityId"
+              control={control}
+              render={({ field }) => (
+                <select
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  className={cn(selectClass, errors.cityId && 'border-red-400')}
+                  disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
+                >
+                  <option value="">選択してください</option>
+                  {citiesForPrefecture.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              )}
+            />
           </Field>
         </div>
         <Field label="町名・番地・建物名" optional>
