@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,14 +10,15 @@ import { useWish, useUpdateWish, useDeleteWish } from '@/hooks/useWishes'
 import { BrandSearchInput } from '@/components/wish/BrandSearchInput'
 import { useSizes } from '@/hooks/useSizes'
 import { cn } from '@/lib/utils'
-import type { Area, PriceRange, ItemCategory, ItemType, SizeGroup } from '@/types'
+import type { PriceRange, ItemCategory, ItemType, SizeGroup } from '@/types'
 
 const wishSchema = z.object({
   categoryId: z.number().default(1),
   itemCategoryId: z.number().optional(),
   itemTypeId: z.number().optional(),
   priceRangeId: z.number({ required_error: '価格帯を選択してください' }),
-  areaId: z.number({ required_error: 'エリアを選択してください' }),
+  prefectureId: z.number({ required_error: '都道府県を選択してください' }),
+  cityId: z.number({ required_error: '市区町村を選択してください' }),
   sizeId: z.number().optional(),
   note: z.string().max(500, '500文字以内で入力してください').optional(),
   tags: z.array(z.string()).optional(),
@@ -114,13 +115,15 @@ const WishEditPage = () => {
   const { data: masterData } = useQuery({
     queryKey: ['wish-master-data'],
     queryFn: async () => {
-      const [areas, priceRanges, itemCategories] = await Promise.all([
-        supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{ data: Area[] | null }>,
+      const [prefectures, cities, priceRanges, itemCategories] = await Promise.all([
+        supabase.from('prefectures').select('id, name').order('id') as unknown as Promise<{ data: { id: number; name: string }[] | null }>,
+        supabase.from('cities').select('id, prefecture_id, name').order('id') as unknown as Promise<{ data: { id: number; prefecture_id: number; name: string }[] | null }>,
         supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{ data: { id: number; label: string; min_price: number | null; max_price: number | null }[] | null }>,
         supabase.from('item_categories').select('id, code, name, order, size_group').order('order') as unknown as Promise<{ data: ({ id: number; code: string; name: string; order: number; size_group: string })[] | null }>,
       ])
       return {
-        areas: areas.data ?? [],
+        prefectures: prefectures.data ?? [],
+        cities: (cities.data ?? []).map((c) => ({ id: c.id, prefectureId: c.prefecture_id, name: c.name })),
         priceRanges: (priceRanges.data ?? []).map((p) => ({ id: p.id, label: p.label, minPrice: p.min_price, maxPrice: p.max_price })) as PriceRange[],
         itemCategories: (itemCategories.data ?? []).map((c) => ({ id: c.id, code: c.code, name: c.name, order: c.order, sizeGroup: c.size_group as SizeGroup })) as ItemCategory[],
       }
@@ -133,34 +136,34 @@ const WishEditPage = () => {
     defaultValues: { categoryId: 1, isPublic: true, notifyEmail: true, tags: [] },
   })
 
-  // wish がロードされたらフォームにセット
-  const wishLoaded = !!wish
-  useQuery({
-    queryKey: ['wish-form-reset', wish?.id],
-    queryFn: () => {
+  const initializedWishId = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (wish && masterData && wish.id !== initializedWishId.current) {
+      initializedWishId.current = wish.id
       reset({
-        categoryId: wish!.category.id,
-        itemCategoryId: wish!.itemCategory?.id,
-        itemTypeId: wish!.itemType?.id,
-        priceRangeId: wish!.priceRange.id,
-        areaId: wish!.area.id,
-        sizeId: wish!.sizeId ?? undefined,
-        note: wish!.note ?? undefined,
-        tags: wish!.tags,
-        isPublic: wish!.isPublic,
-        notifyEmail: wish!.notifyEmail,
-        brandId: wish!.brandId ?? undefined,
+        categoryId: wish.category.id,
+        itemCategoryId: wish.itemCategory?.id,
+        itemTypeId: wish.itemType?.id,
+        priceRangeId: wish.priceRange.id,
+        prefectureId: wish.prefectureId,
+        cityId: wish.cityId ?? undefined,
+        sizeId: wish.sizeId ?? undefined,
+        note: wish.note ?? undefined,
+        tags: wish.tags,
+        isPublic: wish.isPublic,
+        notifyEmail: wish.notifyEmail,
+        brandId: wish.brandId ?? undefined,
       })
-      return null
-    },
-    enabled: wishLoaded,
-    staleTime: Infinity,
-  })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wish, masterData])
 
   const watchedItemCategoryId = watch('itemCategoryId')
   const watchedItemTypeId = watch('itemTypeId')
   const watchedSizeId = watch('sizeId')
   const watchedIsPublic = watch('isPublic')
+  const watchedPrefectureId = watch('prefectureId')
+  const citiesForPrefecture = (masterData?.cities ?? []).filter((c) => c.prefectureId === watchedPrefectureId)
 
   const { data: sizes } = useSizes()
   const selectedCategoryObj = masterData?.itemCategories.find((c) => c.id === watchedItemCategoryId)
@@ -363,16 +366,47 @@ const WishEditPage = () => {
             {/* ── 04 エリア & 価格帯 ───────────────────── */}
             <section>
               <SectionLabel num="04" title="エリア & 価格帯" required />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">エリア</label>
-                  <select className={cn(selectClass, errors.areaId && 'border-red-400')} {...register('areaId', { valueAsNumber: true })}>
-                    <option value="">選択</option>
-                    {masterData?.areas.map((area) => <option key={area.id} value={area.id}>{area.city}</option>)}
-                  </select>
-                  {errors.areaId && <p className="mt-1 text-[10px] font-medium text-red-500">{errors.areaId.message}</p>}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">都道府県</label>
+                    <select
+                      className={cn(selectClass, errors.prefectureId && 'border-red-400')}
+                      {...register('prefectureId', { valueAsNumber: true, onChange: () => setValue('cityId', undefined) })}
+                    >
+                      <option value="">選択してください</option>
+                      {(masterData?.prefectures ?? []).map((pref) => (
+                        <option key={pref.id} value={pref.id}>{pref.name}</option>
+                      ))}
+                    </select>
+                    {errors.prefectureId && <p className="mt-1 text-[10px] font-medium text-red-500">{errors.prefectureId.message}</p>}
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                      市区町村
+                    </label>
+                    <Controller
+                      name="cityId"
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          className={cn(selectClass, errors.cityId && 'border-red-400')}
+                          disabled={!watchedPrefectureId || citiesForPrefecture.length === 0}
+                        >
+                          <option value="">選択してください</option>
+                          {citiesForPrefecture.map((c) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    {errors.cityId && <p className="mt-1 text-[10px] font-medium text-red-500">{errors.cityId.message}</p>}
+                  </div>
                 </div>
-
                 <div>
                   <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">価格帯</label>
                   <select className={cn(selectClass, errors.priceRangeId && 'border-red-400')} {...register('priceRangeId', { valueAsNumber: true })}>

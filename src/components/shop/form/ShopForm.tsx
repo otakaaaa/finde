@@ -126,6 +126,7 @@ export const ShopForm = ({
                   <PriceRangeSection
                     num={s03}
                     priceRanges={masterData?.priceRanges ?? []}
+                    priceRangeRequired
                     animationDelay="60ms"
                   />
 

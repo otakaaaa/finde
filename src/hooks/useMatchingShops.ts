@@ -7,7 +7,7 @@ interface MatchShopRow {
   name: string
   review_count: number
   average_rating: number | null
-  area_id: number | null
+  city_id: number | null
   price_range_id: number | null
   areas: { id: number; prefecture: string; city: string; slug: string } | null
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
@@ -20,15 +20,6 @@ const toShopPriceRange = (row: MatchShopRow['price_ranges']): PriceRange | null 
     : null
 
 const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; tier2: MatchedShop[] }> => {
-  // 都道府県内の area_id 一覧を取得（エリアは必須フィルタ）
-  const { data: areaData } = await supabase
-    .from('areas')
-    .select('id')
-    .eq('prefecture', wish.area.prefecture) as unknown as { data: { id: number }[] | null }
-
-  const prefAreaIds = areaData?.map((a) => a.id) ?? []
-  if (prefAreaIds.length === 0) return { tier1: [], tier2: [] }
-
   // アイテムタイプ・アイテムカテゴリ・ブランド一致の shop_id をまとめて取得
   const [itemTypeResult, itemCategoryResult, brandResult] = await Promise.all([
     wish.itemType
@@ -62,13 +53,13 @@ const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; t
     .from('shops')
     .select(`
       id, name, review_count, average_rating,
-      area_id, price_range_id,
+      city_id, price_range_id,
       areas ( id, prefecture, city, slug ),
       price_ranges ( id, label, min_price, max_price ),
       shop_photos ( storage_path, order )
     `)
     .eq('status', 'public')
-    .in('area_id', prefAreaIds)
+    .eq('prefecture_id', wish.prefectureId)
     .limit(100) as unknown as { data: MatchShopRow[] | null; error: { message: string } | null }
 
   if (error) throw new Error(error.message)
@@ -82,7 +73,7 @@ const fetchMatchingShops = async (wish: Wish): Promise<{ tier1: MatchedShop[]; t
     if (brandShopIds?.has(row.id))        score += 3
     if (itemCategoryShopIds?.has(row.id)) score += 2
     if (row.price_range_id === wish.priceRange.id) score += 2
-    if (row.area_id === wish.area.id)     score += 1
+    if (wish.cityId != null && row.city_id === wish.cityId) score += 1
     return { row, score }
   })
 

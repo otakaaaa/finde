@@ -185,7 +185,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             {wish.priceRange.label}
           </span>
           <span className="text-xs font-semibold text-muted-foreground">
-            {wish.area.city}
+            {wish.city?.name ?? wish.prefecture?.name ?? ''}
           </span>
           {wish.size && (
             <span className="text-xs text-muted-foreground">/ {wish.size.label}</span>

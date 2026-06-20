@@ -18,11 +18,11 @@ const ShopSkeleton = () => (
 interface TierSectionProps {
   label: string
   shops: MatchedShop[]
-  wishAreaId: number
+  wishPrefectureId: number
   wishPriceRangeId: number
 }
 
-const TierSection = ({ label, shops, wishAreaId, wishPriceRangeId }: TierSectionProps) => {
+const TierSection = ({ label, shops, wishPrefectureId, wishPriceRangeId }: TierSectionProps) => {
   if (shops.length === 0) return null
 
   const displayed = shops.slice(0, MAX_DISPLAY)
@@ -40,7 +40,7 @@ const TierSection = ({ label, shops, wishAreaId, wishPriceRangeId }: TierSection
       </div>
       {overflow > 0 && (
         <Link
-          to={`/shops?areaId=${wishAreaId}&priceRangeId=${wishPriceRangeId}`}
+          to={`/shops?prefectureId=${wishPrefectureId}&priceRangeId=${wishPriceRangeId}`}
           className="mt-2 block text-right text-[10px] font-bold text-primary underline-offset-2 hover:underline"
         >
           他{overflow}件を見る →
@@ -91,13 +91,13 @@ export const WishMatchPanel = ({ wish }: WishMatchPanelProps) => {
       <TierSection
         label="完全マッチ"
         shops={data?.tier1 ?? []}
-        wishAreaId={wish.area.id}
+        wishPrefectureId={wish.prefectureId}
         wishPriceRangeId={wish.priceRange.id}
       />
       <TierSection
-        label={`${wish.area.prefecture}の候補`}
+        label={`${wish.prefecture?.name ?? ''}の候補`}
         shops={data?.tier2 ?? []}
-        wishAreaId={wish.area.id}
+        wishPrefectureId={wish.prefectureId}
         wishPriceRangeId={wish.priceRange.id}
       />
     </div>

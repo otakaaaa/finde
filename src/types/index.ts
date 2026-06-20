@@ -221,7 +221,10 @@ export interface Wish {
   itemCategory: ItemCategory | null
   itemType: ItemType | null
   priceRange: PriceRange
-  area: Area
+  prefectureId: number
+  prefecture: { id: number; name: string } | null
+  cityId: number | null
+  city: { id: number; name: string } | null
   sizeId: number | null
   size: Size | null
   tags: string[]
@@ -241,7 +244,8 @@ export interface WishFormValues {
   itemCategoryId?: number
   itemTypeId?: number
   priceRangeId: number
-  areaId: number
+  prefectureId: number
+  cityId: number
   sizeId?: number
   tags?: string[]
   note?: string

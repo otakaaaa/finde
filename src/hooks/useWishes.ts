@@ -18,9 +18,12 @@ interface WishRow {
   brand_id: string | null
   created_at: string
   updated_at: string
+  prefecture_id: number
+  city_id: number | null
   categories: { id: number; code: string; name: string }
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null }
-  areas: { id: number; prefecture: string; city: string; slug: string }
+  prefectures: { id: number; name: string } | null
+  cities: { id: number; name: string } | null
   brands: { id: string; name: string } | null
   item_categories: { id: number; code: string; name: string; order: number; size_group: string } | null
   item_types: { id: number; item_category_id: number; code: string; name: string; order: number } | null
@@ -39,7 +42,10 @@ const mapWishRow = (row: WishRow): Wish => ({
     ? { id: row.item_types.id, itemCategoryId: row.item_types.item_category_id, code: row.item_types.code, name: row.item_types.name, order: row.item_types.order }
     : null,
   priceRange: { id: row.price_ranges.id, label: row.price_ranges.label, minPrice: row.price_ranges.min_price, maxPrice: row.price_ranges.max_price },
-  area: { id: row.areas.id, prefecture: row.areas.prefecture, city: row.areas.city, slug: row.areas.slug },
+  prefectureId: row.prefecture_id,
+  prefecture: row.prefectures ?? null,
+  cityId: row.city_id,
+  city: row.cities ?? null,
   sizeId: row.size_id,
   size: row.sizes ? { id: row.sizes.id, code: row.sizes.code, label: row.sizes.label, sizeGroup: row.sizes.size_group as SizeGroup, order: row.sizes.order } : null,
   tags: row.tags ?? [],
@@ -58,9 +64,11 @@ const WISH_SELECT = `
   size_id, tags,
   note, is_public, notify_email, status, brand_id,
   created_at, updated_at,
+  prefecture_id, city_id,
   categories ( id, code, name ),
   price_ranges ( id, label, min_price, max_price ),
-  areas ( id, prefecture, city, slug ),
+  prefectures ( id, name ),
+  cities ( id, name ),
   brands ( id, name ),
   item_categories ( id, code, name, order, size_group ),
   item_types ( id, item_category_id, code, name, order ),
@@ -107,7 +115,8 @@ export const useCreateWish = () => {
         item_category_id: values.itemCategoryId ?? null,
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
-        area_id: values.areaId,
+        prefecture_id: values.prefectureId,
+        city_id: values.cityId,
         size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
         note: values.note ?? null,
@@ -160,7 +169,8 @@ export const useUpdateWish = () => {
         item_category_id: values.itemCategoryId ?? null,
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
-        area_id: values.areaId,
+        prefecture_id: values.prefectureId,
+        city_id: values.cityId,
         size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
         note: values.note ?? null,
