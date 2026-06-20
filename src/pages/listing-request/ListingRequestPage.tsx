@@ -341,7 +341,6 @@ const ListingRequestPage = () => {
                     num="02"
                     prefectures={masterData?.prefectures ?? []}
                     cities={masterData?.cities ?? []}
-                    cityRequired
                     animationDelay="40ms"
                   />
 
