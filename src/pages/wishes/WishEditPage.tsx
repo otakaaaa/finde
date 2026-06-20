@@ -372,7 +372,7 @@ const WishEditPage = () => {
                     <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">都道府県</label>
                     <select
                       className={cn(selectClass, errors.prefectureId && 'border-red-400')}
-                      {...register('prefectureId', { valueAsNumber: true, onChange: () => setValue('cityId', undefined) })}
+                      {...register('prefectureId', { valueAsNumber: true, onChange: () => setValue('cityId', undefined as unknown as number) })}
                     >
                       <option value="">選択してください</option>
                       {(masterData?.prefectures ?? []).map((pref) => (

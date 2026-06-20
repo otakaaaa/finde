@@ -316,7 +316,7 @@ const WishNewPage = () => {
                     </label>
                     <select
                       className={cn(selectClass, errors.prefectureId && 'border-red-400')}
-                      {...register('prefectureId', { valueAsNumber: true, onChange: () => setValue('cityId', undefined) })}
+                      {...register('prefectureId', { valueAsNumber: true, onChange: () => setValue('cityId', undefined as unknown as number) })}
                     >
                       <option value="">選択してください</option>
                       {(masterData?.prefectures ?? []).map((pref) => (
