@@ -108,7 +108,7 @@ describe('hasBannerPlacement', () => {
   })
 
   it('複数指定のいずれも判定できる', () => {
-    const banner = { ...baseBanner, placements: ['shop_detail', 'favorite_button'] as const }
+    const banner: ShopBanner = { ...baseBanner, placements: ['shop_detail', 'favorite_button'] }
     expect(hasBannerPlacement(banner, 'favorite_button')).toBe(true)
     expect(hasBannerPlacement(banner, 'shop_detail')).toBe(true)
   })
