@@ -18,6 +18,7 @@ import { useShopItems } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import { useRecordShopView, useRecordShopAction } from '@/hooks/useShopEvent'
+import { ShopBannerCarousel } from '@/components/shop/ShopBannerCarousel'
 import { resolveShopViewSource } from '@/lib/shopViewSource'
 import type { BusinessHours } from '@/types'
 
@@ -184,6 +185,8 @@ const ShopDetailPage = () => {
         path={`/shops/${shop.id}`}
         image={seoImage}
       />
+      {/* ── 店舗専用バナー ────────────────────────────── */}
+      <ShopBannerCarousel shopId={shop.id} />
       {/* ── Hero Gallery ──────────────────────────────── */}
       <div className="relative overflow-hidden bg-primary">
         {/* Back nav */}

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
-  ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3,
+  ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3, Image,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
@@ -321,6 +321,14 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   title="アクセス解析"
                   desc="店舗詳細の閲覧数(PV/UU)・流入元・人気アイテムを確認する"
                   animDelay={220}
+                />
+                <ActionCard
+                  to={`/owner/shops/${shop.id}/banners`}
+                  icon={<Image className="h-4 w-4" />}
+                  index="06"
+                  title="店舗バナーを管理"
+                  desc="店舗詳細ページ上部に表示する専用バナーを登録・掲載する"
+                  animDelay={275}
                 />
               </div>
             </div>
