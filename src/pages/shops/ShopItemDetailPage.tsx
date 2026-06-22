@@ -4,6 +4,7 @@ import { ChevronLeft, Store, Tag } from 'lucide-react'
 import { useShopItem } from '@/hooks/useShopItems'
 import { useShop } from '@/hooks/useShop'
 import { useSizes } from '@/hooks/useSizes'
+import { useRecordShopItemView } from '@/hooks/useShopEvent'
 import { getR2Url } from '@/lib/r2'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,9 @@ const ShopItemDetailPage = () => {
   const { data: shop } = useShop(shopId ?? '')
   const { data: sizes } = useSizes()
   const [activePhoto, setActivePhoto] = useState(0)
+
+  // アクセス解析: アイテム閲覧を記録
+  useRecordShopItemView(shopId ?? '', itemId ?? '')
 
   if (isLoading) {
     return (

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router'
+import { useState, useMemo } from 'react'
+import { useParams, Link, useNavigate, useLocation } from 'react-router'
 import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight, Store } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
@@ -17,6 +17,8 @@ import { SharePostCard } from '@/components/share/SharePostCard'
 import { useShopItems } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
+import { useRecordShopView, useRecordShopAction } from '@/hooks/useShopEvent'
+import { resolveShopViewSource } from '@/lib/shopViewSource'
 import type { BusinessHours } from '@/types'
 
 import { getR2Url } from '@/lib/r2'
@@ -100,7 +102,13 @@ const StarRow = ({
 const ShopDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
+
+  // アクセス解析: 流入元を判定し閲覧(PV)を記録
+  const viewSource = useMemo(() => resolveShopViewSource(location.state), [location.state])
+  useRecordShopView(id ?? '', viewSource)
+  const recordAction = useRecordShopAction(id ?? '')
   const { data: shop, isLoading, isError } = useShop(id ?? '')
   const { data: shopHasOwner } = useShopHasOwner(id ?? '')
   const { data: masterData } = useShopMasterData()
@@ -396,6 +404,7 @@ const ShopDetailPage = () => {
                   {shop.phone && (
                     <a
                       href={`tel:${shop.phone}`}
+                      onClick={() => recordAction('phone')}
                       className="flex items-center gap-2 px-5 py-3.5 text-xs font-bold transition-colors hover:bg-muted"
                     >
                       <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -403,22 +412,22 @@ const ShopDetailPage = () => {
                     </a>
                   )}
                   {shop.websiteUrl && (
-                    <ExternalLink href={shop.websiteUrl} icon={<Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                    <ExternalLink href={shop.websiteUrl} onClick={() => recordAction('website')} icon={<Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       公式サイト
                     </ExternalLink>
                   )}
                   {shop.instagramUrl && (
-                    <ExternalLink href={shop.instagramUrl} icon={<Instagram className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                    <ExternalLink href={shop.instagramUrl} onClick={() => recordAction('instagram')} icon={<Instagram className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       Instagram
                     </ExternalLink>
                   )}
                   {shop.twitterUrl && (
-                    <ExternalLink href={shop.twitterUrl} icon={<XLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                    <ExternalLink href={shop.twitterUrl} onClick={() => recordAction('x')} icon={<XLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       X
                     </ExternalLink>
                   )}
                   {shop.tiktokUrl && (
-                    <ExternalLink href={shop.tiktokUrl} icon={<TikTokLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
+                    <ExternalLink href={shop.tiktokUrl} onClick={() => recordAction('tiktok')} icon={<TikTokLogo className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}>
                       TikTok
                     </ExternalLink>
                   )}
@@ -633,15 +642,18 @@ const ExternalLink = ({
   href,
   icon,
   children,
+  onClick,
 }: {
   href: string
   icon: React.ReactNode
   children: React.ReactNode
+  onClick?: () => void
 }) => (
   <a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
+    onClick={onClick}
     className="group flex items-center justify-between px-5 py-3.5 text-xs font-bold transition-colors hover:bg-muted"
   >
     <span className="flex items-center gap-2">

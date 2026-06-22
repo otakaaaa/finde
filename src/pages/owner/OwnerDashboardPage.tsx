@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
-  ArrowUpRight, Package, TrendingUp, AlertCircle,
+  ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
@@ -313,6 +313,14 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   title="ウィッシュ分析"
                   desc="同エリアのウィッシュ需要を確認してマッチング精度を上げる"
                   animDelay={165}
+                />
+                <ActionCard
+                  to={`/owner/shops/${shop.id}/analytics`}
+                  icon={<BarChart3 className="h-4 w-4" />}
+                  index="05"
+                  title="アクセス解析"
+                  desc="店舗詳細の閲覧数(PV/UU)・流入元・人気アイテムを確認する"
+                  animDelay={220}
                 />
               </div>
             </div>
