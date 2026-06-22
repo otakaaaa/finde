@@ -94,6 +94,7 @@ const ShopItemNewPage = () => {
   const [name, setName] = useState('')
   const [nameManuallyEdited, setNameManuallyEdited] = useState(false)
   const [description, setDescription] = useState('')
+  const [price, setPrice] = useState<string>('')
   const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([])
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<Set<number>>(new Set())
   const [materialPercentages, setMaterialPercentages] = useState<Map<number, number | null>>(new Map())
@@ -229,6 +230,7 @@ const ShopItemNewPage = () => {
           brandId: selectedBrand?.id,
           name: name.trim(),
           description: description.trim() || undefined,
+          price: price.trim() === '' ? undefined : Number(price),
           sizeIds: selectedSizeIds,
           materialTypeIds: Array.from(selectedMaterialIds),
           materialPercentages: Object.fromEntries(materialPercentages.entries()),
@@ -413,6 +415,23 @@ const ShopItemNewPage = () => {
               rows={4}
               className="w-full border border-border bg-white px-4 py-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
             />
+          </section>
+
+          {/* ── 05b Price ────────────────────────────── */}
+          <section>
+            <SectionLabel index="05" label="価格" note="任意（ウィッシュの価格帯マッチに使用）" />
+            <div className="relative w-full sm:w-1/2">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">¥</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="例: 12000"
+                className="w-full border border-border bg-white py-3 pl-8 pr-4 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              />
+            </div>
           </section>
 
           {/* ── 06 Sizes ─────────────────────────────── */}

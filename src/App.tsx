@@ -10,6 +10,7 @@ import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
 const TopPage = lazy(() => import('@/pages/top/TopPage'))
 const ShopsPage = lazy(() => import('@/pages/shops/ShopsPage'))
 const ShopDetailPage = lazy(() => import('@/pages/shops/ShopDetailPage'))
+const ShopItemDetailPage = lazy(() => import('@/pages/shops/ShopItemDetailPage'))
 
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
@@ -116,6 +117,7 @@ const router = createBrowserRouter([
       { index: true, element: <TopPage /> },
       { path: 'shops', element: <ShopsPage /> },
       { path: 'shops/:id', element: <ShopDetailPage /> },
+      { path: 'shops/:shopId/items/:itemId', element: <ShopItemDetailPage /> },
       { path: 'brands', element: <BrandSearchPage /> },
       { path: 'brands/:id', element: <BrandDetailPage /> },
       { path: 'contact', element: <ContactPage /> },

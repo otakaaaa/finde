@@ -217,7 +217,6 @@ export interface Wish {
   id: string
   userId: string
   type: WishType
-  category: Category
   itemCategory: ItemCategory | null
   itemType: ItemType | null
   priceRange: PriceRange
@@ -240,7 +239,6 @@ export interface Wish {
 
 export interface WishFormValues {
   type: WishType
-  categoryId: number
   itemCategoryId?: number
   itemTypeId?: number
   priceRangeId: number
@@ -275,6 +273,7 @@ export interface ShopItem {
   brand: Pick<Brand, 'id' | 'name'> | null
   name: string
   description: string | null
+  price: number | null
   sizeIds: number[]
   isAvailable: boolean
   materials: { id: number; name: string; percentage: number | null }[]
@@ -289,26 +288,22 @@ export interface ShopItemFormValues {
   brandId?: string
   name: string
   description?: string
+  price?: number
   sizeIds: number[]
   materialTypeIds: number[]
   materialPercentages?: Record<number, number | null>
   isAvailable: boolean
 }
 
-export interface MatchShop {
+export interface MatchItem {
   id: string
+  shopId: string
+  shopName: string
   name: string
-  area: Area | null
-  priceRange: PriceRange | null
-  averageRating: number | null
-  reviewCount: number
+  brandName: string | null
+  itemTypeName: string | null
+  price: number | null
   coverPhotoPath: string | null
-}
-
-export interface MatchedShop {
-  shop: MatchShop
-  tier: 1 | 2
-  hasBrandMatch: boolean
 }
 
 // ============================================================

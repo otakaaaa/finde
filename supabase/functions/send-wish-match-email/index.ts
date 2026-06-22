@@ -7,30 +7,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface ShopRow {
+interface ItemRow {
+  id: string
+  shop_id: string
   name: string
-  area_id: number | null
-  price_range_id: number | null
-  areas: { prefecture: string; city: string } | null
-  price_ranges: { label: string; min_price: number | null; max_price: number | null } | null
-  shop_categories: { categories: { name: string } | null }[]
+  price: number | null
+  size_ids: number[]
+  item_type_id: number | null
+  brand_id: string | null
+  is_available: boolean
+  item_types: { id: number; name: string; item_category_id: number } | null
+  brands: { name: string } | null
+  shops: { name: string; status: string; prefecture_id: number | null; created_by: string | null; prefectures: { name: string } | null } | null
 }
 
-interface WishUserRow {
+interface WishRow {
   user_id: string
+  item_type_id: number | null
+  item_category_id: number | null
+  brand_id: string | null
+  size_id: number | null
+  price_range_id: number
+  price_ranges: { min_price: number | null; max_price: number | null } | null
 }
 
 function buildEmailHtml(params: {
+  itemName: string
   shopName: string
   prefecture: string
-  city: string
-  priceLabel: string
-  categoryNames: string[]
-  shopUrl: string
+  brandName: string
+  priceText: string
+  sizeText: string
+  itemUrl: string
   wishListUrl: string
 }): string {
-  const { shopName, prefecture, city, priceLabel, categoryNames, shopUrl, wishListUrl } = params
-  const categoryText = categoryNames.join(' / ')
+  const { itemName, shopName, prefecture, brandName, priceText, sizeText, itemUrl, wishListUrl } = params
+
+  const detailRow = (label: string, value: string) =>
+    value
+      ? `<td style="padding:0 20px 0 0;vertical-align:top;">
+           <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:#9ca3af;">${label}</p>
+           <p style="margin:0;font-size:13px;font-weight:600;color:#374151;">${value}</p>
+         </td>`
+      : ''
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -52,29 +71,21 @@ function buildEmailHtml(params: {
         <!-- Body -->
         <tr><td style="background:#fff;padding:48px 40px;">
           <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.45em;text-transform:uppercase;color:#9ca3af;">— Wish Match</p>
-          <h1 style="margin:0 0 32px;font-size:22px;font-weight:900;letter-spacing:-0.03em;color:#1c1d2b;line-height:1.2;">ウィッシュリストに<br>マッチする店舗が<br>見つかりました</h1>
+          <h1 style="margin:0 0 32px;font-size:22px;font-weight:900;letter-spacing:-0.03em;color:#1c1d2b;line-height:1.2;">ウィッシュにマッチする<br>アイテムが見つかりました</h1>
           <div style="width:32px;height:2px;background:#1c1d2b;margin-bottom:32px;"></div>
 
-          <!-- Shop detail box -->
+          <!-- Item detail box -->
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-left:3px solid #1c1d2b;margin-bottom:32px;">
             <tr><td style="padding:24px;">
-              <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.4em;text-transform:uppercase;color:#9ca3af;">Shop</p>
-              <p style="margin:0 0 20px;font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#1c1d2b;">${shopName}</p>
+              <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.4em;text-transform:uppercase;color:#9ca3af;">Item</p>
+              <p style="margin:0 0 4px;font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#1c1d2b;">${itemName}</p>
+              <p style="margin:0 0 20px;font-size:12px;font-weight:600;color:#6b7280;">${shopName}${prefecture ? ` ・ ${prefecture}` : ''}</p>
 
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding:0 20px 0 0;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:#9ca3af;">エリア</p>
-                    <p style="margin:0;font-size:13px;font-weight:600;color:#374151;">${prefecture} ${city}</p>
-                  </td>
-                  <td style="padding:0 20px 0 0;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:#9ca3af;">価格帯</p>
-                    <p style="margin:0;font-size:13px;font-weight:600;color:#374151;">${priceLabel}</p>
-                  </td>
-                  ${categoryText ? `<td style="vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:9px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:#9ca3af;">カテゴリ</p>
-                    <p style="margin:0;font-size:13px;font-weight:600;color:#374151;">${categoryText}</p>
-                  </td>` : ''}
+                  ${detailRow('ブランド', brandName)}
+                  ${detailRow('価格', priceText)}
+                  ${detailRow('サイズ', sizeText)}
                 </tr>
               </table>
             </td></tr>
@@ -84,8 +95,8 @@ function buildEmailHtml(params: {
           <table cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding-right:12px;">
-                <a href="${shopUrl}" style="display:inline-block;background:#1c1d2b;color:#fff;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;text-decoration:none;padding:14px 28px;">
-                  店舗を見る →
+                <a href="${itemUrl}" style="display:inline-block;background:#1c1d2b;color:#fff;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;text-decoration:none;padding:14px 28px;">
+                  アイテムを見る →
                 </a>
               </td>
               <td>
@@ -131,108 +142,75 @@ serve(async (req) => {
 
     if (!resendApiKey) throw new Error('RESEND_API_KEY is not set')
 
-    const { shop_id } = await req.json() as { shop_id: string }
-    if (!shop_id) throw new Error('shop_id is required')
+    const { item_id } = await req.json() as { item_id: string }
+    if (!item_id) throw new Error('item_id is required')
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // 店舗情報を取得
-    const { data: shop, error: shopErr } = await supabase
-      .from('shops')
+    // アイテム情報を取得
+    const { data: item, error: itemErr } = await supabase
+      .from('shop_items')
       .select(`
-        name, area_id, price_range_id,
-        areas ( prefecture, city ),
-        price_ranges ( label, min_price, max_price ),
-        shop_categories ( categories ( name ) )
+        id, shop_id, name, price, size_ids, item_type_id, brand_id, is_available,
+        item_types ( id, name, item_category_id ),
+        brands ( name ),
+        shops ( name, status, prefecture_id, created_by, prefectures ( name ) )
       `)
-      .eq('id', shop_id)
-      .single() as { data: ShopRow | null; error: { message: string } | null }
+      .eq('id', item_id)
+      .single() as { data: ItemRow | null; error: { message: string } | null }
 
-    if (shopErr || !shop) throw new Error(shopErr?.message ?? 'Shop not found')
+    if (itemErr || !item) throw new Error(itemErr?.message ?? 'Item not found')
 
-    const prefecture     = shop.areas?.prefecture ?? ''
-    const city           = shop.areas?.city ?? ''
-    const priceLabel     = shop.price_ranges?.label ?? ''
-    const shopPriceMin   = shop.price_ranges?.min_price ?? 0
-    const shopPriceMax   = shop.price_ranges?.max_price ?? 2147483647
-    const categoryNames  = shop.shop_categories
-      .map((sc) => sc.categories?.name)
-      .filter((n): n is string => !!n)
-    const categoryIds    = shop.shop_categories.map((_, i) => i) // placeholder
-
-    // notify_email = true のウィッシュを持つユーザーを取得
-    // （トリガーと同じ条件: カテゴリ × 都道府県 × 価格帯オーバーラップ × active）
-    const { data: shopCats } = await supabase
-      .from('shop_categories')
-      .select('category_id')
-      .eq('shop_id', shop_id) as { data: { category_id: number }[] | null }
-
-    const catIds = shopCats?.map((c) => c.category_id) ?? []
-    if (catIds.length === 0) {
+    const shop = item.shops
+    if (!shop || shop.status !== 'public' || !item.is_available || shop.prefecture_id == null) {
       return new Response(JSON.stringify({ ok: true, sent: 0 }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // 都道府県内の area_id 一覧
-    const { data: areaRows } = await supabase
-      .from('areas')
-      .select('id')
-      .eq('prefecture', prefecture) as { data: { id: number }[] | null }
+    const itemCategoryId = item.item_types?.item_category_id ?? null
 
-    const prefAreaIds = areaRows?.map((a) => a.id) ?? []
-    if (prefAreaIds.length === 0) {
-      return new Response(JSON.stringify({ ok: true, sent: 0 }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // 価格帯オーバーラップするウィッシュユーザーを取得
-    const { data: wishUsers } = await supabase
+    // notify_email = true のマッチするウィッシュを取得
+    // 種別: item_type 一致 OR（item_type未指定 AND item_category 一致）OR（両 null）
+    let wishQuery = supabase
       .from('wishes')
-      .select('user_id')
-      .in('category_id', catIds)
-      .in('area_id', prefAreaIds)
+      .select('user_id, item_type_id, item_category_id, brand_id, size_id, price_range_id, price_ranges ( min_price, max_price )')
       .eq('status', 'active')
-      .eq('notify_email', true) as { data: WishUserRow[] | null }
+      .eq('notify_email', true)
+      .eq('prefecture_id', shop.prefecture_id)
 
-    if (!wishUsers || wishUsers.length === 0) {
-      return new Response(JSON.stringify({ ok: true, sent: 0 }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    if (shop.created_by) wishQuery = wishQuery.neq('user_id', shop.created_by)
 
-    // 価格帯オーバーラップ確認はクライアントサイドで（Supabase はrange比較クエリが複雑なため）
-    const { data: wishPriceRows } = await supabase
-      .from('wishes')
-      .select('user_id, price_range_id, price_ranges(min_price, max_price)')
-      .in('user_id', wishUsers.map((w) => w.user_id))
-      .in('category_id', catIds)
-      .in('area_id', prefAreaIds)
-      .eq('status', 'active')
-      .eq('notify_email', true) as {
-        data: {
-          user_id: string
-          price_range_id: number
-          price_ranges: { min_price: number | null; max_price: number | null } | null
-        }[] | null
+    const { data: wishes } = await wishQuery as { data: WishRow[] | null }
+
+    const eligibleUserIds = new Set<string>()
+    for (const w of wishes ?? []) {
+      // 種別
+      const typeOk =
+        (w.item_type_id != null && w.item_type_id === item.item_type_id) ||
+        (w.item_type_id == null && w.item_category_id != null && w.item_category_id === itemCategoryId) ||
+        (w.item_type_id == null && w.item_category_id == null)
+      if (!typeOk) continue
+
+      // ブランド
+      if (w.brand_id != null && w.brand_id !== item.brand_id) continue
+
+      // サイズ
+      if (w.size_id != null && !item.size_ids.includes(w.size_id)) continue
+
+      // 価格（item.price が null ならスキップ）
+      if (item.price != null) {
+        const wMin = w.price_ranges?.min_price ?? 0
+        const wMax = w.price_ranges?.max_price ?? 2147483647
+        if (item.price < wMin || item.price > wMax) continue
       }
 
-    const eligibleUserIds = new Set<string>(
-      (wishPriceRows ?? [])
-        .filter((w) => {
-          const wMin = w.price_ranges?.min_price ?? 0
-          const wMax = w.price_ranges?.max_price ?? 2147483647
-          return wMin <= shopPriceMax && wMax >= shopPriceMin
-        })
-        .map((w) => w.user_id),
-    )
+      eligibleUserIds.add(w.user_id)
+    }
 
     if (eligibleUserIds.size === 0) {
       return new Response(JSON.stringify({ ok: true, sent: 0 }), {
@@ -241,11 +219,21 @@ serve(async (req) => {
       })
     }
 
-    // ユーザーのメールアドレスを取得してメール送信
-    let sentCount = 0
-    const shopUrl     = `${siteUrl}/shops/${shop_id}`
+    // サイズラベル（任意・表示用）
+    const { data: sizeRows } = await supabase
+      .from('sizes')
+      .select('id, label')
+      .in('id', item.size_ids.length > 0 ? item.size_ids : [-1]) as { data: { id: number; label: string }[] | null }
+
+    const sizeText  = (sizeRows ?? []).map((s) => s.label).join(' / ')
+    const brandName = item.brands?.name ?? ''
+    const priceText = item.price != null ? `¥${item.price.toLocaleString()}` : ''
+    const prefecture = shop.prefectures?.name ?? ''
+
+    const itemUrl     = `${siteUrl}/shops/${item.shop_id}/items/${item.id}`
     const wishListUrl = `${siteUrl}/wishes`
 
+    let sentCount = 0
     for (const userId of eligibleUserIds) {
       const { data: { user }, error: userErr } = await supabase.auth.admin.getUserById(userId)
       if (userErr || !user?.email) continue
@@ -259,14 +247,15 @@ serve(async (req) => {
         body: JSON.stringify({
           from:    fromEmail,
           to:      user.email,
-          subject: `【FINDE】ウィッシュリストにマッチする店舗が見つかりました`,
+          subject: `【FINDE】ウィッシュにマッチするアイテムが見つかりました`,
           html: buildEmailHtml({
+            itemName: item.name,
             shopName: shop.name,
             prefecture,
-            city,
-            priceLabel,
-            categoryNames,
-            shopUrl,
+            brandName,
+            priceText,
+            sizeText,
+            itemUrl,
             wishListUrl,
           }),
         }),

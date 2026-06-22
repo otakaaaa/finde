@@ -20,7 +20,6 @@ interface WishRow {
   updated_at: string
   prefecture_id: number
   city_id: number | null
-  categories: { id: number; code: string; name: string }
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null }
   prefectures: { id: number; name: string } | null
   cities: { id: number; name: string } | null
@@ -34,7 +33,6 @@ const mapWishRow = (row: WishRow): Wish => ({
   id: row.id,
   userId: row.user_id,
   type: row.type as Wish['type'],
-  category: { id: row.categories.id, code: row.categories.code as Wish['category']['code'], name: row.categories.name },
   itemCategory: row.item_categories
     ? { id: row.item_categories.id, code: row.item_categories.code, name: row.item_categories.name, order: row.item_categories.order, sizeGroup: row.item_categories.size_group as SizeGroup }
     : null,
@@ -65,7 +63,6 @@ const WISH_SELECT = `
   note, is_public, notify_email, status, brand_id,
   created_at, updated_at,
   prefecture_id, city_id,
-  categories ( id, code, name ),
   price_ranges ( id, label, min_price, max_price ),
   prefectures ( id, name ),
   cities ( id, name ),
@@ -111,7 +108,6 @@ export const useCreateWish = () => {
       const { error } = await supabase.from('wishes').insert({
         user_id: user.id,
         type: values.type,
-        category_id: values.categoryId,
         item_category_id: values.itemCategoryId ?? null,
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
@@ -165,7 +161,6 @@ export const useUpdateWish = () => {
     mutationFn: async ({ id, values }: { id: string; values: WishFormValues }) => {
       const { error } = await supabase.from('wishes').update({
         type: values.type,
-        category_id: values.categoryId,
         item_category_id: values.itemCategoryId ?? null,
         item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,

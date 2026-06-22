@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils'
 import type { PriceRange, ItemCategory, ItemType, SizeGroup } from '@/types'
 
 const wishSchema = z.object({
-  categoryId: z.number().default(1),
   itemCategoryId: z.number().optional(),
   itemTypeId: z.number().optional(),
   priceRangeId: z.number({ required_error: '価格帯を選択してください' }),
@@ -133,7 +132,7 @@ const WishEditPage = () => {
 
   const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm<WishFormSchema>({
     resolver: zodResolver(wishSchema),
-    defaultValues: { categoryId: 1, isPublic: true, notifyEmail: true, tags: [] },
+    defaultValues: { isPublic: true, notifyEmail: true, tags: [] },
   })
 
   const initializedWishId = useRef<string | undefined>(undefined)
@@ -141,7 +140,6 @@ const WishEditPage = () => {
     if (wish && masterData && wish.id !== initializedWishId.current) {
       initializedWishId.current = wish.id
       reset({
-        categoryId: wish.category.id,
         itemCategoryId: wish.itemCategory?.id,
         itemTypeId: wish.itemType?.id,
         priceRangeId: wish.priceRange.id,

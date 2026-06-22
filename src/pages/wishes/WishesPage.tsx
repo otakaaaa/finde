@@ -20,8 +20,8 @@ const getWishTypeBadge = (wish: Wish): string =>
 
 const getWishCategoryBadge = (wish: Wish): string | null => {
   if (wish.itemType) return wish.itemType.name
-  if (wish.itemCategory) return null  // itemCategory はステータスバッジで表示済み
-  return wish.category.name
+  // itemCategory はステータスバッジ（typeBadge）で表示済み
+  return null
 }
 
 
