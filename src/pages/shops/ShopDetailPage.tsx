@@ -14,6 +14,7 @@ import { ReviewCard } from '@/components/review/ReviewCard'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { useSharePostsByShop } from '@/hooks/useSharePosts'
 import { SharePostCard } from '@/components/share/SharePostCard'
+import { useShopItems } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import type { BusinessHours } from '@/types'
@@ -108,6 +109,8 @@ const ShopDetailPage = () => {
   const { data: reviews } = useReviews(id ?? '')
   const { data: myReview } = useMyReview(id ?? '')
   const { data: sharePosts } = useSharePostsByShop(id ?? '')
+  const { data: shopItems } = useShopItems(id ?? '')
+  const availableItems = (shopItems ?? []).filter((item) => item.isAvailable)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
 
@@ -451,6 +454,64 @@ const ShopDetailPage = () => {
             )}
           </aside>
         </div>
+
+        {/* ── 取り扱いアイテム ──────────────────────────── */}
+        {availableItems.length > 0 && (
+          <section className="mt-16 border-t border-border pt-12">
+            <div className="mb-8 flex items-end justify-between gap-4">
+              <div>
+                <SectionLabel>取り扱いアイテム</SectionLabel>
+                <p className="mt-1 font-headline text-2xl font-black leading-none">
+                  {availableItems.length}
+                  <span className="ml-1.5 text-base font-bold text-muted-foreground">点</span>
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {availableItems.map((item) => {
+                const coverPhoto = item.photos[0]
+                return (
+                  <Link
+                    key={item.id}
+                    to={`/shops/${shop.id}/items/${item.id}`}
+                    className="group border border-border bg-white transition-shadow hover:shadow-md"
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-muted">
+                      {coverPhoto ? (
+                        <img
+                          src={getR2Url('shop-items', coverPhoto.storagePath)}
+                          alt={item.name}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">
+                            No Image
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="px-3 py-2.5">
+                      <p className="font-headline text-[11px] font-black tracking-tight text-foreground/80 line-clamp-1">
+                        {item.name}
+                      </p>
+                      <div className="mt-0.5 flex items-center justify-between gap-2">
+                        {item.itemType && (
+                          <p className="text-[9px] text-muted-foreground/50 line-clamp-1">{item.itemType.name}</p>
+                        )}
+                        {item.price != null && (
+                          <p className="shrink-0 font-headline text-[11px] font-black tabular-nums text-foreground/70">
+                            ¥{item.price.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* ── シャレ活 ──────────────────────────────────── */}
         <section className="mt-16 border-t border-border pt-12">
