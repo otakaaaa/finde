@@ -1,5 +1,5 @@
 export type ContactStatus = 'open' | 'in_progress' | 'closed'
-export type ContactCategory = 'general' | 'shop_listing' | 'bug_report' | 'account' | 'other'
+export type ContactCategory = 'general' | 'shop_listing' | 'bug_report' | 'account' | 'other' | 'material_request'
 
 export interface Contact {
   id: string
@@ -25,11 +25,12 @@ export interface ContactReply {
 }
 
 export const CATEGORY_LABEL: Record<ContactCategory, string> = {
-  general:      '一般的なご質問',
-  shop_listing: '店舗掲載について',
-  bug_report:   'バグ・不具合',
-  account:      'アカウントについて',
-  other:        'その他',
+  general:          '一般的なご質問',
+  shop_listing:     '店舗掲載について',
+  bug_report:       'バグ・不具合',
+  account:          'アカウントについて',
+  other:            'その他',
+  material_request: '素材追加リクエスト',
 }
 
 export const STATUS_CONFIG: Record<ContactStatus, { label: string; borderClass: string; badgeClass: string }> = {

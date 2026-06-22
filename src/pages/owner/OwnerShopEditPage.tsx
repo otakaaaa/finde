@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Globe, Tag } from 'lucide-react'
+import { Globe, Tag, Package } from 'lucide-react'
 import { useShop } from '@/hooks/useShop'
 import { useUpdateShop } from '@/hooks/useOwnerShops'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -29,9 +29,14 @@ const OwnerShopEditPage = () => {
     defaultValues: DEFAULT_SHOP_FORM_VALUES,
   })
 
+  const initializedShopId = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (shop) methods.reset(shopToFormValues(shop))
-  }, [shop, methods])
+    if (shop && masterData && shop.id !== initializedShopId.current) {
+      initializedShopId.current = shop.id
+      methods.reset(shopToFormValues(shop))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shop, masterData])
 
   const onSubmit = (values: ShopFormValues) => {
     if (!id) return
@@ -96,6 +101,15 @@ const OwnerShopEditPage = () => {
             <Tag className="h-3.5 w-3.5 text-muted-foreground/40" />
             <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
               ブランド管理
+            </span>
+          </Link>
+          <Link
+            to={`/owner/shops/${id}/items`}
+            className="flex items-center gap-3 border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/30"
+          >
+            <Package className="h-3.5 w-3.5 text-muted-foreground/40" />
+            <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
+              アイテム管理
             </span>
           </Link>
           <Link

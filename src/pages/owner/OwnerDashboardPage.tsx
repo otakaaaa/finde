@@ -3,10 +3,12 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
-  ArrowUpRight,
+  ArrowUpRight, Package, TrendingUp, AlertCircle,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
+import { useShopItems, useShopWishAnalytics } from '@/hooks/useShopItems'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
 
@@ -90,13 +92,14 @@ const InfoRow = ({
   label,
   value,
   href,
+  editTo,
 }: {
   icon: React.ReactNode
   label: string
   value: string | null | undefined
   href?: string
+  editTo?: string
 }) => {
-  if (!value) return null
   return (
     <div className="flex items-start gap-3 p-2.5">
       <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground/40">
@@ -106,17 +109,29 @@ const InfoRow = ({
         <p className="font-headline text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/35">
           {label}
         </p>
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-0.5 block truncate text-[11px] text-muted-foreground/70 transition-colors hover:text-primary"
+        {value ? (
+          href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-0.5 block truncate text-[11px] text-muted-foreground/70 transition-colors hover:text-primary"
+            >
+              {value}
+            </a>
+          ) : (
+            <p className="mt-0.5 text-[11px] text-muted-foreground/70">{value}</p>
+          )
+        ) : editTo ? (
+          <Link
+            to={editTo}
+            className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground/30 transition-colors hover:text-primary"
           >
-            {value}
-          </a>
+            未設定
+            <ChevronRight className="h-2.5 w-2.5" />
+          </Link>
         ) : (
-          <p className="mt-0.5 text-[11px] text-muted-foreground/70">{value}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground/30">未設定</p>
         )}
       </div>
     </div>
@@ -125,9 +140,32 @@ const InfoRow = ({
 
 // ── Shop Dashboard ─────────────────────────────────────────────
 
+interface SetupTask {
+  label: string
+  to: string
+}
+
 const ShopDashboard = ({ shop }: { shop: Shop }) => {
   const statusConf = SHOP_STATUS[shop.status] ?? SHOP_STATUS.private
-  const ratingDisplay = shop.averageRating != null ? shop.averageRating.toFixed(1) : '—'
+
+  const { data: shopItems } = useShopItems(shop.id)
+  const { data: analytics } = useShopWishAnalytics(shop.id)
+  const { data: masterData } = useShopMasterData()
+
+  const prefectureName = masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name
+  const cityName = masterData?.cities.find((c) => c.id === shop.cityId)?.name
+
+  const itemCount = shopItems?.length ?? 0
+  const brandCount = shop.brands.length
+  const matchingWishes = analytics?.totalMatchingWishes ?? 0
+
+  const editHref = `/owner/shops/${shop.id}/edit`
+
+  const setupTasks: SetupTask[] = []
+  if (!shop.description?.trim()) setupTasks.push({ label: '店舗説明を入力する', to: editHref })
+  if (shopItems && itemCount === 0) setupTasks.push({ label: 'アイテムを登録する', to: `/owner/shops/${shop.id}/items` })
+  if (brandCount === 0) setupTasks.push({ label: '取り扱いブランドを追加する', to: `/owner/shops/${shop.id}/brands` })
+  if (!shop.businessHours) setupTasks.push({ label: '営業時間を設定する', to: editHref })
 
   return (
     <>
@@ -152,10 +190,10 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 <span className={cn('h-1.5 w-1.5 rounded-full', statusConf.dotClass)} />
                 {statusConf.label}
               </span>
-              {shop.area && (
+              {cityName && (
                 <span className="flex items-center gap-1 text-[10px] text-white/30">
                   <MapPin className="h-2.5 w-2.5" />
-                  {shop.area.city}
+                  {cityName}
                 </span>
               )}
             </div>
@@ -180,21 +218,21 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
         <div className="mx-auto max-w-5xl px-4 md:px-16">
           <div className="grid grid-cols-3 gap-3 pt-6 md:gap-4">
             <StatPanel
-              value={ratingDisplay}
-              label="Rating"
-              sub="平均評価"
+              value={shopItems ? String(itemCount).padStart(2, '0') : '—'}
+              label="Items"
+              sub="登録アイテム"
               index={0}
             />
             <StatPanel
-              value={String(shop.reviewCount).padStart(2, '0')}
-              label="Reviews"
-              sub="レビュー件数"
+              value={String(brandCount).padStart(2, '0')}
+              label="Brands"
+              sub="取り扱いブランド"
               index={1}
             />
             <StatPanel
-              value={String(shop.favoriteCount).padStart(2, '0')}
-              label="Favorites"
-              sub="お気に入り数"
+              value={analytics ? String(matchingWishes).padStart(2, '0') : '—'}
+              label="Wishes"
+              sub="マッチング中"
               index={2}
             />
           </div>
@@ -208,6 +246,34 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
 
             {/* Main: actions */}
             <div>
+              {/* Setup progress */}
+              {setupTasks.length > 0 && (
+                <div className="wish-card-enter mb-8 border border-amber-200 bg-amber-50/50 px-5 py-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="font-headline text-[10px] font-black uppercase tracking-[0.3em] text-amber-700/80">
+                      セットアップ
+                    </span>
+                    <span className="font-headline text-[10px] font-black tabular-nums text-amber-600/50">
+                      残り {setupTasks.length}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {setupTasks.map((task) => (
+                      <Link
+                        key={task.label}
+                        to={task.to}
+                        className="group flex items-center gap-2 text-[12px] text-amber-900/70 transition-colors hover:text-amber-900"
+                      >
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full border border-amber-400" />
+                        <span className="flex-1">{task.label}</span>
+                        <ChevronRight className="h-3 w-3 text-amber-400/60 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="mb-5 flex items-baseline gap-3">
                 <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
                   Actions
@@ -233,38 +299,22 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   animDelay={55}
                 />
                 <ActionCard
-                  to={`/shops/${shop.id}`}
-                  icon={<ExternalLink className="h-4 w-4" />}
+                  to={`/owner/shops/${shop.id}/items`}
+                  icon={<Package className="h-4 w-4" />}
                   index="03"
-                  title="公開ページを確認"
-                  desc="ユーザーに表示されているページを見る"
-                  external
+                  title="アイテムを管理"
+                  desc="取り扱いアイテムを登録してマッチング精度を上げる"
                   animDelay={110}
                 />
+                <ActionCard
+                  to={`/owner/shops/${shop.id}/wish-analytics`}
+                  icon={<TrendingUp className="h-4 w-4" />}
+                  index="04"
+                  title="ウィッシュ分析"
+                  desc="同エリアのウィッシュ需要を確認してマッチング精度を上げる"
+                  animDelay={165}
+                />
               </div>
-
-              {/* Description preview */}
-              {shop.description && (
-                <div className="mt-10">
-                  <div className="mb-4 flex items-baseline gap-3">
-                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-                      Description
-                    </span>
-                    <span className="h-px flex-1 bg-border" />
-                  </div>
-                  <div className="wish-card-enter border-l-[3px] border-l-border bg-white px-5 py-4 editorial-shadow">
-                    <p className="text-sm leading-relaxed text-muted-foreground/70 line-clamp-4">
-                      {shop.description}
-                    </p>
-                    <Link
-                      to={`/owner/shops/${shop.id}/edit`}
-                      className="mt-3 flex items-center gap-1 text-[10px] font-bold text-primary/60 transition-colors hover:text-primary"
-                    >
-                      編集する <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Sidebar: shop info */}
@@ -276,40 +326,67 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 <span className="h-px flex-1 bg-border" />
               </div>
 
+              <Link
+                to={`/shops/${shop.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wish-card-enter group mb-3 flex items-center gap-3 border border-border bg-white px-4 py-3 transition-all hover:border-primary/20 hover:bg-primary/[0.02] editorial-shadow"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-white">
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </div>
+                <span className="flex-1 font-headline text-[11px] font-black uppercase tracking-[0.15em] text-foreground/80">
+                  公開ページを確認
+                </span>
+                <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/20 transition-colors group-hover:text-primary/40" />
+              </Link>
+
               <div className="wish-card-enter divide-y divide-border/60 border border-border bg-white editorial-shadow">
                 <InfoRow
                   icon={<MapPin className="h-3.5 w-3.5" />}
-                  label="エリア"
-                  value={shop.area ? `${shop.area.prefecture} ${shop.area.city}` : null}
+                  label="都道府県"
+                  value={prefectureName}
+                  editTo={editHref}
+                />
+                <InfoRow
+                  icon={<MapPin className="h-3.5 w-3.5" />}
+                  label="市区町村"
+                  value={cityName}
+                  editTo={editHref}
                 />
                 <InfoRow
                   icon={<Store className="h-3.5 w-3.5" />}
                   label="価格帯"
                   value={shop.priceRange?.label}
+                  editTo={editHref}
                 />
                 <InfoRow
                   icon={<Phone className="h-3.5 w-3.5" />}
                   label="電話番号"
                   value={shop.phone}
                   href={shop.phone ? `tel:${shop.phone}` : undefined}
+                  editTo={editHref}
                 />
                 <InfoRow
                   icon={<Globe className="h-3.5 w-3.5" />}
                   label="公式サイト"
                   value={shop.websiteUrl}
                   href={shop.websiteUrl ?? undefined}
+                  editTo={editHref}
                 />
                 <InfoRow
                   icon={<Instagram className="h-3.5 w-3.5" />}
                   label="Instagram"
                   value={shop.instagramUrl}
                   href={shop.instagramUrl ?? undefined}
+                  editTo={editHref}
                 />
                 <InfoRow
                   icon={<XLogo className="h-3.5 w-3.5" />}
                   label="X"
                   value={shop.twitterUrl}
                   href={shop.twitterUrl ?? undefined}
+                  editTo={editHref}
                 />
               </div>
 

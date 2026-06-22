@@ -12,34 +12,18 @@ const TYPE_CONFIG: Record<Wish['type'], { label: string; shortLabel: string }> =
   condition: { label: 'CONDITION', shortLabel: 'コンディション' },
 }
 
-interface UrgencyConfig {
-  label: string
-  borderClass: string
-  badgeClass: string
+const getWishWatermark = (wish: Wish): string =>
+  wish.itemCategory ? wish.itemCategory.code.toUpperCase() : TYPE_CONFIG[wish.type].label
+
+const getWishTypeBadge = (wish: Wish): string =>
+  wish.itemCategory ? wish.itemCategory.name : TYPE_CONFIG[wish.type].shortLabel
+
+const getWishCategoryBadge = (wish: Wish): string | null => {
+  if (wish.itemType) return wish.itemType.name
+  // itemCategory はステータスバッジ（typeBadge）で表示済み
+  return null
 }
 
-const URGENCY_CONFIG: Record<NonNullable<Wish['urgency']>, UrgencyConfig> = {
-  low: {
-    label: '低',
-    borderClass: 'border-l-emerald-300',
-    badgeClass: 'bg-emerald-50 text-emerald-700',
-  },
-  medium: {
-    label: '中',
-    borderClass: 'border-l-amber-400',
-    badgeClass: 'bg-amber-50 text-amber-700',
-  },
-  high: {
-    label: '高',
-    borderClass: 'border-l-red-400',
-    badgeClass: 'bg-red-50 text-red-700',
-  },
-}
-
-const CONDITION_LABEL: Record<NonNullable<Wish['condition']>, string> = {
-  new: '新品',
-  used: '中古',
-}
 
 type OverlayState = 'none' | 'delete' | 'close'
 
@@ -49,9 +33,10 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
   const [overlay, setOverlay] = useState<OverlayState>('none')
   const [matchExpanded, setMatchExpanded] = useState(false)
 
-  const typeConf = TYPE_CONFIG[wish.type]
-  const urgencyConf = wish.urgency ? URGENCY_CONFIG[wish.urgency] : null
   const isClosed = wish.status === 'closed'
+  const watermark = getWishWatermark(wish)
+  const typeBadge = getWishTypeBadge(wish)
+  const categoryBadge = getWishCategoryBadge(wish)
 
   const handleDeleteConfirm = () => {
     deleteWish(wish.id, { onSettled: () => setOverlay('none') })
@@ -65,7 +50,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
     <div
       className={cn(
         'wish-card-enter group relative overflow-hidden border-l-[3px] bg-white editorial-shadow',
-        urgencyConf && !isClosed ? urgencyConf.borderClass : 'border-l-border',
+        'border-l-border',
         isClosed && 'opacity-70',
       )}
       style={{ animationDelay: `${index * 55}ms` }}
@@ -143,7 +128,7 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
           className="font-headline font-black leading-none tracking-tighter text-black/[0.03]"
           style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
         >
-          {typeConf.label}
+          {watermark}
         </span>
       </div>
 
@@ -158,15 +143,12 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
               </span>
             ) : (
               <span className="inline-flex items-center rounded-sm bg-primary/[0.07] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-primary">
-                {typeConf.shortLabel}
+                {typeBadge}
               </span>
             )}
-            <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
-              {wish.category.name}
-            </span>
-            {urgencyConf && !isClosed && (
-              <span className={cn('inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold', urgencyConf.badgeClass)}>
-                優先度 {urgencyConf.label}
+            {categoryBadge && (
+              <span className="inline-flex items-center rounded-sm border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-bold text-foreground/70">
+                {categoryBadge}
               </span>
             )}
             {wish.brand && (
@@ -203,15 +185,10 @@ const WishCard = ({ wish, index }: { wish: Wish; index: number }) => {
             {wish.priceRange.label}
           </span>
           <span className="text-xs font-semibold text-muted-foreground">
-            {wish.area.city}
+            {wish.city?.name ?? wish.prefecture?.name ?? ''}
           </span>
           {wish.size && (
-            <span className="text-xs text-muted-foreground">/ {wish.size}</span>
-          )}
-          {wish.condition && (
-            <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
-              {CONDITION_LABEL[wish.condition]}
-            </span>
+            <span className="text-xs text-muted-foreground">/ {wish.size.label}</span>
           )}
         </div>
 

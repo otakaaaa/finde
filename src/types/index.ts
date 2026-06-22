@@ -2,12 +2,13 @@
 // Primitive types
 // ============================================================
 
+export type SizeGroup = 'general' | 'bottoms' | 'shoes' | 'none'
+
 export type UserRole = 'user' | 'shop_owner' | 'admin'
 export type ShopStatus = 'public' | 'private' | 'pending'
 export type ReviewStatus = 'published' | 'flagged' | 'hidden'
+/** @deprecated type 軸は item_category_id / item_type_id に移行予定 */
 export type WishType = 'brand' | 'item' | 'condition'
-export type WishUrgency = 'low' | 'medium' | 'high'
-export type WishCondition = 'new' | 'used'
 export type SubscriptionPlan = 'monthly' | 'yearly'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 export type ReportReason = 'false_info' | 'harassment' | 'irrelevant' | 'other'
@@ -60,6 +61,38 @@ export interface Category {
   id: number
   code: CategoryCode
   name: string
+}
+
+export interface Size {
+  id: number
+  code: string
+  label: string
+  sizeGroup: SizeGroup
+  order: number
+}
+
+export interface ItemCategory {
+  id: number
+  code: string
+  name: string
+  order: number
+  sizeGroup: SizeGroup
+}
+
+export interface ItemType {
+  id: number
+  itemCategoryId: number
+  code: string
+  name: string
+  order: number
+}
+
+export interface MaterialType {
+  id: number
+  code: string
+  name: string
+  order: number
+  isActive: boolean
 }
 
 export interface Tag {
@@ -184,13 +217,16 @@ export interface Wish {
   id: string
   userId: string
   type: WishType
-  category: Category
+  itemCategory: ItemCategory | null
+  itemType: ItemType | null
   priceRange: PriceRange
-  area: Area
-  size: string | null
+  prefectureId: number
+  prefecture: { id: number; name: string } | null
+  cityId: number | null
+  city: { id: number; name: string } | null
+  sizeId: number | null
+  size: Size | null
   tags: string[]
-  condition: WishCondition | null
-  urgency: WishUrgency | null
   note: string | null
   isPublic: boolean
   notifyEmail: boolean
@@ -203,33 +239,71 @@ export interface Wish {
 
 export interface WishFormValues {
   type: WishType
-  categoryId: number
+  itemCategoryId?: number
+  itemTypeId?: number
   priceRangeId: number
-  areaId: number
-  size?: string
+  prefectureId: number
+  cityId: number
+  sizeId?: number
   tags?: string[]
-  condition?: WishCondition
-  urgency?: WishUrgency
   note?: string
   isPublic: boolean
   notifyEmail: boolean
   brandId?: string
 }
 
-export interface MatchShop {
+// ============================================================
+// Shop Item
+// ============================================================
+
+export interface ShopItemPhoto {
   id: string
-  name: string
-  area: Area | null
-  priceRange: PriceRange | null
-  averageRating: number | null
-  reviewCount: number
-  coverPhotoPath: string | null
+  shopItemId: string
+  storagePath: string
+  order: number
+  createdAt: string
 }
 
-export interface MatchedShop {
-  shop: MatchShop
-  tier: 1 | 2
-  hasBrandMatch: boolean
+export interface ShopItem {
+  id: string
+  shopId: string
+  itemTypeId: number | null
+  itemType: Pick<ItemType, 'id' | 'code' | 'name' | 'itemCategoryId'> | null
+  brandId: string | null
+  brand: Pick<Brand, 'id' | 'name'> | null
+  name: string
+  description: string | null
+  price: number | null
+  sizeIds: number[]
+  isAvailable: boolean
+  materials: { id: number; name: string; percentage: number | null }[]
+  photos: ShopItemPhoto[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShopItemFormValues {
+  itemCategoryId?: number
+  itemTypeId?: number
+  brandId?: string
+  name: string
+  description?: string
+  price?: number
+  sizeIds: number[]
+  materialTypeIds: number[]
+  materialPercentages?: Record<number, number | null>
+  isAvailable: boolean
+}
+
+export interface MatchItem {
+  id: string
+  shopId: string
+  shopName: string
+  name: string
+  brandName: string | null
+  itemTypeName: string | null
+  price: number | null
+  coverPhotoPath: string | null
 }
 
 // ============================================================

@@ -28,6 +28,7 @@ interface OwnerShopRow {
     address: string | null
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
+    shop_brands: { brands: { id: string; name: string; name_kana: string | null; aliases: string[]; status: string; merged_into: string | null; submitted_by: string | null; created_at: string } }[]
   }
 }
 
@@ -49,7 +50,8 @@ export const useOwnerShops = () => {
             status, review_count, average_rating, favorite_count,
             prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
-            price_ranges ( id, label, min_price, max_price )
+            price_ranges ( id, label, min_price, max_price ),
+            shop_brands ( brands ( id, name, name_kana, aliases, status, merged_into, submitted_by, created_at ) )
           )
         `)
         .eq('user_id', user.id) as { data: OwnerShopRow[] | null; error: { message: string } | null }
@@ -78,7 +80,16 @@ export const useOwnerShops = () => {
         status: s.status as Shop['status'],
         categories: [],
         tags: [],
-        brands: [],
+        brands: (s.shop_brands ?? []).map((sb) => ({
+          id: sb.brands.id,
+          name: sb.brands.name,
+          nameKana: sb.brands.name_kana,
+          aliases: sb.brands.aliases,
+          status: sb.brands.status as 'active' | 'merged',
+          mergedInto: sb.brands.merged_into,
+          submittedBy: sb.brands.submitted_by,
+          createdAt: sb.brands.created_at,
+        })),
         photos: [],
         reviewCount: s.review_count,
         averageRating: s.average_rating,
@@ -116,23 +127,22 @@ export const useUpdateShop = () => {
   return useMutation({
     mutationFn: async ({ shopId, categoryIds, ...updates }: ShopUpdateInput) => {
       const { error } = await supabase
-        .from('shops')
-        .update({
-          ...(updates.name !== undefined && { name: updates.name }),
-          description: updates.description,
-          ...(updates.prefectureId !== undefined && { prefecture_id: updates.prefectureId }),
-          ...(updates.cityId !== undefined && { city_id: updates.cityId ?? null }),
-          address: updates.address || null,
-          ...(updates.priceRangeId !== undefined && { price_range_id: updates.priceRangeId ?? null }),
-          phone: updates.phone || null,
-          website_url: updates.websiteUrl || null,
-          instagram_url: updates.instagramUrl || null,
-          twitter_url: updates.twitterUrl || null,
-          tiktok_url: updates.tiktokUrl || null,
-          business_hours: updates.businessHours ?? null,
-          closed_days: updates.closedDays ?? [],
-        } as never)
-        .eq('id', shopId) as unknown as { data: unknown; error: { message: string } | null }
+        .rpc('update_shop_as_owner' as never, {
+          p_shop_id:        shopId,
+          p_name:           updates.name ?? null,
+          p_description:    updates.description ?? null,
+          p_prefecture_id:  updates.prefectureId ?? null,
+          p_city_id:        updates.cityId ?? null,
+          p_address:        updates.address || null,
+          p_price_range_id: updates.priceRangeId ?? null,
+          p_phone:          updates.phone || null,
+          p_website_url:    updates.websiteUrl || null,
+          p_instagram_url:  updates.instagramUrl || null,
+          p_twitter_url:    updates.twitterUrl || null,
+          p_tiktok_url:     updates.tiktokUrl || null,
+          p_business_hours: updates.businessHours ?? null,
+          p_closed_days:    updates.closedDays ?? [],
+        } as never) as unknown as { error: { message: string } | null }
 
       if (error) throw new Error(error.message)
 

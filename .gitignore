@@ -40,4 +40,8 @@ supabase/.temp
 !.dev.vars.example
 !.env.example
 
+# Vault シークレットの実値（example のみコミット）
+supabase/scripts/set-vault-secrets.local.sql
+supabase/scripts/*.local.sql
+
 .tmp

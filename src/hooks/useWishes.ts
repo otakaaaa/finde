@@ -1,16 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import type { Wish, WishFormValues } from '@/types'
+import type { Wish, WishFormValues, SizeGroup } from '@/types'
 
 interface WishRow {
   id: string
   user_id: string
   type: string
-  size: string | null
+  item_category_id: number | null
+  item_type_id: number | null
+  size_id: number | null
   tags: string[]
-  condition: string | null
-  urgency: string | null
   note: string | null
   is_public: boolean
   notify_email: boolean
@@ -18,23 +18,35 @@ interface WishRow {
   brand_id: string | null
   created_at: string
   updated_at: string
-  categories: { id: number; code: string; name: string }
+  prefecture_id: number
+  city_id: number | null
   price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null }
-  areas: { id: number; prefecture: string; city: string; slug: string }
+  prefectures: { id: number; name: string } | null
+  cities: { id: number; name: string } | null
   brands: { id: string; name: string } | null
+  item_categories: { id: number; code: string; name: string; order: number; size_group: string } | null
+  item_types: { id: number; item_category_id: number; code: string; name: string; order: number } | null
+  sizes: { id: number; code: string; label: string; size_group: string; order: number } | null
 }
 
 const mapWishRow = (row: WishRow): Wish => ({
   id: row.id,
   userId: row.user_id,
   type: row.type as Wish['type'],
-  category: { id: row.categories.id, code: row.categories.code as Wish['category']['code'], name: row.categories.name },
+  itemCategory: row.item_categories
+    ? { id: row.item_categories.id, code: row.item_categories.code, name: row.item_categories.name, order: row.item_categories.order, sizeGroup: row.item_categories.size_group as SizeGroup }
+    : null,
+  itemType: row.item_types
+    ? { id: row.item_types.id, itemCategoryId: row.item_types.item_category_id, code: row.item_types.code, name: row.item_types.name, order: row.item_types.order }
+    : null,
   priceRange: { id: row.price_ranges.id, label: row.price_ranges.label, minPrice: row.price_ranges.min_price, maxPrice: row.price_ranges.max_price },
-  area: { id: row.areas.id, prefecture: row.areas.prefecture, city: row.areas.city, slug: row.areas.slug },
-  size: row.size,
+  prefectureId: row.prefecture_id,
+  prefecture: row.prefectures ?? null,
+  cityId: row.city_id,
+  city: row.cities ?? null,
+  sizeId: row.size_id,
+  size: row.sizes ? { id: row.sizes.id, code: row.sizes.code, label: row.sizes.label, sizeGroup: row.sizes.size_group as SizeGroup, order: row.sizes.order } : null,
   tags: row.tags ?? [],
-  condition: row.condition as Wish['condition'],
-  urgency: row.urgency as Wish['urgency'],
   note: row.note,
   isPublic: row.is_public,
   notifyEmail: row.notify_email,
@@ -46,13 +58,18 @@ const mapWishRow = (row: WishRow): Wish => ({
 })
 
 const WISH_SELECT = `
-  id, user_id, type, size, tags, condition, urgency,
+  id, user_id, type, item_category_id, item_type_id,
+  size_id, tags,
   note, is_public, notify_email, status, brand_id,
   created_at, updated_at,
-  categories ( id, code, name ),
+  prefecture_id, city_id,
   price_ranges ( id, label, min_price, max_price ),
-  areas ( id, prefecture, city, slug ),
-  brands ( id, name )
+  prefectures ( id, name ),
+  cities ( id, name ),
+  brands ( id, name ),
+  item_categories ( id, code, name, order, size_group ),
+  item_types ( id, item_category_id, code, name, order ),
+  sizes ( id, code, label, size_group, order )
 `
 
 export const useMyWishes = (status: 'active' | 'closed' = 'active') => {
@@ -91,13 +108,13 @@ export const useCreateWish = () => {
       const { error } = await supabase.from('wishes').insert({
         user_id: user.id,
         type: values.type,
-        category_id: values.categoryId,
+        item_category_id: values.itemCategoryId ?? null,
+        item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
-        area_id: values.areaId,
-        size: values.size ?? null,
+        prefecture_id: values.prefectureId,
+        city_id: values.cityId,
+        size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
-        condition: values.condition ?? null,
-        urgency: values.urgency ?? null,
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,
@@ -144,13 +161,13 @@ export const useUpdateWish = () => {
     mutationFn: async ({ id, values }: { id: string; values: WishFormValues }) => {
       const { error } = await supabase.from('wishes').update({
         type: values.type,
-        category_id: values.categoryId,
+        item_category_id: values.itemCategoryId ?? null,
+        item_type_id: values.itemTypeId ?? null,
         price_range_id: values.priceRangeId,
-        area_id: values.areaId,
-        size: values.size ?? null,
+        prefecture_id: values.prefectureId,
+        city_id: values.cityId,
+        size_id: values.sizeId ?? null,
         tags: values.tags ?? [],
-        condition: values.condition ?? null,
-        urgency: values.urgency ?? null,
         note: values.note ?? null,
         is_public: values.isPublic,
         notify_email: values.notifyEmail,
