@@ -258,29 +258,6 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   animDelay={220}
                 />
               </div>
-
-              {/* Description preview */}
-              {shop.description && (
-                <div className="mt-10">
-                  <div className="mb-4 flex items-baseline gap-3">
-                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-                      Description
-                    </span>
-                    <span className="h-px flex-1 bg-border" />
-                  </div>
-                  <div className="wish-card-enter border-l-[3px] border-l-border bg-white px-5 py-4 editorial-shadow">
-                    <p className="text-sm leading-relaxed text-muted-foreground/70 line-clamp-4">
-                      {shop.description}
-                    </p>
-                    <Link
-                      to={`/owner/shops/${shop.id}/edit`}
-                      className="mt-3 flex items-center gap-1 text-[10px] font-bold text-primary/60 transition-colors hover:text-primary"
-                    >
-                      編集する <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Sidebar: shop info */}
