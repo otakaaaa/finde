@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Globe, Tag, Package } from 'lucide-react'
+import { Globe, Tag, Package, BarChart3 } from 'lucide-react'
 import { useShop } from '@/hooks/useShop'
 import { useUpdateShop } from '@/hooks/useOwnerShops'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -110,6 +110,15 @@ const OwnerShopEditPage = () => {
             <Package className="h-3.5 w-3.5 text-muted-foreground/40" />
             <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
               アイテム管理
+            </span>
+          </Link>
+          <Link
+            to={`/owner/shops/${id}/analytics`}
+            className="flex items-center gap-3 border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/30"
+          >
+            <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/40" />
+            <span className="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">
+              アクセス解析
             </span>
           </Link>
           <Link

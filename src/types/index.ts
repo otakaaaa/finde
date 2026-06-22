@@ -479,6 +479,59 @@ export interface ShareFormValues {
 }
 
 // ============================================================
+// Shop view analytics（オーナー向けアクセス解析）
+// ============================================================
+
+export interface ShopAnalyticsDailyPoint {
+  date: string
+  pv: number
+  uu: number
+}
+
+export interface ShopAnalyticsTotals {
+  pv: number
+  uu: number
+}
+
+export interface ShopAnalyticsSourceCount {
+  source: string
+  count: number
+}
+
+export interface ShopAnalyticsActionCount {
+  type: string
+  count: number
+}
+
+export interface ShopAnalyticsItemCount {
+  itemId: string
+  name: string
+  count: number
+}
+
+export interface ShopAnalyticsHourCount {
+  hour: number
+  count: number
+}
+
+export interface ShopAnalyticsWeekdayCount {
+  weekday: number
+  count: number
+}
+
+export interface ShopViewAnalytics {
+  daily: ShopAnalyticsDailyPoint[]
+  totals: ShopAnalyticsTotals
+  prevTotals: ShopAnalyticsTotals
+  bySource: ShopAnalyticsSourceCount[]
+  actions: ShopAnalyticsActionCount[]
+  favorites: number
+  topItems: ShopAnalyticsItemCount[]
+  byHour: ShopAnalyticsHourCount[]
+  byWeekday: ShopAnalyticsWeekdayCount[]
+}
+
+// ============================================================
 // Pagination
 // ============================================================
 
