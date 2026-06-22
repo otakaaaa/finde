@@ -1,26 +1,15 @@
 import { useParams, useNavigate, Link } from 'react-router'
 import { ChevronLeft, Package, Plus, Image } from 'lucide-react'
-import { useShopItemTypeIds, useItemCategoriesWithTypes, useToggleShopItemType } from '@/hooks/useShopItemTypes'
 import { useShopItems } from '@/hooks/useShopItems'
 import { getR2Url } from '@/lib/r2'
-import { cn } from '@/lib/utils'
 
 const ShopItemTypesPage = () => {
   const { shopId } = useParams<{ shopId: string }>()
   const navigate = useNavigate()
 
-  const { data: registeredIds, isLoading: isIdsLoading } = useShopItemTypeIds(shopId ?? '')
-  const { data: categories, isLoading: isCatsLoading } = useItemCategoriesWithTypes()
-  const { mutate: toggleType } = useToggleShopItemType(shopId ?? '')
-  const { data: shopItems, isLoading: isItemsLoading } = useShopItems(shopId ?? '')
+  const { data: shopItems, isLoading } = useShopItems(shopId ?? '')
 
-  const isLoading = isIdsLoading || isCatsLoading || isItemsLoading
-
-  const handleToggle = (itemTypeId: number, currentlyChecked: boolean) => {
-    toggleType({ itemTypeId, checked: !currentlyChecked })
-  }
-
-  const totalSelected = registeredIds?.size ?? 0
+  const totalItems = shopItems?.length ?? 0
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">
@@ -48,9 +37,9 @@ const ShopItemTypesPage = () => {
               <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
                 アイテム管理
               </h1>
-              {!isLoading && totalSelected > 0 && (
+              {!isLoading && totalItems > 0 && (
                 <span className="mb-1 font-headline text-[11px] font-black tabular-nums text-white/30">
-                  {String(totalSelected).padStart(2, '0')} 選択中
+                  {String(totalItems).padStart(2, '0')} 登録
                 </span>
               )}
             </div>
@@ -62,14 +51,14 @@ const ShopItemTypesPage = () => {
       <div className="border-b border-border bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-16">
           <p className="text-[11px] text-muted-foreground/60">
-            取り扱っているアイテムにチェックを入れてください。マッチング精度が向上します。
+            取り扱い商品を登録すると、ウィッシュが一致するユーザーへ自動で通知されます。
           </p>
           <Link
             to={`/owner/shops/${shopId}/items/new`}
             className="ml-4 flex shrink-0 items-center gap-1.5 bg-primary px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90"
           >
             <Plus className="h-3 w-3" />
-            アイテムを詳細登録
+            アイテムを登録
           </Link>
         </div>
       </div>
@@ -79,36 +68,42 @@ const ShopItemTypesPage = () => {
         <div className="mx-auto max-w-5xl px-4 py-10 md:px-16 md:py-14">
 
           {isLoading && (
-            <div className="space-y-10">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="space-y-3">
-                  <div className="h-3 w-24 animate-pulse rounded-sm bg-muted" />
-                  <div className="flex flex-wrap gap-2">
-                    {Array.from({ length: 6 }).map((_, j) => (
-                      <div key={j} className="h-8 w-20 animate-pulse rounded-sm bg-muted" />
-                    ))}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="border border-border bg-white">
+                  <div className="aspect-square animate-pulse bg-muted" />
+                  <div className="space-y-2 px-3 py-2.5">
+                    <div className="h-3 w-3/4 animate-pulse rounded-sm bg-muted" />
+                    <div className="h-2 w-1/2 animate-pulse rounded-sm bg-muted" />
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {!isLoading && (!categories || categories.length === 0) && (
+          {!isLoading && totalItems === 0 && (
             <div className="flex flex-col items-center gap-4 py-24 text-center">
               <Package className="h-10 w-10 text-muted-foreground/15" />
-              <p className="text-sm text-muted-foreground/50">アイテムデータが見つかりませんでした</p>
+              <p className="text-sm text-muted-foreground/50">まだアイテムが登録されていません</p>
+              <Link
+                to={`/owner/shops/${shopId}/items/new`}
+                className="flex items-center gap-1.5 bg-primary px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90"
+              >
+                <Plus className="h-3 w-3" />
+                最初のアイテムを登録
+              </Link>
             </div>
           )}
 
           {/* ── 登録済みアイテム一覧 ───────────────────── */}
-          {!isLoading && (shopItems?.length ?? 0) > 0 && (
-            <div className="mb-12">
+          {!isLoading && totalItems > 0 && (
+            <div>
               <div className="mb-4 flex items-baseline gap-3">
                 <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
                   登録済みアイテム
                 </span>
                 <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/25">
-                  {String(shopItems!.length).padStart(2, '0')}
+                  {String(totalItems).padStart(2, '0')}
                 </span>
                 <span className="h-px flex-1 bg-border" />
               </div>
@@ -149,54 +144,6 @@ const ShopItemTypesPage = () => {
                   )
                 })}
               </div>
-            </div>
-          )}
-
-          {/* ── カテゴリ × アイテムタイプ チェックリスト ── */}
-          {!isLoading && categories && categories.length > 0 && (
-            <div className="space-y-10">
-              {categories.map((cat) => (
-                <section key={cat.id}>
-                  {/* カテゴリヘッダー */}
-                  <div className="mb-4 flex items-baseline gap-3">
-                    <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
-                      {cat.name}
-                    </span>
-                    <span className="h-px flex-1 bg-border" />
-                    <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/25">
-                      {cat.types.filter((t) => registeredIds?.has(t.id)).length}/{cat.types.length}
-                    </span>
-                  </div>
-
-                  {/* アイテムタイプ一覧 */}
-                  <div className="flex flex-wrap gap-2">
-                    {cat.types.map((type) => {
-                      const isChecked = registeredIds?.has(type.id) ?? false
-                      return (
-                        <button
-                          key={type.id}
-                          type="button"
-                          onClick={() => handleToggle(type.id, isChecked)}
-                          className={cn(
-                            'flex items-center gap-1.5 rounded-sm border px-3 py-2 text-[11px] font-bold transition-all',
-                            isChecked
-                              ? 'border-primary bg-primary text-white'
-                              : 'border-border bg-white text-foreground/70 hover:border-primary/30 hover:text-foreground',
-                          )}
-                        >
-                          <span className={cn(
-                            'inline-block h-2.5 w-2.5 rounded-sm border transition-colors',
-                            isChecked
-                              ? 'border-white bg-white/30'
-                              : 'border-muted-foreground/30',
-                          )} />
-                          {type.name}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-              ))}
             </div>
           )}
 
