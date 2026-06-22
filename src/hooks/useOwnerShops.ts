@@ -28,6 +28,7 @@ interface OwnerShopRow {
     address: string | null
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     price_ranges: { id: number; label: string; min_price: number | null; max_price: number | null } | null
+    shop_brands: { brands: { id: string; name: string; name_kana: string | null; aliases: string[]; status: string; merged_into: string | null; submitted_by: string | null; created_at: string } }[]
   }
 }
 
@@ -49,7 +50,8 @@ export const useOwnerShops = () => {
             status, review_count, average_rating, favorite_count,
             prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
-            price_ranges ( id, label, min_price, max_price )
+            price_ranges ( id, label, min_price, max_price ),
+            shop_brands ( brands ( id, name, name_kana, aliases, status, merged_into, submitted_by, created_at ) )
           )
         `)
         .eq('user_id', user.id) as { data: OwnerShopRow[] | null; error: { message: string } | null }
@@ -78,7 +80,16 @@ export const useOwnerShops = () => {
         status: s.status as Shop['status'],
         categories: [],
         tags: [],
-        brands: [],
+        brands: (s.shop_brands ?? []).map((sb) => ({
+          id: sb.brands.id,
+          name: sb.brands.name,
+          nameKana: sb.brands.name_kana,
+          aliases: sb.brands.aliases,
+          status: sb.brands.status as 'active' | 'merged',
+          mergedInto: sb.brands.merged_into,
+          submittedBy: sb.brands.submitted_by,
+          createdAt: sb.brands.created_at,
+        })),
         photos: [],
         reviewCount: s.review_count,
         averageRating: s.average_rating,
