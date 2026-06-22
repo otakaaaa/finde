@@ -52,6 +52,7 @@ const OwnerShopEditPage = lazy(() => import('@/pages/owner/OwnerShopEditPage'))
 const BrandsManagePage = lazy(() => import('@/pages/owner/BrandsManagePage'))
 const ShopItemTypesPage = lazy(() => import('@/pages/owner/ShopItemTypesPage'))
 const ShopItemNewPage = lazy(() => import('@/pages/owner/ShopItemNewPage'))
+const ShopItemEditPage = lazy(() => import('@/pages/owner/ShopItemEditPage'))
 const OwnerWishAnalyticsPage = lazy(() => import('@/pages/owner/OwnerWishAnalyticsPage'))
 
 // Admin pages
@@ -172,6 +173,7 @@ const router = createBrowserRouter([
       { path: 'owner/shops/:id/brands', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><BrandsManagePage /></ProtectedRoute> : <Navigate to="/" replace /> },
       { path: 'owner/shops/:shopId/items', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><ShopItemTypesPage /></ProtectedRoute> : <Navigate to="/" replace /> },
       { path: 'owner/shops/:shopId/items/new', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><ShopItemNewPage /></ProtectedRoute> : <Navigate to="/" replace /> },
+      { path: 'owner/shops/:shopId/items/:itemId/edit', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><ShopItemEditPage /></ProtectedRoute> : <Navigate to="/" replace /> },
       { path: 'owner/shops/:shopId/wish-analytics', element: OWNER_FEATURE_ENABLED ? <ProtectedRoute requiredRole="shop_owner"><OwnerWishAnalyticsPage /></ProtectedRoute> : <Navigate to="/" replace /> },
 
       // Admin

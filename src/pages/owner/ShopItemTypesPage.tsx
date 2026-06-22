@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router'
-import { ChevronLeft, Package, Plus, Image } from 'lucide-react'
+import { ChevronLeft, Package, Plus, Image, Pencil } from 'lucide-react'
 import { useShopItems } from '@/hooks/useShopItems'
 import { getR2Url } from '@/lib/r2'
 
@@ -111,8 +111,16 @@ const ShopItemTypesPage = () => {
                 {shopItems!.map((item) => {
                   const coverPhoto = item.photos[0]
                   return (
-                    <div key={item.id} className="group border border-border bg-white editorial-shadow">
+                    <Link
+                      key={item.id}
+                      to={`/owner/shops/${shopId}/items/${item.id}/edit`}
+                      className="group border border-border bg-white editorial-shadow transition-shadow hover:shadow-md"
+                    >
                       <div className="relative aspect-square overflow-hidden bg-muted">
+                        <div className="absolute left-1 top-1 z-10 flex items-center gap-1 rounded-sm bg-black/55 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          <Pencil className="h-2.5 w-2.5" />
+                          編集
+                        </div>
                         {coverPhoto ? (
                           <img
                             src={getR2Url('shop-items', coverPhoto.storagePath)}
@@ -140,7 +148,7 @@ const ShopItemTypesPage = () => {
                           <p className="mt-0.5 text-[9px] text-muted-foreground/50">{item.itemType.name}</p>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   )
                 })}
               </div>

@@ -1,0 +1,717 @@
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Search, X, Plus, Tag, ImagePlus, Loader2, Trash2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { useItemCategoriesWithTypes } from '@/hooks/useShopItemTypes'
+import { useSizes } from '@/hooks/useSizes'
+import { getR2Url } from '@/lib/r2'
+import { cn } from '@/lib/utils'
+import type { MaterialType, ShopItem, ShopItemFormValues, ShopItemPhoto } from '@/types'
+
+// ── Sub-types ───────────────────────────────────────────────────
+
+interface MaterialTypeRow {
+  id: number
+  code: string
+  name: string
+  order: number
+  is_active: boolean
+}
+
+interface PhotoPreview {
+  file: File
+  url: string
+}
+
+type SelectedBrand = { id: string; name: string }
+
+export interface ShopItemFormSubmit {
+  values: ShopItemFormValues
+  newPhotoFiles: File[]
+  deletedPhotoIds: string[]
+  deletedPhotoPaths: string[]
+}
+
+interface ShopItemFormProps {
+  shopId: string
+  initialItem?: ShopItem
+  submitting: boolean
+  submitLabel: string
+  errorMessage?: string | null
+  onSubmit: (payload: ShopItemFormSubmit) => void
+  onCancel: () => void
+  onDelete?: () => void
+  deleting?: boolean
+}
+
+// ── Data hooks ──────────────────────────────────────────────────
+
+const useMaterialTypes = () =>
+  useQuery({
+    queryKey: ['material-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('material_types')
+        .select('id, code, name, order, is_active')
+        .eq('is_active', true)
+        .order('order') as unknown as { data: MaterialTypeRow[] | null; error: { message: string } | null }
+      if (error) throw new Error(error.message)
+      return (data ?? []).map((m) => ({
+        id: m.id,
+        code: m.code,
+        name: m.name,
+        order: m.order,
+        isActive: m.is_active,
+      })) as MaterialType[]
+    },
+    staleTime: Infinity,
+  })
+
+const useSearchBrands = (query: string) =>
+  useQuery({
+    queryKey: ['brands-search', query],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('brands')
+        .select('id, name')
+        .eq('status', 'active')
+        .ilike('name', `%${query}%`)
+        .limit(8) as unknown as { data: { id: string; name: string }[] | null }
+      return (data ?? []) as SelectedBrand[]
+    },
+    enabled: query.trim().length >= 2,
+  })
+
+// ── Form ────────────────────────────────────────────────────────
+
+const ShopItemForm = ({
+  shopId,
+  initialItem,
+  submitting,
+  submitLabel,
+  errorMessage,
+  onSubmit,
+  onCancel,
+  onDelete,
+  deleting,
+}: ShopItemFormProps) => {
+  const { user, session } = useAuth()
+
+  const { data: categories } = useItemCategoriesWithTypes()
+  const { data: materials } = useMaterialTypes()
+  const { data: sizes } = useSizes()
+
+  // ── Form state (prefilled from initialItem when editing) ────
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(
+    initialItem?.itemType?.itemCategoryId ?? undefined,
+  )
+  const [selectedTypeId, setSelectedTypeId] = useState<number | undefined>(initialItem?.itemTypeId ?? undefined)
+  const [selectedBrand, setSelectedBrand] = useState<SelectedBrand | null>(initialItem?.brand ?? null)
+  const [brandQuery, setBrandQuery] = useState('')
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false)
+  const [name, setName] = useState(initialItem?.name ?? '')
+  const [nameManuallyEdited, setNameManuallyEdited] = useState(!!initialItem)
+  const [description, setDescription] = useState(initialItem?.description ?? '')
+  const [price, setPrice] = useState<string>(initialItem?.price != null ? String(initialItem.price) : '')
+  const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>(initialItem?.sizeIds ?? [])
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<Set<number>>(
+    new Set(initialItem?.materials.map((m) => m.id) ?? []),
+  )
+  const [materialPercentages, setMaterialPercentages] = useState<Map<number, number | null>>(
+    new Map(initialItem?.materials.map((m) => [m.id, m.percentage]) ?? []),
+  )
+  const [existingPhotos, setExistingPhotos] = useState<ShopItemPhoto[]>(initialItem?.photos ?? [])
+  const [deletedPhotos, setDeletedPhotos] = useState<ShopItemPhoto[]>([])
+  const [photos, setPhotos] = useState<PhotoPreview[]>([])
+  const [isAvailable, setIsAvailable] = useState(initialItem?.isAvailable ?? true)
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  // ── Material request state ─────────────────────────────────
+  const [showMaterialRequest, setShowMaterialRequest] = useState(false)
+  const [materialRequestName, setMaterialRequestName] = useState('')
+  const [materialRequestSent, setMaterialRequestSent] = useState(false)
+  const [materialRequestSending, setMaterialRequestSending] = useState(false)
+
+  const brandSearchRef = useRef<HTMLDivElement>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  const { data: brandResults } = useSearchBrands(brandQuery)
+
+  // Close brand dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (brandSearchRef.current && !brandSearchRef.current.contains(e.target as Node)) {
+        setBrandDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Auto-generate item name (only until manually edited)
+  useEffect(() => {
+    if (nameManuallyEdited) return
+
+    const category = categories?.find((c) => c.id === selectedCategoryId)
+    const type = category?.types.find((t) => t.id === selectedTypeId)
+    const brandName = selectedBrand?.name ?? ''
+
+    let generated = ''
+    if (brandName && type) {
+      generated = `${brandName} ${type.name}`
+    } else if (brandName) {
+      generated = brandName
+    } else if (type) {
+      generated = type.name
+    } else if (category) {
+      generated = category.name
+    }
+    setName(generated)
+  }, [selectedCategoryId, selectedTypeId, selectedBrand, categories, nameManuallyEdited])
+
+  // ── Helpers ────────────────────────────────────────────────
+  const selectedCategory = categories?.find((c) => c.id === selectedCategoryId)
+  const filteredBrands = (brandResults ?? []).filter((b) => b.id !== selectedBrand?.id)
+
+  const toggleSize = (id: number) =>
+    setSelectedSizeIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+
+  const toggleMaterial = (id: number) => {
+    setSelectedMaterialIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+        setMaterialPercentages((p) => { const m = new Map(p); m.delete(id); return m })
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const setMaterialPercentage = (id: number, value: number | null) =>
+    setMaterialPercentages((prev) => { const next = new Map(prev); next.set(id, value); return next })
+
+  const materialPercentageTotal = Array.from(selectedMaterialIds).reduce(
+    (sum, id) => sum + (materialPercentages.get(id) ?? 0), 0,
+  )
+
+  const totalPhotoCount = existingPhotos.length + photos.length
+
+  const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    setPhotos((prev) => {
+      const remaining = 10 - existingPhotos.length - prev.length
+      const added = files.slice(0, remaining).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }))
+      return [...prev, ...added]
+    })
+    e.target.value = ''
+  }, [existingPhotos.length])
+
+  const removeNewPhoto = (idx: number) => {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[idx].url)
+      return prev.filter((_, i) => i !== idx)
+    })
+  }
+
+  const removeExistingPhoto = (photoId: string) => {
+    setExistingPhotos((prev) => {
+      const target = prev.find((p) => p.id === photoId)
+      if (target) setDeletedPhotos((d) => [...d, target])
+      return prev.filter((p) => p.id !== photoId)
+    })
+  }
+
+  const handleMaterialRequest = async () => {
+    if (!materialRequestName.trim() || !user) return
+    setMaterialRequestSending(true)
+    const authEmail = session?.user?.email ?? ''
+    try {
+      await supabase.from('contacts').insert({
+        name: authEmail || 'オーナー',
+        email: authEmail,
+        category: 'material_request',
+        subject: '素材追加リクエスト',
+        body: `素材名: ${materialRequestName.trim()}\n店舗ID: ${shopId}\nユーザーID: ${user.id}`,
+        user_id: user.id,
+      } as never)
+      setMaterialRequestSent(true)
+      setMaterialRequestName('')
+    } catch {
+      // ignore
+    } finally {
+      setMaterialRequestSending(false)
+    }
+  }
+
+  const handleSubmit = () => {
+    if (!name.trim()) {
+      setValidationError('アイテム名を入力してください')
+      return
+    }
+    setValidationError(null)
+
+    onSubmit({
+      values: {
+        itemCategoryId: selectedCategoryId,
+        itemTypeId: selectedTypeId,
+        brandId: selectedBrand?.id,
+        name: name.trim(),
+        description: description.trim() || undefined,
+        price: price.trim() === '' ? undefined : Number(price),
+        sizeIds: selectedSizeIds,
+        materialTypeIds: Array.from(selectedMaterialIds),
+        materialPercentages: Object.fromEntries(materialPercentages.entries()),
+        isAvailable,
+      },
+      newPhotoFiles: photos.map((p) => p.file),
+      deletedPhotoIds: deletedPhotos.map((p) => p.id),
+      deletedPhotoPaths: deletedPhotos.map((p) => p.storagePath),
+    })
+  }
+
+  const error = errorMessage ?? validationError
+
+  // ── Render ─────────────────────────────────────────────────
+  return (
+    <div className="mx-auto max-w-3xl space-y-10 px-4 py-10 md:px-16 md:py-14">
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-start gap-3 rounded-sm border border-red-200 bg-red-50 px-4 py-3">
+          <p className="flex-1 text-xs font-medium text-red-700">{error}</p>
+          <button onClick={() => setValidationError(null)}><X className="h-3.5 w-3.5 text-red-400" /></button>
+        </div>
+      )}
+
+      {/* ── 01 Item Category ─────────────────────── */}
+      <section>
+        <SectionLabel index="01" label="アイテムカテゴリ" note="任意" />
+        <div className="flex flex-wrap gap-2">
+          {(categories ?? []).map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => {
+                if (selectedCategoryId === cat.id) {
+                  setSelectedCategoryId(undefined)
+                  setSelectedTypeId(undefined)
+                } else {
+                  setSelectedCategoryId(cat.id)
+                  setSelectedTypeId(undefined)
+                }
+              }}
+              className={cn(
+                'rounded-sm border px-4 py-2 text-xs font-bold transition-all',
+                selectedCategoryId === cat.id
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+              )}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 02 Item Type ─────────────────────────── */}
+      {selectedCategory && (
+        <section>
+          <SectionLabel index="02" label="アイテムタイプ" note="任意" />
+          <div className="flex flex-wrap gap-2">
+            {selectedCategory.types.map((type) => (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => setSelectedTypeId((prev) => (prev === type.id ? undefined : type.id))}
+                className={cn(
+                  'rounded-sm border px-3 py-1.5 text-xs font-bold transition-all',
+                  selectedTypeId === type.id
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+                )}
+              >
+                {type.name}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── 03 Brand ─────────────────────────────── */}
+      <section>
+        <SectionLabel index="03" label="ブランド" note="任意" />
+        {selectedBrand ? (
+          <div className="flex items-center gap-3 border border-primary/30 bg-primary/[0.03] px-4 py-3">
+            <Tag className="h-3.5 w-3.5 text-primary/60" />
+            <span className="flex-1 font-headline text-sm font-black tracking-tight">{selectedBrand.name}</span>
+            <button
+              type="button"
+              onClick={() => { setSelectedBrand(null); setBrandQuery('') }}
+              className="text-muted-foreground/40 hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div ref={brandSearchRef} className="relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/40" />
+              <input
+                type="text"
+                placeholder="ブランド名で検索…"
+                value={brandQuery}
+                onChange={(e) => { setBrandQuery(e.target.value); setBrandDropdownOpen(true) }}
+                onFocus={() => setBrandDropdownOpen(true)}
+                className="h-11 w-full border border-border bg-white pl-9 pr-4 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              />
+            </div>
+            {brandDropdownOpen && brandQuery.trim().length >= 2 && filteredBrands.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-10 border border-t-0 border-border bg-white editorial-shadow">
+                {filteredBrands.map((brand) => (
+                  <button
+                    key={brand.id}
+                    type="button"
+                    onClick={() => { setSelectedBrand({ id: brand.id, name: brand.name }); setBrandQuery(''); setBrandDropdownOpen(false) }}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50"
+                  >
+                    <Tag className="h-3 w-3 text-muted-foreground/40" />
+                    <span className="font-headline text-[12px] font-black tracking-tight">{brand.name}</span>
+                    <Plus className="ml-auto h-3.5 w-3.5 text-primary/60" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ── 04 Name ──────────────────────────────── */}
+      <section>
+        <SectionLabel index="04" label="アイテム名" note="必須" />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => { setName(e.target.value); setNameManuallyEdited(true) }}
+          placeholder="例: COMOLI コットンツイルシャツ"
+          className="h-11 w-full border border-border bg-white px-4 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+        />
+        {!nameManuallyEdited && (
+          <p className="mt-1.5 text-[10px] text-muted-foreground/40">
+            ブランドやタイプを選ぶと自動入力されます。編集可能です。
+          </p>
+        )}
+      </section>
+
+      {/* ── 05 Description ───────────────────────── */}
+      <section>
+        <SectionLabel index="05" label="説明" note="任意" />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="素材感、シルエット、着こなしのコツなどを自由に記入してください"
+          rows={4}
+          className="w-full border border-border bg-white px-4 py-3 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+        />
+      </section>
+
+      {/* ── 05b Price ────────────────────────────── */}
+      <section>
+        <SectionLabel index="05" label="価格" note="任意（ウィッシュの価格帯マッチに使用）" />
+        <div className="relative w-full sm:w-1/2">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">¥</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="例: 12000"
+            className="w-full border border-border bg-white py-3 pl-8 pr-4 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+          />
+        </div>
+      </section>
+
+      {/* ── 06 Sizes ─────────────────────────────── */}
+      {selectedCategory?.sizeGroup && selectedCategory.sizeGroup !== 'none' && (
+        <section>
+          <SectionLabel index="06" label="サイズ" note="任意" />
+          <div className="flex flex-wrap gap-2">
+            {(sizes?.bySizeGroup[selectedCategory.sizeGroup] ?? []).map((size) => (
+              <button
+                key={size.id}
+                type="button"
+                onClick={() => toggleSize(size.id)}
+                className={cn(
+                  'rounded-sm border px-3 py-1.5 text-xs font-bold transition-all',
+                  selectedSizeIds.includes(size.id)
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+                )}
+              >
+                {size.label}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── 07 Materials ─────────────────────────── */}
+      <section>
+        <SectionLabel index="07" label="素材" note="任意" />
+        <div className="flex flex-wrap gap-2">
+          {(materials ?? []).map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => toggleMaterial(m.id)}
+              className={cn(
+                'rounded-sm border px-3 py-1.5 text-xs font-bold transition-all',
+                selectedMaterialIds.has(m.id)
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border bg-white text-foreground/70 hover:border-primary/30',
+              )}
+            >
+              {m.name}
+            </button>
+          ))}
+        </div>
+
+        {/* 比率入力 */}
+        {selectedMaterialIds.size > 0 && (
+          <div className="mt-4 space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+              素材比率（任意）
+            </p>
+            {(materials ?? []).filter((m) => selectedMaterialIds.has(m.id)).map((m) => (
+              <div key={m.id} className="flex items-center gap-3">
+                <span className="w-28 truncate text-xs font-bold text-foreground/70">{m.name}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={materialPercentages.get(m.id) ?? ''}
+                  onChange={(e) => {
+                    const raw = parseInt(e.target.value, 10)
+                    setMaterialPercentage(m.id, Number.isNaN(raw) ? null : Math.min(100, Math.max(1, raw)))
+                  }}
+                  placeholder="—"
+                  className="h-8 w-16 border border-border bg-white px-2 text-center text-xs font-bold placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                />
+                <span className="text-xs text-muted-foreground/50">%</span>
+              </div>
+            ))}
+            {materialPercentageTotal > 0 && (
+              <p className={cn('text-[10px] font-bold', materialPercentageTotal === 100 ? 'text-emerald-600' : 'text-amber-600')}>
+                合計: {materialPercentageTotal}%{materialPercentageTotal === 100 ? ' ✓' : ' （100%を目安に入力してください）'}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Material request */}
+        <div className="mt-4 border border-dashed border-border p-4">
+          {!showMaterialRequest ? (
+            <button
+              type="button"
+              onClick={() => setShowMaterialRequest(true)}
+              className="text-[11px] font-bold text-muted-foreground/50 hover:text-primary/60"
+            >
+              欲しい素材が見つからない場合はリクエスト →
+            </button>
+          ) : materialRequestSent ? (
+            <p className="text-[11px] font-bold text-primary/70">
+              リクエストを送信しました。ありがとうございます！
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/40">
+                素材追加リクエスト
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={materialRequestName}
+                  onChange={(e) => setMaterialRequestName(e.target.value)}
+                  placeholder="例: カシミヤ混、オーガニックコットン"
+                  className="h-9 flex-1 border border-border bg-white px-3 text-xs placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                />
+                <button
+                  type="button"
+                  onClick={handleMaterialRequest}
+                  disabled={!materialRequestName.trim() || materialRequestSending}
+                  className="h-9 border border-primary bg-primary px-3 text-xs font-bold text-white disabled:opacity-40"
+                >
+                  {materialRequestSending ? '送信中…' : '送信'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowMaterialRequest(false); setMaterialRequestName('') }}
+                  className="h-9 border border-border bg-white px-2 text-muted-foreground/40 hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground/40">
+                素材名を入力して送信してください。
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── 08 Photos ────────────────────────────── */}
+      <section>
+        <SectionLabel index="08" label="写真" note={`任意 (最大10枚 · ${totalPhotoCount}/10)`} />
+
+        {(existingPhotos.length > 0 || photos.length > 0) && (
+          <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+            {existingPhotos.map((p, idx) => (
+              <div key={p.id} className="group relative aspect-square overflow-hidden border border-border">
+                <img src={getR2Url('shop-items', p.storagePath)} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeExistingPhoto(p.id)}
+                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-sm bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+                {idx === 0 && (
+                  <span className="absolute bottom-1 left-1 rounded-sm bg-black/60 px-1 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white">
+                    メイン
+                  </span>
+                )}
+              </div>
+            ))}
+            {photos.map((p, idx) => (
+              <div key={p.url} className="group relative aspect-square overflow-hidden border border-border">
+                <img src={p.url} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeNewPhoto(idx)}
+                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-sm bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+                {existingPhotos.length === 0 && idx === 0 && (
+                  <span className="absolute bottom-1 left-1 rounded-sm bg-black/60 px-1 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white">
+                    メイン
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {totalPhotoCount < 10 && (
+          <>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic"
+              multiple
+              className="sr-only"
+              onChange={handlePhotoChange}
+            />
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="flex w-full items-center justify-center gap-2 border border-dashed border-border py-8 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60"
+            >
+              <ImagePlus className="h-4 w-4" />
+              写真を追加
+            </button>
+          </>
+        )}
+      </section>
+
+      {/* ── 09 Availability ──────────────────────── */}
+      <section>
+        <SectionLabel index="09" label="公開設定" />
+        <button
+          type="button"
+          onClick={() => setIsAvailable((prev) => !prev)}
+          className={cn(
+            'flex w-full items-center justify-between border px-4 py-3 transition-all',
+            isAvailable ? 'border-primary/20 bg-primary/[0.03]' : 'border-border bg-white',
+          )}
+        >
+          <div className="text-left">
+            <p className="text-xs font-bold">{isAvailable ? '公開中' : '非公開'}</p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground/50">
+              {isAvailable ? 'ショップページでこのアイテムが表示されます' : '非公開にすると一覧に表示されません'}
+            </p>
+          </div>
+          <div className={cn(
+            'h-5 w-9 rounded-full transition-colors',
+            isAvailable ? 'bg-primary' : 'bg-muted-foreground/20',
+          )}>
+            <div className={cn(
+              'h-5 w-5 rounded-full bg-white shadow transition-transform',
+              isAvailable ? 'translate-x-4' : 'translate-x-0',
+            )} />
+          </div>
+        </button>
+      </section>
+
+      {/* ── Submit ────────────────────────────────── */}
+      <div className="flex gap-3 pt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 border border-border bg-white py-3 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors hover:text-foreground"
+        >
+          キャンセル
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting || !name.trim()}
+          className="flex-1 bg-primary py-3 text-xs font-bold uppercase tracking-[0.2em] text-white disabled:opacity-50"
+        >
+          {submitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              保存中...
+            </span>
+          ) : submitLabel}
+        </button>
+      </div>
+
+      {/* ── Delete (edit only) ────────────────────── */}
+      {onDelete && (
+        <div className="border-t border-border pt-6">
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-red-500/70 transition-colors hover:text-red-600 disabled:opacity-40"
+          >
+            {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            このアイテムを削除
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Section label component ────────────────────────────────────
+
+const SectionLabel = ({ index, label, note }: { index: string; label: string; note?: string }) => (
+  <div className="mb-4 flex items-baseline gap-3">
+    <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/25">{index}</span>
+    <span className="font-headline text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
+      {label}
+    </span>
+    {note && <span className="text-[9px] text-muted-foreground/30">{note}</span>}
+    <span className="h-px flex-1 bg-border" />
+  </div>
+)
+
+export default ShopItemForm
