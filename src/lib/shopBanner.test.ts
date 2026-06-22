@@ -4,6 +4,8 @@ import {
   formatBannerPeriod,
   toLocalDatetimeInput,
   toNullableInput,
+  hasBannerPlacement,
+  bannerPlacementLabel,
 } from '@/lib/shopBanner'
 import type { ShopBanner } from '@/types'
 
@@ -16,6 +18,7 @@ const baseBanner: ShopBanner = {
   isActive: true,
   startsAt: null,
   endsAt: null,
+  placements: ['shop_detail'],
   createdAt: '2026-06-01T00:00:00Z',
   updatedAt: '2026-06-01T00:00:00Z',
 }
@@ -92,5 +95,28 @@ describe('toNullableInput', () => {
 
   it('値があれば前後空白を除去して返す', () => {
     expect(toNullableInput('  https://example.com  ')).toBe('https://example.com')
+  })
+})
+
+describe('hasBannerPlacement', () => {
+  it('含まれる表示位置は true', () => {
+    expect(hasBannerPlacement(baseBanner, 'shop_detail')).toBe(true)
+  })
+
+  it('含まれない表示位置は false', () => {
+    expect(hasBannerPlacement(baseBanner, 'favorite_button')).toBe(false)
+  })
+
+  it('複数指定のいずれも判定できる', () => {
+    const banner = { ...baseBanner, placements: ['shop_detail', 'favorite_button'] as const }
+    expect(hasBannerPlacement(banner, 'favorite_button')).toBe(true)
+    expect(hasBannerPlacement(banner, 'shop_detail')).toBe(true)
+  })
+})
+
+describe('bannerPlacementLabel', () => {
+  it('既知の値は日本語ラベルを返す', () => {
+    expect(bannerPlacementLabel('shop_detail')).toBe('店舗詳細ページ上部')
+    expect(bannerPlacementLabel('favorite_button')).toBe('お気に入りボタンの上')
   })
 })

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router'
-import { ChevronLeft, X, Pencil, ExternalLink, Calendar } from 'lucide-react'
+import { ChevronLeft, X, Pencil, ExternalLink, Calendar, MapPin } from 'lucide-react'
 import { getR2Url } from '@/lib/r2'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
@@ -12,9 +12,15 @@ import {
   useDeleteShopBanner,
   SHOP_BANNER_BUCKET,
 } from '@/hooks/useShopBanners'
-import { isBannerLive, formatBannerPeriod, toLocalDatetimeInput } from '@/lib/shopBanner'
+import {
+  isBannerLive,
+  formatBannerPeriod,
+  toLocalDatetimeInput,
+  BANNER_PLACEMENTS,
+  bannerPlacementLabel,
+} from '@/lib/shopBanner'
 import { cn } from '@/lib/utils'
-import type { ShopBanner, ShopBannerFormValues } from '@/types'
+import type { ShopBanner, ShopBannerFormValues, BannerPlacement } from '@/types'
 
 const getBannerUrl = (imagePath: string) => getR2Url(SHOP_BANNER_BUCKET, imagePath)
 
@@ -23,7 +29,16 @@ const EMPTY_FORM: ShopBannerFormValues = {
   isActive: true,
   startsAt: '',
   endsAt: '',
+  placements: ['shop_detail'],
 }
+
+const togglePlacement = (
+  placements: BannerPlacement[],
+  placement: BannerPlacement,
+): BannerPlacement[] =>
+  placements.includes(placement)
+    ? placements.filter((p) => p !== placement)
+    : [...placements, placement]
 
 // ── 期間・リンク・公開のフォーム部品 ────────────────────────────
 
@@ -73,6 +88,28 @@ const BannerFields = ({ values, onChange }: BannerFieldsProps) => (
       </div>
     </div>
 
+    <div>
+      <label className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+        表示位置（1つ以上）
+      </label>
+      <div className="flex flex-col gap-2">
+        {BANNER_PLACEMENTS.map((p) => (
+          <label
+            key={p.value}
+            className="flex w-fit cursor-pointer items-center gap-2 text-xs text-foreground/70"
+          >
+            <input
+              type="checkbox"
+              checked={values.placements.includes(p.value)}
+              onChange={() => onChange({ ...values, placements: togglePlacement(values.placements, p.value) })}
+              className="h-4 w-4 accent-primary"
+            />
+            {p.label}
+          </label>
+        ))}
+      </div>
+    </div>
+
     <label className="flex w-fit cursor-pointer items-center gap-2 text-xs text-foreground/70">
       <input
         type="checkbox"
@@ -99,6 +136,7 @@ const BannerRow = ({ banner, shopId }: BannerRowProps) => {
     isActive: banner.isActive,
     startsAt: toLocalDatetimeInput(banner.startsAt),
     endsAt: toLocalDatetimeInput(banner.endsAt),
+    placements: banner.placements,
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -108,6 +146,10 @@ const BannerRow = ({ banner, shopId }: BannerRowProps) => {
   const live = isBannerLive(banner)
 
   const handleSave = () => {
+    if (values.placements.length === 0) {
+      setError('表示位置を1つ以上選択してください')
+      return
+    }
     setError(null)
     update(
       { id: banner.id, values },
@@ -158,6 +200,20 @@ const BannerRow = ({ banner, shopId }: BannerRowProps) => {
               <Calendar className="h-3 w-3 shrink-0" />
               {formatBannerPeriod(banner)}
             </p>
+
+            {banner.placements.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {banner.placements.map((p) => (
+                  <span
+                    key={p}
+                    className="inline-flex items-center gap-1 rounded-sm border border-border px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground/60"
+                  >
+                    <MapPin className="h-2.5 w-2.5" />
+                    {bannerPlacementLabel(p)}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -246,6 +302,10 @@ const AddBannerForm = ({ shopId, nextOrder }: AddBannerFormProps) => {
   const handleSubmit = () => {
     if (!file) {
       setError('バナー画像を選択してください')
+      return
+    }
+    if (values.placements.length === 0) {
+      setError('表示位置を1つ以上選択してください')
       return
     }
     setError(null)

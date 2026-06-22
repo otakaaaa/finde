@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { toNullableInput } from '@/lib/shopBanner'
-import type { ShopBanner, ShopBannerFormValues } from '@/types'
+import type { ShopBanner, ShopBannerFormValues, BannerPlacement } from '@/types'
 
 export const SHOP_BANNER_BUCKET = 'shop-banners'
 
@@ -17,11 +17,12 @@ interface ShopBannerRow {
   is_active: boolean
   starts_at: string | null
   ends_at: string | null
+  placements: string[]
   created_at: string
   updated_at: string
 }
 
-const SELECT = 'id, shop_id, image_path, link_url, order, is_active, starts_at, ends_at, created_at, updated_at'
+const SELECT = 'id, shop_id, image_path, link_url, order, is_active, starts_at, ends_at, placements, created_at, updated_at'
 
 const mapRow = (row: ShopBannerRow): ShopBanner => ({
   id: row.id,
@@ -32,6 +33,7 @@ const mapRow = (row: ShopBannerRow): ShopBanner => ({
   isActive: row.is_active,
   startsAt: row.starts_at,
   endsAt: row.ends_at,
+  placements: (row.placements ?? []) as BannerPlacement[],
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 })
@@ -105,6 +107,7 @@ export const useCreateShopBanner = (shopId: string) => {
           is_active: values.isActive,
           starts_at: toNullableInput(values.startsAt),
           ends_at: toNullableInput(values.endsAt),
+          placements: values.placements,
         } as never) as unknown as { error: { message: string } | null }
       if (error) {
         await deleteFromR2(SHOP_BANNER_BUCKET, [path])
@@ -126,6 +129,7 @@ export const useUpdateShopBanner = (shopId: string) => {
           is_active: values.isActive,
           starts_at: toNullableInput(values.startsAt),
           ends_at: toNullableInput(values.endsAt),
+          placements: values.placements,
         } as never)
         .eq('id', id) as unknown as { error: { message: string } | null }
       if (error) throw new Error(error.message)

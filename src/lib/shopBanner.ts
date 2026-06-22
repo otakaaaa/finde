@@ -1,4 +1,17 @@
-import type { ShopBanner } from '@/types'
+import type { ShopBanner, BannerPlacement } from '@/types'
+
+// 表示位置の選択肢とラベル
+export const BANNER_PLACEMENTS: { value: BannerPlacement; label: string }[] = [
+  { value: 'shop_detail', label: '店舗詳細ページ上部' },
+  { value: 'favorite_button', label: 'お気に入りボタンの上' },
+]
+
+export const bannerPlacementLabel = (placement: BannerPlacement): string =>
+  BANNER_PLACEMENTS.find((p) => p.value === placement)?.label ?? placement
+
+// バナーが指定の表示位置を含むか
+export const hasBannerPlacement = (banner: ShopBanner, placement: BannerPlacement): boolean =>
+  banner.placements.includes(placement)
 
 // 掲載中（is_active かつ 期間内）かどうかを判定する。
 // オーナー/管理者は RLS 上すべてのバナーを取得できるため、表示側でも絞り込む。

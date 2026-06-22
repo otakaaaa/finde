@@ -185,8 +185,8 @@ const ShopDetailPage = () => {
         path={`/shops/${shop.id}`}
         image={seoImage}
       />
-      {/* ── 店舗専用バナー ────────────────────────────── */}
-      <ShopBannerCarousel shopId={shop.id} />
+      {/* ── 店舗専用バナー（上部） ────────────────────── */}
+      <ShopBannerCarousel shopId={shop.id} placement="shop_detail" />
       {/* ── Hero Gallery ──────────────────────────────── */}
       <div className="relative overflow-hidden bg-primary">
         {/* Back nav */}
@@ -271,6 +271,8 @@ const ShopDetailPage = () => {
 
       {/* ── Body ──────────────────────────────────────── */}
       <div className="mx-auto max-w-6xl px-4 py-10 md:px-16 md:py-14">
+        {/* 店舗専用バナー（お気に入りボタンの上・SP） */}
+        <ShopBannerCarousel shopId={shop.id} placement="favorite_button" className="mb-8 lg:hidden" />
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
 
           {/* ── Left: Content ─────────────────────────── */}
@@ -342,6 +344,8 @@ const ShopDetailPage = () => {
 
           {/* ── Right: Info Panel ─────────────────────── */}
           <aside className="lg:sticky lg:top-[calc(56px+24px)] lg:self-start">
+            {/* 店舗専用バナー（お気に入りボタンの上・PC） */}
+            <ShopBannerCarousel shopId={shop.id} placement="favorite_button" className="mb-4 hidden lg:block" />
             <div className="border border-border">
               {/* Rating + Favorite (desktop) */}
               <div className="hidden border-b border-border px-5 py-4 lg:flex items-center justify-between">
