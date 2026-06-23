@@ -555,7 +555,7 @@ const OwnerApplicationNewPage = () => {
                         </label>
                         <input
                           type="text"
-                          placeholder="例: ○○古着店"
+                          placeholder="例: ○○ショップ"
                           className={cn(inputClass, errors.shopName && 'border-red-400')}
                           {...register('shopName')}
                         />
