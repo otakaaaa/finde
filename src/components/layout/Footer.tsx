@@ -1,5 +1,7 @@
 import { Link } from 'react-router'
 import { FindeLogo } from '@/components/icons/FindeLogo'
+import { XLogo } from '@/components/icons/XLogo'
+import { SITE } from '@/config/site'
 
 const NAV_COLUMNS = [
   {
@@ -66,18 +68,31 @@ export const Footer = () => (
             </p>
           </div>
 
-          {/* CTA */}
-          <Link
-            to="/listing-request"
-            className="group inline-flex w-fit items-center gap-2 border border-white/20 px-4 py-2.5 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
-          >
-            <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-white/60 transition-colors group-hover:text-white/90">
-              店舗掲載申請
-            </span>
-            <span className="font-headline text-[9px] font-black text-white/20 transition-colors group-hover:text-white/40">
-              →
-            </span>
-          </Link>
+          <div className="flex flex-col gap-5">
+            {/* CTA */}
+            <Link
+              to="/listing-request"
+              className="group inline-flex w-fit items-center gap-2 border border-white/20 px-4 py-2.5 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
+            >
+              <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-white/60 transition-colors group-hover:text-white/90">
+                店舗掲載申請
+              </span>
+              <span className="font-headline text-[9px] font-black text-white/20 transition-colors group-hover:text-white/40">
+                →
+              </span>
+            </Link>
+
+            {/* Social */}
+            <a
+              href={SITE.social.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="FINDE公式X"
+              className="group inline-flex h-9 w-9 items-center justify-center border border-white/20 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
+            >
+              <XLogo className="h-3.5 w-3.5 text-white/50 transition-colors group-hover:text-white/90" />
+            </a>
+          </div>
         </div>
 
         {/* Nav columns */}

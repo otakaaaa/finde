@@ -9,6 +9,10 @@ export const SITE = {
   defaultDescription:
     '洋服好き・子ども服を探している人向けに、店舗と取り扱いブランドを比較しながら「行きたいお店」が見つかる服屋検索サービス。',
   defaultImage: '/ogp.png',
+  /** FINDE運営の公式SNSアカウント */
+  social: {
+    x: 'https://x.com/findecloud',
+  },
 } as const
 
 /**
