@@ -128,28 +128,27 @@ export interface ShopPhoto {
   createdAt: string
 }
 
-export type BannerPlacement = 'shop_detail' | 'favorite_button'
-
-export interface ShopBanner {
+export interface ShopAnnouncement {
   id: string
   shopId: string
-  imagePath: string
+  title: string
+  body: string
   linkUrl: string | null
-  order: number
+  imagePath: string | null
   isActive: boolean
   startsAt: string | null
   endsAt: string | null
-  placements: BannerPlacement[]
   createdAt: string
   updatedAt: string
 }
 
-export interface ShopBannerFormValues {
+export interface ShopAnnouncementFormValues {
+  title: string
+  body: string
   linkUrl: string
   isActive: boolean
   startsAt: string
   endsAt: string
-  placements: BannerPlacement[]
 }
 
 export interface Shop {

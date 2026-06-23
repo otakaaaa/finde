@@ -392,7 +392,7 @@ const AdminShopBulkPage = () => {
                       <td className="px-3 py-2.5">
                         <span className="rounded-sm bg-emerald-50 px-1.5 py-0.5 font-headline text-[9px] font-black text-emerald-700">public</span>
                       </td>
-                      <td className="px-3 py-2.5 text-muted-foreground/40">渋谷の古着店…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">渋谷のセレクトショップ…</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">03-0000-0000</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>

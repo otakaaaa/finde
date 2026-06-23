@@ -24,7 +24,7 @@ export const BasicInfoSection = ({
         <Field label="店舗名" error={errors.name?.message}>
           <input
             type="text"
-            placeholder="例: ○○古着店"
+            placeholder="例: ○○ショップ"
             className={cn(inputClass, errors.name && 'border-red-400')}
             {...register('name')}
           />

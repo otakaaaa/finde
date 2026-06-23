@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import {
   Edit3, Tag, ExternalLink, Star, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
-  ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3, Image,
+  ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3, Megaphone,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
@@ -323,11 +323,11 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   animDelay={220}
                 />
                 <ActionCard
-                  to={`/owner/shops/${shop.id}/banners`}
-                  icon={<Image className="h-4 w-4" />}
+                  to={`/owner/shops/${shop.id}/announcements`}
+                  icon={<Megaphone className="h-4 w-4" />}
                   index="06"
-                  title="店舗バナーを管理"
-                  desc="店舗詳細ページ上部に表示する専用バナーを登録・掲載する"
+                  title="お知らせを管理"
+                  desc="店舗詳細ページに表示するお知らせを登録・掲載する"
                   animDelay={275}
                 />
               </div>
