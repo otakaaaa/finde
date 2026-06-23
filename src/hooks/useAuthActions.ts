@@ -26,6 +26,22 @@ export const useAuthActions = () => {
     }
   }
 
+  const signInWithTwitter = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const hasPasswordIdentity = async (): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser()
     return (user?.identities ?? []).some((identity) => identity.provider === 'email')
@@ -92,6 +108,7 @@ export const useAuthActions = () => {
     error,
     clearError,
     signInWithGoogle,
+    signInWithTwitter,
     hasPasswordIdentity,
     updateEmail,
     updatePasswordWithCurrent,
