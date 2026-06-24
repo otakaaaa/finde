@@ -1,6 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { AwsClient } from 'https://esm.sh/aws4fetch@1.0.11'
-import { getCallerUser } from '../_shared/guards.ts'
+import { getCallerUser, callerCanModifyObject } from '../_shared/guards.ts'
+
+// アップロードは webp に圧縮されたうえで送られる。署名に Content-Type を含めて
+// 固定することで、HTML/JS 等を任意の Content-Type で配信される事態を防ぐ。
+const UPLOAD_CONTENT_TYPE = 'image/webp'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,6 +33,14 @@ serve(async (req: Request) => {
     })
   }
 
+  // 呼び出し元が当該パスの所有者（本人 / 店舗スタッフ / 管理者）か検証する。
+  if (!(await callerCanModifyObject(user, bucket, path))) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   const accountId = Deno.env.get('R2_ACCOUNT_ID')!
   const r2Bucket = Deno.env.get('R2_BUCKET')!
 
@@ -44,7 +56,13 @@ serve(async (req: Request) => {
   url.searchParams.set('X-Amz-Expires', '300')
 
   const signed = await r2.sign(
-    new Request(url, { method: 'PUT', headers: { 'x-amz-content-sha256': 'UNSIGNED-PAYLOAD' } }),
+    new Request(url, {
+      method: 'PUT',
+      headers: {
+        'x-amz-content-sha256': 'UNSIGNED-PAYLOAD',
+        'Content-Type': UPLOAD_CONTENT_TYPE,
+      },
+    }),
     { aws: { signQuery: true } },
   )
 

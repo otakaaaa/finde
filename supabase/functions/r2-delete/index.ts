@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { AwsClient } from 'https://esm.sh/aws4fetch@1.0.11'
-import { getCallerUser } from '../_shared/guards.ts'
+import { getCallerUser, callerCanModifyObject } from '../_shared/guards.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +25,17 @@ serve(async (req: Request) => {
   if (!bucket || !Array.isArray(paths) || paths.length === 0) {
     return new Response(JSON.stringify({ error: 'bucket と paths は必須です' }), {
       status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // 全パスについて呼び出し元が所有者か検証する。1つでも権限がなければ全体を拒否する。
+  const ownershipChecks = await Promise.all(
+    paths.map((path) => callerCanModifyObject(user, bucket, path)),
+  )
+  if (ownershipChecks.some((allowed) => !allowed)) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
