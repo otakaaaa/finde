@@ -1,6 +1,14 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router'
-import { ChevronLeft, TrendingUp, ShoppingBag, CheckCircle, XCircle } from 'lucide-react'
-import { useShopWishAnalytics } from '@/hooks/useShopItems'
+import {
+  ChevronLeft,
+  TrendingUp,
+  ShoppingBag,
+  CheckCircle,
+  XCircle,
+  Boxes,
+} from 'lucide-react'
+import { useShopWishAnalytics, type WishCategoryCount } from '@/hooks/useShopItems'
 import { useShopSubscription } from '@/hooks/useShopSubscription'
 import { OwnerPremiumLock } from '@/components/owner/OwnerPremiumLock'
 import { cn } from '@/lib/utils'
@@ -59,7 +67,7 @@ const OwnerWishAnalyticsPage = () => {
       <div className="border-b border-border bg-white">
         <div className="mx-auto max-w-3xl px-4 py-3 md:px-16">
           <p className="text-[11px] text-muted-foreground/60">
-            同都道府県内の公開ウィッシュデータを集計しています。マッチング改善の参考にしてください。
+            同都道府県内の公開ウィッシュデータを集計しています。
           </p>
         </div>
       </div>
@@ -83,56 +91,32 @@ const OwnerWishAnalyticsPage = () => {
           {!isLoading && !isError && analytics && (
             <>
 
-              {/* ── Total matching ────────────────── */}
+              {/* ── 充足率 ────────────────────── */}
               <section>
-                <SectionLabel label="マッチング対象ウィッシュ" />
-                <div className="border border-border bg-white p-6 editorial-shadow">
-                  <div className="flex items-center gap-4">
-                    <TrendingUp className="h-8 w-8 text-primary/40" />
-                    <div>
-                      <p className="font-headline text-4xl font-black tabular-nums tracking-tight text-primary">
-                        {analytics.totalMatchingWishes.toLocaleString()}
-                      </p>
-                      <p className="mt-1 text-[11px] text-muted-foreground/60">
-                        件のウィッシュが同都道府県内に存在します
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <SectionLabel label="充足率" />
+                <FulfillmentCard
+                  total={analytics.totalMatchingWishes}
+                  fulfilled={analytics.fulfilledWishes}
+                  shopId={shopId ?? ''}
+                />
               </section>
 
-              {/* ── By item category ──────────────── */}
+              {/* ── By item category（アイテムタイプ掘り下げ付き） ── */}
               {analytics.byItemCategory.length > 0 && (
                 <section>
                   <SectionLabel label="カテゴリ別ウィッシュ数" />
+                  <p className="mb-4 text-[10px] text-muted-foreground/50">
+                    カテゴリをタップすると、内訳のアイテムタイプ別需要を確認できます。
+                  </p>
                   <div className="space-y-2">
-                    {analytics.byItemCategory.map((cat, idx) => {
-                      const maxCount = analytics.byItemCategory[0]?.count ?? 1
-                      const widthPct = Math.round((cat.count / maxCount) * 100)
-                      return (
-                        <div key={cat.id} className="border border-border bg-white p-4 editorial-shadow">
-                          <div className="mb-2 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/30">
-                                {String(idx + 1).padStart(2, '0')}
-                              </span>
-                              <span className="font-headline text-sm font-black tracking-tight text-foreground/80">
-                                {cat.name}
-                              </span>
-                            </div>
-                            <span className="font-headline text-sm font-black tabular-nums text-primary">
-                              {cat.count.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="h-1 overflow-hidden rounded-full bg-border">
-                            <div
-                              className="h-full rounded-full bg-primary/40 transition-all"
-                              style={{ width: `${widthPct}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
+                    {analytics.byItemCategory.map((cat, idx) => (
+                      <CategoryRow
+                        key={cat.id}
+                        category={cat}
+                        rank={idx + 1}
+                        maxCount={analytics.byItemCategory[0]?.count ?? 1}
+                      />
+                    ))}
                   </div>
                 </section>
               )}
@@ -223,5 +207,154 @@ const SectionLabel = ({ label }: { label: string }) => (
     <span className="h-px flex-1 bg-border" />
   </div>
 )
+
+// ── 充足率カード ───────────────────────────────────────────
+const FulfillmentCard = ({
+  total,
+  fulfilled,
+  shopId,
+}: {
+  total: number
+  fulfilled: number
+  shopId: string
+}) => {
+  const safeFulfilled = Math.min(fulfilled, total)
+  const unfulfilled = Math.max(total - safeFulfilled, 0)
+  const rate = total > 0 ? Math.round((safeFulfilled / total) * 100) : 0
+
+  return (
+    <div className="border border-border bg-white p-6 editorial-shadow">
+      <div className="flex items-center gap-4">
+        <Boxes className="h-8 w-8 shrink-0 text-primary/40" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <p className="font-headline text-4xl font-black tabular-nums tracking-tight text-primary">
+              {rate}
+              <span className="text-2xl">%</span>
+            </p>
+            <p className="text-[11px] text-muted-foreground/60">
+              {total > 0
+                ? `同エリアの公開ウィッシュ ${total.toLocaleString()}件中 ${safeFulfilled.toLocaleString()}件 をカバー`
+                : '同エリアに公開ウィッシュがまだありません'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {total > 0 && (
+        <>
+          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-border">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${rate}%` }}
+            />
+          </div>
+
+          {unfulfilled > 0 && (
+            <div className="mt-5 border border-amber-100 bg-amber-50/50 p-4">
+              <p className="text-[11px] font-bold leading-relaxed text-amber-700">
+                <ShoppingBag className="mr-1.5 inline h-3 w-3" />
+                未充足のウィッシュが {unfulfilled.toLocaleString()}件 あります。
+                取り扱いブランド・サイズ・価格帯を広げると、リーチできる需要が増えます。
+                <Link
+                  to={`/owner/shops/${shopId}/items`}
+                  className="ml-1 underline hover:no-underline"
+                >
+                  アイテムを追加する →
+                </Link>
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ── カテゴリ行（アイテムタイプ掘り下げ） ───────────────────────
+const CategoryRow = ({
+  category,
+  rank,
+  maxCount,
+}: {
+  category: WishCategoryCount
+  rank: number
+  maxCount: number
+}) => {
+  const [expanded, setExpanded] = useState(false)
+  const widthPct = Math.round((category.count / maxCount) * 100)
+  const hasTypes = category.itemTypes.length > 0
+  const typedTotal = category.itemTypes.reduce((sum, t) => sum + t.count, 0)
+  const typeUnspecified = Math.max(category.count - typedTotal, 0)
+
+  return (
+    <div className="border border-border bg-white editorial-shadow">
+      <button
+        type="button"
+        onClick={() => hasTypes && setExpanded((v) => !v)}
+        className={cn('w-full p-4 text-left', hasTypes && 'transition-colors hover:bg-muted/30')}
+        aria-expanded={expanded}
+        disabled={!hasTypes}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/30">
+              {String(rank).padStart(2, '0')}
+            </span>
+            <span className="font-headline text-sm font-black tracking-tight text-foreground/80">
+              {category.name}
+            </span>
+            {hasTypes && (
+              <ChevronLeft
+                className={cn(
+                  'h-3 w-3 text-muted-foreground/40 transition-transform',
+                  expanded ? 'rotate-90' : '-rotate-90',
+                )}
+              />
+            )}
+          </div>
+          <span className="font-headline text-sm font-black tabular-nums text-primary">
+            {category.count.toLocaleString()}
+          </span>
+        </div>
+        <div className="h-1 overflow-hidden rounded-full bg-border">
+          <div
+            className="h-full rounded-full bg-primary/40 transition-all"
+            style={{ width: `${widthPct}%` }}
+          />
+        </div>
+      </button>
+
+      {expanded && hasTypes && (
+        <div className="space-y-2 border-t border-border bg-muted/20 px-4 py-3">
+          {category.itemTypes.map((type) => {
+            const typeWidth = Math.round((type.count / (category.itemTypes[0]?.count ?? 1)) * 100)
+            return (
+              <div key={type.id}>
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-foreground/70">{type.name}</span>
+                  <span className="font-headline text-[11px] font-black tabular-nums text-primary/70">
+                    {type.count.toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-0.5 overflow-hidden rounded-full bg-border">
+                  <div
+                    className="h-full rounded-full bg-primary/30"
+                    style={{ width: `${typeWidth}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+          {typeUnspecified > 0 && (
+            <p className="pt-1 text-[10px] text-muted-foreground/50">
+              アイテムタイプ未指定: {typeUnspecified.toLocaleString()}件
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default OwnerWishAnalyticsPage
