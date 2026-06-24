@@ -4,6 +4,7 @@ import { ArrowRight, Megaphone } from 'lucide-react'
 import { usePressReleases } from '@/hooks/usePressReleases'
 import { cn } from '@/lib/utils'
 import { Seo } from '@/components/seo/Seo'
+import { FollowXCard } from '@/components/common/FollowXCard'
 
 const PAGE_SIZE = 10
 
@@ -136,6 +137,12 @@ const NewsPage = () => {
               </div>
               <Pagination page={page} totalPages={totalPages} onPage={setPage} />
             </>
+          )}
+
+          {!isLoading && (
+            <div className="mt-10">
+              <FollowXCard />
+            </div>
           )}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { Seo } from '@/components/seo/Seo'
+import { FollowXCard } from '@/components/common/FollowXCard'
 
 // ── Section heading ───────────────────────────────────────────────────────
 
@@ -138,6 +139,11 @@ const AboutPage = () => (
               </svg>
             </a>
           </div>
+
+          <FollowXCard
+            className="mt-6"
+            description="FINDEの最新の取り組みをお届けしています。"
+          />
         </section>
 
         {/* ── CTA ──────────────────────────────────────────── */}
