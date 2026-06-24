@@ -13,6 +13,8 @@ import {
 } from 'recharts'
 import { ChevronLeft, Eye, Users, Heart, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useShopViewAnalytics } from '@/hooks/useShopViewAnalytics'
+import { useShopSubscription } from '@/hooks/useShopSubscription'
+import { OwnerPremiumLock } from '@/components/owner/OwnerPremiumLock'
 import { cn } from '@/lib/utils'
 import type {
   ShopAnalyticsSourceCount,
@@ -220,7 +222,10 @@ const DistributionChart = ({
 const OwnerShopAnalyticsPage = () => {
   const { shopId } = useParams<{ shopId: string }>()
   const [days, setDays] = useState(30)
-  const { data: analytics, isLoading, isError } = useShopViewAnalytics(shopId ?? '', days)
+  const { isPremium, isLoading: isSubLoading } = useShopSubscription(shopId)
+  const { data: analytics, isLoading, isError } = useShopViewAnalytics(shopId ?? '', days, {
+    enabled: isPremium,
+  })
 
   const dailyChart = (analytics?.daily ?? []).map((d) => ({
     date: d.date.slice(5).replace('-', '/'),
@@ -257,6 +262,18 @@ const OwnerShopAnalyticsPage = () => {
   }))
 
   const hasData = (analytics?.totals.pv ?? 0) > 0
+
+  if (isSubLoading) {
+    return (
+      <div className="flex min-h-[calc(100dvh-56px)] justify-center bg-background py-24">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return <OwnerPremiumLock feature="analytics" />
+  }
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">

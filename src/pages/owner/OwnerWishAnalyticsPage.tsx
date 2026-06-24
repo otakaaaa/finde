@@ -1,12 +1,29 @@
 import { useParams, Link } from 'react-router'
 import { ChevronLeft, TrendingUp, ShoppingBag, CheckCircle, XCircle } from 'lucide-react'
 import { useShopWishAnalytics } from '@/hooks/useShopItems'
+import { useShopSubscription } from '@/hooks/useShopSubscription'
+import { OwnerPremiumLock } from '@/components/owner/OwnerPremiumLock'
 import { cn } from '@/lib/utils'
 
 const OwnerWishAnalyticsPage = () => {
   const { shopId } = useParams<{ shopId: string }>()
 
-  const { data: analytics, isLoading, isError } = useShopWishAnalytics(shopId ?? '')
+  const { isPremium, isLoading: isSubLoading } = useShopSubscription(shopId)
+  const { data: analytics, isLoading, isError } = useShopWishAnalytics(shopId ?? '', {
+    enabled: isPremium,
+  })
+
+  if (isSubLoading) {
+    return (
+      <div className="flex min-h-[calc(100dvh-56px)] justify-center bg-background py-24">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return <OwnerPremiumLock feature="wish-analytics" />
+  }
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">

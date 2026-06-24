@@ -310,7 +310,10 @@ interface AnalyticsRpcResult {
   top_demanded_brands: { brand_id: string; name: string; count: number; in_shop: boolean }[] | null
 }
 
-export const useShopWishAnalytics = (shopId: string) =>
+export const useShopWishAnalytics = (
+  shopId: string,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: ['shop-wish-analytics', shopId],
     queryFn: async () => {
@@ -337,7 +340,7 @@ export const useShopWishAnalytics = (shopId: string) =>
         })),
       } as WishAnalytics
     },
-    enabled: !!shopId,
+    enabled: !!shopId && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000,
   })
 
