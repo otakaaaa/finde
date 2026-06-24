@@ -35,7 +35,11 @@ export const mapResult = (data: AnalyticsRpcResult): ShopViewAnalytics => ({
   byWeekday: data.by_weekday ?? [],
 })
 
-export const useShopViewAnalytics = (shopId: string, days: number) =>
+export const useShopViewAnalytics = (
+  shopId: string,
+  days: number,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: ['shop-view-analytics', shopId, days],
     queryFn: async () => {
@@ -50,6 +54,6 @@ export const useShopViewAnalytics = (shopId: string, days: number) =>
       if (!data) return null
       return mapResult(data)
     },
-    enabled: !!shopId,
+    enabled: !!shopId && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000,
   })

@@ -298,19 +298,44 @@ export const useDeleteShopItem = (shopId: string) => {
 
 // ── Analytics hook ─────────────────────────────────────────────
 
+interface WishItemTypeCount {
+  id: number
+  name: string
+  count: number
+}
+
+interface WishCategoryCount {
+  id: number
+  name: string
+  count: number
+  itemTypes: WishItemTypeCount[]
+}
+
 interface WishAnalytics {
   totalMatchingWishes: number
-  byItemCategory: { id: number; name: string; count: number }[]
+  fulfilledWishes: number
+  byItemCategory: WishCategoryCount[]
   topDemandedBrands: { brandId: string; name: string; count: number; inShop: boolean }[]
 }
 
 interface AnalyticsRpcResult {
   total_matching_wishes: number
-  by_item_category: { id: number; name: string; count: number }[] | null
+  fulfilled_wishes: number
+  by_item_category:
+    | {
+        id: number
+        name: string
+        count: number
+        item_types: { id: number; name: string; count: number }[] | null
+      }[]
+    | null
   top_demanded_brands: { brand_id: string; name: string; count: number; in_shop: boolean }[] | null
 }
 
-export const useShopWishAnalytics = (shopId: string) =>
+export const useShopWishAnalytics = (
+  shopId: string,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: ['shop-wish-analytics', shopId],
     queryFn: async () => {
@@ -324,10 +349,16 @@ export const useShopWishAnalytics = (shopId: string) =>
 
       return {
         totalMatchingWishes: data.total_matching_wishes ?? 0,
+        fulfilledWishes: data.fulfilled_wishes ?? 0,
         byItemCategory: (data.by_item_category ?? []).map((c) => ({
           id: c.id,
           name: c.name,
           count: c.count,
+          itemTypes: (c.item_types ?? []).map((t) => ({
+            id: t.id,
+            name: t.name,
+            count: t.count,
+          })),
         })),
         topDemandedBrands: (data.top_demanded_brands ?? []).map((b) => ({
           brandId: b.brand_id,
@@ -337,8 +368,8 @@ export const useShopWishAnalytics = (shopId: string) =>
         })),
       } as WishAnalytics
     },
-    enabled: !!shopId,
+    enabled: !!shopId && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000,
   })
 
-export type { WishAnalytics }
+export type { WishAnalytics, WishCategoryCount, WishItemTypeCount }

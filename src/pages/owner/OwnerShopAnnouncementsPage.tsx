@@ -17,6 +17,8 @@ import {
   formatAnnouncementPeriod,
   toLocalDatetimeInput,
 } from '@/lib/shopAnnouncement'
+import { useShopSubscription } from '@/hooks/useShopSubscription'
+import { OwnerPremiumLock } from '@/components/owner/OwnerPremiumLock'
 import { cn } from '@/lib/utils'
 import type { ShopAnnouncement, ShopAnnouncementFormValues } from '@/types'
 
@@ -410,7 +412,22 @@ const AddAnnouncementForm = ({ shopId }: AddAnnouncementFormProps) => {
 
 const OwnerShopAnnouncementsPage = () => {
   const { shopId } = useParams<{ shopId: string }>()
-  const { data: announcements = [], isLoading, isError } = useShopAnnouncements(shopId ?? '')
+  const { isPremium, isLoading: isSubLoading } = useShopSubscription(shopId)
+  const { data: announcements = [], isLoading, isError } = useShopAnnouncements(shopId ?? '', {
+    enabled: isPremium,
+  })
+
+  if (isSubLoading) {
+    return (
+      <div className="flex min-h-[calc(100dvh-56px)] justify-center bg-background py-24">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return <OwnerPremiumLock feature="announcements" />
+  }
 
   return (
     <div className="min-h-[calc(100dvh-56px)]">

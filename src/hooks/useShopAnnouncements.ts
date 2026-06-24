@@ -65,7 +65,10 @@ export const usePublicShopAnnouncements = (shopId: string) =>
 
 // ── オーナー管理用（全件） ──────────────────────────────────────
 
-export const useShopAnnouncements = (shopId: string) =>
+export const useShopAnnouncements = (
+  shopId: string,
+  options?: { enabled?: boolean },
+) =>
   useQuery({
     queryKey: ['shop-announcements', 'owner', shopId],
     queryFn: async () => {
@@ -73,7 +76,7 @@ export const useShopAnnouncements = (shopId: string) =>
       if (error) throw new Error(error.message)
       return (data ?? []).map(mapRow)
     },
-    enabled: !!shopId,
+    enabled: !!shopId && (options?.enabled ?? true),
   })
 
 const invalidate = (shopId: string) => (queryClient: ReturnType<typeof useQueryClient>) => {
