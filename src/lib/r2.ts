@@ -29,7 +29,8 @@ export const uploadToR2 = async (bucket: string, path: string, file: File): Prom
     method: 'PUT',
     body: compressed,
     headers: {
-      'Content-Type': compressed.type,
+      // presign 側で署名された Content-Type と一致させる必要がある。
+      'Content-Type': 'image/webp',
       'x-amz-content-sha256': 'UNSIGNED-PAYLOAD',
     },
   })

@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useItemCategoriesWithTypes } from '@/hooks/useShopItemTypes'
 import { useSizes } from '@/hooks/useSizes'
 import { getR2Url } from '@/lib/r2'
+import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { cn } from '@/lib/utils'
 import type { MaterialType, ShopItem, ShopItemFormValues, ShopItemPhoto } from '@/types'
 
@@ -126,6 +127,8 @@ const ShopItemForm = ({
   const [photos, setPhotos] = useState<PhotoPreview[]>([])
   const [isAvailable, setIsAvailable] = useState(initialItem?.isAvailable ?? true)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [photoValidating, setPhotoValidating] = useState(false)
 
   // ── Material request state ─────────────────────────────────
   const [showMaterialRequest, setShowMaterialRequest] = useState(false)
@@ -199,17 +202,28 @@ const ShopItemForm = ({
 
   const totalPhotoCount = existingPhotos.length + photos.length
 
-  const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
-    setPhotos((prev) => {
-      const remaining = 10 - existingPhotos.length - prev.length
-      const added = files.slice(0, remaining).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }))
-      return [...prev, ...added]
-    })
     e.target.value = ''
+    if (files.length === 0) return
+
+    setPhotoError(null)
+    setPhotoValidating(true)
+    try {
+      await validateAllowedImageFiles(files)
+      setPhotos((prev) => {
+        const remaining = 10 - existingPhotos.length - prev.length
+        const added = files.slice(0, remaining).map((file) => ({
+          file,
+          url: URL.createObjectURL(file),
+        }))
+        return [...prev, ...added]
+      })
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : '画像の検証に失敗しました')
+    } finally {
+      setPhotoValidating(false)
+    }
   }, [existingPhotos.length])
 
   const removeNewPhoto = (idx: number) => {
@@ -608,12 +622,16 @@ const ShopItemForm = ({
           </div>
         )}
 
+        {photoError && (
+          <p className="mb-3 text-[10px] font-medium text-red-500">{photoError}</p>
+        )}
+
         {totalPhotoCount < 10 && (
           <>
             <input
               ref={photoInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic"
+              accept="image/jpeg,image/png,image/webp"
               multiple
               className="sr-only"
               onChange={handlePhotoChange}
@@ -621,10 +639,20 @@ const ShopItemForm = ({
             <button
               type="button"
               onClick={() => photoInputRef.current?.click()}
-              className="flex w-full items-center justify-center gap-2 border border-dashed border-border py-8 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60"
+              disabled={photoValidating}
+              className="flex w-full items-center justify-center gap-2 border border-dashed border-border py-8 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/50 transition-colors hover:border-primary/40 hover:text-primary/60 disabled:opacity-50"
             >
-              <ImagePlus className="h-4 w-4" />
-              写真を追加
+              {photoValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  検証中...
+                </>
+              ) : (
+                <>
+                  <ImagePlus className="h-4 w-4" />
+                  写真を追加
+                </>
+              )}
             </button>
           </>
         )}
