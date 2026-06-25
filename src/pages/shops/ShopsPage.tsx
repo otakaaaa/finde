@@ -8,9 +8,7 @@ import type { ShopFilters } from '@/types'
 import { Seo } from '@/components/seo/Seo'
 
 const SORT_OPTIONS: { value: NonNullable<ShopFilters['sort']>; label: string }[] = [
-  { value: 'popular', label: '人気順' },
   { value: 'newest', label: '新着順' },
-  { value: 'rating', label: '高評価順' },
 ]
 
 const FilterSelect = ({
@@ -62,11 +60,12 @@ const ShopsPage = () => {
   const { data: master } = useShopMasterData()
 
   const shops = data?.pages.flatMap((p) => p.items) ?? []
-  const activeSort = shopFilters.sort ?? 'popular'
+  const activeSort = shopFilters.sort ?? 'newest'
   const hasActiveFilters =
     shopFilters.prefectureId != null ||
     shopFilters.cityId != null ||
     shopFilters.categoryId != null ||
+
     shopFilters.priceRangeId != null ||
     shopFilters.brandId != null
 
@@ -133,7 +132,12 @@ const ShopsPage = () => {
 
             <FilterSelect
               value={shopFilters.prefectureId?.toString() ?? ''}
-              onChange={(v) => update({ prefectureId: v ? Number(v) : undefined })}
+              onChange={(v) =>
+                update({
+                  prefectureId: v ? Number(v) : undefined,
+                  cityId: undefined,
+                })
+              }
               placeholder="都道府県"
               isActive={shopFilters.prefectureId != null}
             >
@@ -143,6 +147,23 @@ const ShopsPage = () => {
                 </option>
               ))}
             </FilterSelect>
+
+            {shopFilters.prefectureId != null && (
+              <FilterSelect
+                value={shopFilters.cityId?.toString() ?? ''}
+                onChange={(v) => update({ cityId: v ? Number(v) : undefined })}
+                placeholder="市区町村"
+                isActive={shopFilters.cityId != null}
+              >
+                {master?.cities
+                  ?.filter((city) => city.prefectureId === shopFilters.prefectureId)
+                  .map((city) => (
+                    <option key={city.id} value={city.id}>
+                      {city.name}
+                    </option>
+                  ))}
+              </FilterSelect>
+            )}
 
             <FilterSelect
               value={shopFilters.categoryId?.toString() ?? ''}

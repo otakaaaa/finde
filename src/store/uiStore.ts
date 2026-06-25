@@ -41,7 +41,7 @@ interface UiState {
 }
 
 const DEFAULT_FILTERS: ShopFilters = {
-  sort: 'popular',
+  sort: 'newest',
 }
 
 export const useUiStore = create<UiState>((set) => ({

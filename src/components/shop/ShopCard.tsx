@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { MapPin, Star, ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 
 import { getR2Url } from '@/lib/r2'
 
@@ -14,6 +15,9 @@ interface ShopCardProps {
 
 export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
   const coverPhoto = shop.photos[0]
+  const { data: master } = useShopMasterData()
+  const cityName =
+    master?.cities.find((c) => c.id === shop.cityId)?.name ?? shop.area?.city ?? null
 
   return (
     <Link
@@ -44,10 +48,10 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
         <div className="absolute inset-0 flex flex-col items-center justify-center px-3 text-center">
           <div className="translate-y-3 opacity-0 transition-all duration-400 group-hover:translate-y-0 group-hover:opacity-100">
             <p className="font-headline text-base font-black leading-tight text-white">{shop.name}</p>
-            {shop.area && (
+            {cityName && (
               <p className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-white/60">
                 <MapPin className="h-2.5 w-2.5" />
-                {shop.area.city}
+                {cityName}
               </p>
             )}
           </div>
@@ -75,10 +79,10 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
             <div>
               <h3 className="truncate font-headline text-sm font-bold leading-snug">{shop.name}</h3>
             </div>
-            {shop.area && (
+            {cityName && (
               <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
                 <MapPin className="h-2.5 w-2.5 shrink-0" />
-                <span className="truncate">{shop.area.city}</span>
+                <span className="truncate">{cityName}</span>
               </div>
             )}
           </div>
