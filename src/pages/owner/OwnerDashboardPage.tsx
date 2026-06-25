@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import {
-  Edit3, Tag, ExternalLink, Star, Heart, MapPin,
+  Edit3, Tag, ExternalLink, Heart, MapPin,
   Phone, Globe, Instagram, Store, ChevronRight,
   ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3, Megaphone,
 } from 'lucide-react'
@@ -412,33 +412,16 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 />
               </div>
 
-              {/* Rating detail */}
-              {shop.averageRating != null && (
-                <div className="mt-6 wish-card-enter border border-border bg-white px-4 py-4 editorial-shadow">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                    <span className="font-headline text-lg font-black tracking-tight text-foreground">
-                      {shop.averageRating.toFixed(1)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/50">
-                      / 5.0 ({shop.reviewCount} 件)
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-amber-400 transition-all"
-                      style={{ width: `${(shop.averageRating / 5) * 100}%` }}
-                    />
-                  </div>
-                  <Link
-                    to={`/shops/${shop.id}`}
-                    className="mt-3 flex items-center gap-1 text-[10px] font-bold text-muted-foreground/40 transition-colors hover:text-foreground/60"
-                  >
-                    <Heart className="h-3 w-3" />
-                    お気に入り {shop.favoriteCount} 件
-                  </Link>
-                </div>
-              )}
+              {/* Favorites detail */}
+              <div className="mt-6 wish-card-enter border border-border bg-white px-4 py-4 editorial-shadow">
+                <Link
+                  to={`/shops/${shop.id}`}
+                  className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground/40 transition-colors hover:text-foreground/60"
+                >
+                  <Heart className="h-3 w-3" />
+                  お気に入り {shop.favoriteCount} 件
+                </Link>
+              </div>
             </aside>
 
           </div>

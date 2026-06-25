@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router'
-import { MapPin, Phone, Globe, Instagram, Star, Heart, ChevronLeft, ArrowUpRight, Store } from 'lucide-react'
+import { MapPin, Phone, Globe, Instagram, Heart, ChevronLeft, ArrowUpRight, Store } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
@@ -8,10 +8,7 @@ import { useShopHasOwner } from '@/hooks/useShopHasOwner'
 import { Seo } from '@/components/seo/Seo'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
-import { useReviews, useMyReview } from '@/hooks/useReviews'
 import { useAuth } from '@/hooks/useAuth'
-import { ReviewCard } from '@/components/review/ReviewCard'
-import { ReviewForm } from '@/components/review/ReviewForm'
 import { useSharePostsByShop } from '@/hooks/useSharePosts'
 import { SharePostCard } from '@/components/share/SharePostCard'
 import { useShopItems } from '@/hooks/useShopItems'
@@ -79,27 +76,6 @@ const BusinessHoursGrid = ({
   )
 }
 
-const StarRow = ({
-  rating,
-  size = 'sm',
-}: {
-  rating: number | null
-  size?: 'sm' | 'md'
-}) => {
-  const filled = rating != null ? Math.round(rating) : 0
-  const cls = size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          className={cn(cls, s <= filled ? 'fill-amber-500 text-amber-500' : 'text-border')}
-        />
-      ))}
-    </div>
-  )
-}
-
 const ShopDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -115,12 +91,9 @@ const ShopDetailPage = () => {
   const { data: masterData } = useShopMasterData()
   const { data: isFavorited } = useFavoriteStatus(id ?? '')
   const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
-  const { data: reviews } = useReviews(id ?? '')
-  const { data: myReview } = useMyReview(id ?? '')
   const { data: sharePosts } = useSharePostsByShop(id ?? '')
   const { data: shopItems } = useShopItems(id ?? '')
   const availableItems = (shopItems ?? []).filter((item) => item.isAvailable)
-  const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
 
   const handleToggleFavorite = () => {
@@ -273,13 +246,8 @@ const ShopDetailPage = () => {
 
           {/* ── Left: Content ─────────────────────────── */}
           <div className="min-w-0">
-            {/* Rating + Favorite (mobile only) */}
-            <div className="mb-8 flex items-center gap-6 lg:hidden">
-              <StarRow rating={shop.averageRating} size="md" />
-              <span className="font-headline text-sm font-black tabular-nums">
-                {shop.averageRating != null ? shop.averageRating.toFixed(1) : '—'}
-              </span>
-              <span className="text-xs text-muted-foreground">({shop.reviewCount}件)</span>
+            {/* Favorite (mobile only) */}
+            <div className="mb-8 flex items-center lg:hidden">
               <button
                 onClick={handleToggleFavorite}
                 className={cn(
@@ -344,15 +312,8 @@ const ShopDetailPage = () => {
           {/* ── Right: Info Panel ─────────────────────── */}
           <aside className="lg:sticky lg:top-[calc(56px+24px)] lg:self-start">
             <div className="border border-border">
-              {/* Rating + Favorite (desktop) */}
-              <div className="hidden border-b border-border px-5 py-4 lg:flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <StarRow rating={shop.averageRating} />
-                  <span className="text-xs font-black tabular-nums">
-                    {shop.averageRating != null ? shop.averageRating.toFixed(1) : '—'}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">({shop.reviewCount})</span>
-                </div>
+              {/* Favorite (desktop) */}
+              <div className="hidden border-b border-border px-5 py-4 lg:flex items-center justify-end">
                 <button
                   onClick={handleToggleFavorite}
                   className={cn(
@@ -558,73 +519,6 @@ const ShopDetailPage = () => {
             <div className="gap-3 divide-y divide-border border-t border-border">
               {sharePosts!.map((post) => (
                 <SharePostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* ── Reviews ───────────────────────────────────── */}
-        <section className="mt-16 border-t border-border pt-12">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <SectionLabel>レビュー</SectionLabel>
-              <p className="mt-1 font-headline text-2xl font-black leading-none">
-                {shop.reviewCount > 0 ? (
-                  <>
-                    {shop.reviewCount}
-                    <span className="ml-1.5 text-base font-bold text-muted-foreground">件</span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground/30">0</span>
-                )}
-              </p>
-            </div>
-            {!showReviewForm && (
-              <button
-                onClick={() => {
-                  if (!user) { navigate('/auth/login'); return }
-                  setShowReviewForm(true)
-                }}
-                className="flex h-9 shrink-0 items-center gap-2 border border-primary px-4 text-[10px] font-bold uppercase tracking-[0.3em] text-primary transition-all hover:bg-primary hover:text-primary-foreground"
-              >
-                {myReview ? 'レビューを編集する' : 'レビューを書く'}
-              </button>
-            )}
-          </div>
-
-          {showReviewForm && (
-            <div className="mb-8 border border-border p-6">
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                — {myReview ? 'レビューを編集する' : 'レビューを書く'}
-              </p>
-              <ReviewForm
-                shopId={shop.id}
-                existingReview={myReview}
-                onSuccess={() => setShowReviewForm(false)}
-              />
-              <button
-                onClick={() => setShowReviewForm(false)}
-                className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
-              >
-                キャンセル
-              </button>
-            </div>
-          )}
-
-          {(reviews?.length ?? 0) === 0 ? (
-            <div className="py-16 text-center">
-              <p
-                className="font-headline font-black text-muted-foreground/20"
-                style={{ fontSize: 'clamp(3rem, 10vw, 6rem)', lineHeight: 1, letterSpacing: '-0.04em' }}
-              >
-                0
-              </p>
-              <p className="mt-3 text-xs text-muted-foreground">まだレビューがありません</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {reviews?.map((review) => (
-                <ReviewCard key={review.id} review={review} />
               ))}
             </div>
           )}

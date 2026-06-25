@@ -84,8 +84,6 @@ interface FavoriteShopRow {
   shops: {
     id: string
     name: string
-    review_count: number
-    average_rating: number | null
     favorite_count: number
     areas: { id: number; prefecture: string; city: string; slug: string } | null
     shop_photos: { id: string; shop_id: string; storage_path: string; order: number; created_at: string }[]
@@ -105,7 +103,7 @@ export const useFavoriteShops = () => {
         .select(`
           id, shop_id, created_at,
           shops (
-            id, name, review_count, average_rating, favorite_count,
+            id, name, favorite_count,
             areas ( id, prefecture, city, slug ),
             shop_photos ( id, shop_id, storage_path, order, created_at )
           )

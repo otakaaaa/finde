@@ -62,7 +62,6 @@ const OwnerShopAnnouncementsPage = lazy(() => import('@/pages/owner/OwnerShopAnn
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const AdminShopsPage = lazy(() => import('@/pages/admin/AdminShopsPage'))
 const AdminShopNewPage = lazy(() => import('@/pages/admin/AdminShopNewPage'))
-const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'))
 const AdminBrandsPage = lazy(() => import('@/pages/admin/AdminBrandsPage'))
 const AdminApplicationsPage = lazy(() => import('@/pages/admin/AdminApplicationsPage'))
 const AdminShopBulkPage = lazy(() => import('@/pages/admin/AdminShopBulkPage'))
@@ -185,7 +184,6 @@ const router = createBrowserRouter([
       { path: 'admin/shops/bulk', element: <ProtectedRoute requiredRole="admin"><AdminShopBulkPage /></ProtectedRoute> },
       { path: 'admin/shops/:id/edit', element: <ProtectedRoute requiredRole="admin"><AdminShopEditPage /></ProtectedRoute> },
       { path: 'admin/shops/:id/brands', element: <ProtectedRoute requiredRole="admin"><BrandsManagePage /></ProtectedRoute> },
-      { path: 'admin/reviews', element: <ProtectedRoute requiredRole="admin"><AdminReviewsPage /></ProtectedRoute> },
       { path: 'admin/brands', element: <ProtectedRoute requiredRole="admin"><AdminBrandsPage /></ProtectedRoute> },
       { path: 'admin/applications', element: <ProtectedRoute requiredRole="admin"><AdminApplicationsPage /></ProtectedRoute> },
       { path: 'admin/contacts', element: <ProtectedRoute requiredRole="admin"><AdminContactsPage /></ProtectedRoute> },

@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Heart, MapPin, Star, Plus } from 'lucide-react'
+import { Heart, MapPin, Plus } from 'lucide-react'
 import { useFavoriteShops, useToggleFavorite } from '@/hooks/useFavorites'
 import { cn } from '@/lib/utils'
 
@@ -10,8 +10,6 @@ const getPhotoUrl = (storagePath: string) => getR2Url('shop-photos', storagePath
 interface FavoriteShop {
   id: string
   name: string
-  review_count: number
-  average_rating: number | null
   favorite_count: number
   areas: { id: number; prefecture: string; city: string; slug: string } | null
   shop_photos: { id: string; shop_id: string; storage_path: string; order: number; created_at: string }[]
@@ -55,19 +53,14 @@ const FavoriteCard = ({ shop, index }: { shop: FavoriteShop; index: number }) =>
             <h3 className="font-headline text-sm font-black leading-tight tracking-tight text-white drop-shadow-sm md:text-base">
               {shop.name}
             </h3>
-            <div className="mt-1.5 flex items-center gap-2">
-              {shop.areas && (
+            {shop.areas && (
+              <div className="mt-1.5 flex items-center gap-2">
                 <span className="flex items-center gap-0.5 text-[10px] font-medium text-white/60">
                   <MapPin className="h-2.5 w-2.5" />
                   {shop.areas.city}
                 </span>
-              )}
-              <span className="flex items-center gap-0.5 text-[10px] font-medium text-white/60">
-                <Star className="h-2.5 w-2.5 fill-white/60" />
-                {shop.average_rating ? shop.average_rating.toFixed(1) : '—'}
-                <span className="text-white/40">({shop.review_count})</span>
-              </span>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </Link>

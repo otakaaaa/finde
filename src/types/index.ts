@@ -6,7 +6,6 @@ export type SizeGroup = 'general' | 'bottoms' | 'shoes' | 'none'
 
 export type UserRole = 'user' | 'shop_owner' | 'admin'
 export type ShopStatus = 'public' | 'private' | 'pending'
-export type ReviewStatus = 'published' | 'flagged' | 'hidden'
 /** @deprecated type 軸は item_category_id / item_type_id に移行予定 */
 export type WishType = 'brand' | 'item' | 'condition'
 export type SubscriptionPlan = 'monthly' | 'yearly'
@@ -173,8 +172,6 @@ export interface Shop {
   tags: Tag[]
   brands: Brand[]
   photos: ShopPhoto[]
-  reviewCount: number
-  averageRating: number | null
   favoriteCount: number
   createdAt: string
   updatedAt: string
@@ -189,7 +186,7 @@ export interface ShopFilters {
   brandId?: string
   brandName?: string
   query?: string
-  sort?: 'popular' | 'newest' | 'rating'
+  sort?: 'popular' | 'newest'
 }
 
 // ============================================================
@@ -205,31 +202,6 @@ export interface Brand {
   mergedInto: string | null
   submittedBy: string | null
   createdAt: string
-}
-
-// ============================================================
-// Review
-// ============================================================
-
-export interface ReviewPhoto {
-  id: string
-  reviewId: string
-  storagePath: string
-  createdAt: string
-}
-
-export interface Review {
-  id: string
-  shopId: string
-  userId: string
-  user: Pick<User, 'id' | 'displayName' | 'avatarUrl'>
-  body: string
-  rating: number
-  status: ReviewStatus
-  ngScore: number
-  photos: ReviewPhoto[]
-  createdAt: string
-  updatedAt: string
 }
 
 // ============================================================
@@ -396,8 +368,6 @@ export type NotificationType =
   | 'owner_application_result'
   | 'admin_new_listing'
   | 'admin_new_contact'
-  | 'admin_review_report'
-  | 'review_posted'
   | 'news_published'
   | 'welcome'
   | 'share_rated'

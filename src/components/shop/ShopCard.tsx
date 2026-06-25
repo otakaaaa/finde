@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { MapPin, Star, ArrowUpRight } from 'lucide-react'
+import { MapPin, ArrowUpRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Shop } from '@/types'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -74,22 +74,14 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
 
       {/* Info bar */}
       <div className="border-t border-border bg-background px-3 py-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div>
-              <h3 className="truncate font-headline text-sm font-bold leading-snug">{shop.name}</h3>
-            </div>
-            {cityName && (
-              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-                <MapPin className="h-2.5 w-2.5 shrink-0" />
-                <span className="truncate">{cityName}</span>
-              </div>
-            )}
+        <div className="min-w-0">
+          <div>
+            <h3 className="truncate font-headline text-sm font-bold leading-snug">{shop.name}</h3>
           </div>
-          {shop.averageRating != null && (
-            <div className="flex shrink-0 items-center gap-0.5 text-amber-500">
-              <Star className="h-3 w-3 fill-amber-500" />
-              <span className="text-[10px] font-bold tabular-nums">{shop.averageRating.toFixed(1)}</span>
+          {cityName && (
+            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+              <MapPin className="h-2.5 w-2.5 shrink-0" />
+              <span className="truncate">{cityName}</span>
             </div>
           )}
         </div>

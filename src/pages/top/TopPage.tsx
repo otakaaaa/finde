@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Star, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight, Search, X, FileText, Heart } from 'lucide-react'
+import { MapPin, Shirt, ShoppingBag, Baby, Users, Sparkles, ArrowUpRight, Search, X, FileText, Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
 import { useBrands } from '@/hooks/useBrands'
@@ -109,24 +109,14 @@ const FeaturedCard = ({ shop, variant = 'small' }: FeaturedCardProps) => {
 
       {/* Info bar */}
       <div className="relative border-t border-border bg-background px-4 py-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="truncate font-headline text-sm font-bold">{shop.name}</h3>
-            {shop.area && (
-              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span>{shop.area.city}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            {shop.averageRating && (
-              <div className="flex items-center gap-0.5 text-amber-500">
-                <Star className="h-3 w-3 fill-amber-500" />
-                <span className="text-xs font-bold">{shop.averageRating.toFixed(1)}</span>
-              </div>
-            )}
-          </div>
+        <div className="min-w-0">
+          <h3 className="truncate font-headline text-sm font-bold">{shop.name}</h3>
+          {shop.area && (
+            <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span>{shop.area.city}</span>
+            </div>
+          )}
         </div>
         {variant === 'large' && shop.description && (
           <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">

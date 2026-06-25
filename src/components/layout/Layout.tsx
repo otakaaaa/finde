@@ -5,7 +5,6 @@ import { Footer } from './Footer'
 import { ToastStack } from '@/components/ui/Toast'
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal'
 import { DeleteAccountModal } from '@/components/auth/DeleteAccountModal'
-import { ReviewReportModal } from '@/components/review/ReviewReportModal'
 import { MaintenanceGuard } from '@/components/MaintenanceGuard'
 
 // /auth/callback 以外のページでSupabaseの認証エラーハッシュを検知し、エラー画面へ転送する
@@ -44,6 +43,5 @@ export const Layout = () => (
     <ToastStack />
     <LogoutConfirmModal />
     <DeleteAccountModal />
-    <ReviewReportModal />
   </div>
 )
