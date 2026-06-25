@@ -103,7 +103,7 @@ const ProfileEditPage = () => {
                 表示名
               </p>
               <p className="mt-0.5 text-[10px] text-muted-foreground/50">
-                レビューや投稿に表示される名前です
+                投稿に表示される名前です
               </p>
             </div>
           </div>

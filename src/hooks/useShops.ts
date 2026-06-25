@@ -17,8 +17,6 @@ interface ShopRow {
   business_hours: Shop['businessHours']
   closed_days: string[]
   status: string
-  review_count: number
-  average_rating: number | null
   favorite_count: number
   created_at: string
   updated_at: string
@@ -63,8 +61,6 @@ const mapShopRow = (row: ShopRow): Shop => ({
       order: p.order,
       createdAt: p.created_at,
     })),
-  reviewCount: row.review_count,
-  averageRating: row.average_rating,
   favoriteCount: row.favorite_count,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -117,7 +113,7 @@ const fetchShops = async ({
     .select(`
       id, name, name_pending, description, phone, website_url,
       instagram_url, twitter_url, tiktok_url, business_hours, closed_days,
-      status, review_count, average_rating, favorite_count,
+      status, favorite_count,
       prefecture_id, city_id, address, created_at, updated_at,
       areas ( id, prefecture, city, slug ),
       price_ranges ( id, label, min_price, max_price ),
@@ -138,9 +134,6 @@ const fetchShops = async ({
   if (cursor) query = query.gt('created_at', cursor)
 
   switch (filters.sort) {
-    case 'rating':
-      query = query.order('average_rating', { ascending: false, nullsFirst: false })
-      break
     case 'newest':
       query = query.order('created_at', { ascending: false })
       break

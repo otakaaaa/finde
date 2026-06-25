@@ -6,8 +6,6 @@ interface SearchResultRow {
   id: string
   name: string
   description: string | null
-  review_count: number
-  average_rating: number | null
   favorite_count: number
   created_at: string
   updated_at: string
@@ -65,8 +63,6 @@ const mapSearchResult = (row: SearchResultRow): Shop => ({
     order: p.order,
     createdAt: p.created_at,
   })),
-  reviewCount: row.review_count,
-  averageRating: row.average_rating,
   favoriteCount: row.favorite_count,
   createdAt: row.created_at,
   updatedAt: row.updated_at,

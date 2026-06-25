@@ -98,8 +98,6 @@ interface ShopRow {
   description: string | null
   address: string | null
   phone: string | null
-  average_rating: number | null
-  review_count: number | null
   areas: { prefecture: string | null; city: string | null } | null
   shop_photos: { storage_path: string }[] | null
   shop_categories: { categories: { name: string } | null }[] | null
@@ -111,7 +109,7 @@ const resolveShopMeta = async (
   pathname: string,
 ): Promise<PageMeta> => {
   const select =
-    'id,name,description,address,phone,average_rating,review_count,' +
+    'id,name,description,address,phone,' +
     'areas:area_id(prefecture,city),shop_photos(storage_path),shop_categories(categories(name))'
   const shop = await fetchOne<ShopRow>(
     config,
@@ -151,15 +149,6 @@ const resolveShopMeta = async (
               ...(shop.areas?.prefecture ? { addressRegion: shop.areas.prefecture } : {}),
               ...(shop.areas?.city ? { addressLocality: shop.areas.city } : {}),
               ...(shop.address ? { streetAddress: shop.address } : {}),
-            },
-          }
-        : {}),
-      ...(shop.review_count && shop.review_count > 0 && shop.average_rating != null
-        ? {
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: shop.average_rating,
-              reviewCount: shop.review_count,
             },
           }
         : {}),

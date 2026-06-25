@@ -7,9 +7,7 @@ interface ShopFiltersProps {
 }
 
 const SORT_OPTIONS: { value: ShopFilters['sort']; label: string }[] = [
-  { value: 'popular', label: '人気順' },
   { value: 'newest', label: '新着順' },
-  { value: 'rating', label: '高評価順' },
 ]
 
 export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
@@ -23,7 +21,7 @@ export const ShopFiltersPanel = ({ filters, onChange }: ShopFiltersProps) => {
     <div className="flex flex-wrap gap-2">
       {/* Sort */}
       <select
-        value={filters.sort ?? 'popular'}
+        value={filters.sort ?? 'newest'}
         onChange={(e) => update({ sort: e.target.value as ShopFilters['sort'] })}
         className="h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       >

@@ -24,11 +24,6 @@ interface UiState {
   setShopFilters: (filters: ShopFilters) => void
   resetShopFilters: () => void
 
-  // Modals
-  reviewReportModalReviewId: string | null
-  openReviewReportModal: (reviewId: string) => void
-  closeReviewReportModal: () => void
-
   // Logout modal
   logoutModalOpen: boolean
   openLogoutModal: () => void
@@ -41,7 +36,7 @@ interface UiState {
 }
 
 const DEFAULT_FILTERS: ShopFilters = {
-  sort: 'popular',
+  sort: 'newest',
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -60,9 +55,6 @@ export const useUiStore = create<UiState>((set) => ({
   setShopFilters: (filters) => set({ shopFilters: filters }),
   resetShopFilters: () => set({ shopFilters: DEFAULT_FILTERS }),
 
-  reviewReportModalReviewId: null,
-  openReviewReportModal: (reviewId) => set({ reviewReportModalReviewId: reviewId }),
-  closeReviewReportModal: () => set({ reviewReportModalReviewId: null }),
 
   logoutModalOpen: false,
   openLogoutModal: () => set({ logoutModalOpen: true }),

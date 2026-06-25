@@ -18,8 +18,6 @@ interface OwnerShopRow {
     business_hours: BusinessHours | null
     closed_days: string[]
     status: string
-    review_count: number
-    average_rating: number | null
     favorite_count: number
     created_at: string
     updated_at: string
@@ -47,7 +45,7 @@ export const useOwnerShops = () => {
           shops (
             id, name, name_pending, description, phone, website_url,
             instagram_url, twitter_url, tiktok_url, business_hours, closed_days,
-            status, review_count, average_rating, favorite_count,
+            status, favorite_count,
             prefecture_id, city_id, address, created_at, updated_at,
             areas ( id, prefecture, city, slug ),
             price_ranges ( id, label, min_price, max_price ),
@@ -91,8 +89,6 @@ export const useOwnerShops = () => {
           createdAt: sb.brands.created_at,
         })),
         photos: [],
-        reviewCount: s.review_count,
-        averageRating: s.average_rating,
         favoriteCount: s.favorite_count,
         createdAt: s.created_at,
         updatedAt: s.updated_at,
