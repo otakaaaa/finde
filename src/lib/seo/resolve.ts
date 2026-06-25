@@ -25,11 +25,6 @@ const STATIC_PAGES: Record<string, { core: string; description: string }> = {
     description:
       'ユーザーのおしゃれな投稿「シャレ活」をチェック。コーデや言動にシャレ度（1〜10）を送り合い、お気に入りはブックマークできます。',
   },
-  '/about': {
-    core: 'FINDEについて',
-    description:
-      'FINDEは、店舗と取り扱いブランドを比較しながら「行きたいお店」が見つかる服屋検索サービスです。サービスの想いと特徴をご紹介します。',
-  },
   '/faq': {
     core: 'よくあるご質問',
     description: 'FINDEの使い方・店舗掲載・オーナー登録などに関するよくある質問と回答をまとめています。',
