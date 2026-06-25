@@ -16,6 +16,7 @@ const ShopItemDetailPage = lazy(() => import('@/pages/shops/ShopItemDetailPage')
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
 const CallbackPage = lazy(() => import('@/pages/auth/CallbackPage'))
+const SetupProfilePage = lazy(() => import('@/pages/auth/SetupProfilePage'))
 const LinkAccountPage = lazy(() => import('@/pages/auth/LinkAccountPage'))
 const MfaChallengePage = lazy(() => import('@/pages/auth/MfaChallengePage'))
 const AuthErrorPage = lazy(() => import('@/pages/auth/AuthErrorPage'))
@@ -137,6 +138,7 @@ const router = createBrowserRouter([
       { path: 'auth/login', element: <LoginPage /> },
       { path: 'auth/register', element: <RegisterPage /> },
       { path: 'auth/callback', element: <CallbackPage /> },
+      { path: 'auth/setup-profile', element: <ProtectedRoute><SetupProfilePage /></ProtectedRoute> },
       { path: 'auth/link-account', element: <LinkAccountPage /> },
       { path: 'auth/mfa', element: <MfaChallengePage /> },
       { path: 'auth/error', element: <AuthErrorPage /> },

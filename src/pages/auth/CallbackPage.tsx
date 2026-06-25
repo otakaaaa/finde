@@ -86,12 +86,20 @@ const CallbackPage = () => {
 
       const { data } = await supabase
         .from('users')
-        .select('role')
+        .select('role, display_name')
         .eq('id', session.user.id)
-        .single() as { data: { role: string } | null; error: unknown }
+        .single() as { data: { role: string; display_name: string | null } | null; error: unknown }
+
+      localStorage.setItem('pending_login_toast', 'true')
+
+      // アカウント名が未設定（新規登録直後）の場合は設定画面へ誘導
+      const displayName = data?.display_name ?? ''
+      if (displayName.trim().length === 0) {
+        navigate('/auth/setup-profile', { replace: true })
+        return
+      }
 
       const role = (data?.role ?? 'user') as UserRole
-      localStorage.setItem('pending_login_toast', 'true')
       navigate(ROLE_REDIRECT[role] ?? '/')
     }
 
