@@ -548,7 +548,7 @@ const TopPage = () => {
               </h2>
               <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/50">
                 地元の掘り出しもの、行きつけのセレクト。<br />
-                あなたの「好き」がfindeを育てます。
+                あなたの「好き」がFINDEを育てます。
               </p>
             </div>
             <div className="shrink-0">

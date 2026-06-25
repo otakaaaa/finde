@@ -87,9 +87,6 @@ const PrivacyPolicyPage = lazy(() => import('@/pages/legal/PrivacyPolicyPage'))
 // FAQ
 const FaqPage = lazy(() => import('@/pages/faq/FaqPage'))
 
-// About
-const AboutPage = lazy(() => import('@/pages/about/AboutPage'))
-
 // News
 const NewsPage = lazy(() => import('@/pages/news/NewsPage'))
 const NewsDetailPage = lazy(() => import('@/pages/news/NewsDetailPage'))
@@ -127,7 +124,6 @@ const router = createBrowserRouter([
       { path: 'terms', element: <TermsPage /> },
       { path: 'privacy', element: <PrivacyPolicyPage /> },
       { path: 'faq', element: <FaqPage /> },
-      { path: 'about', element: <AboutPage /> },
       { path: 'news', element: <NewsPage /> },
       { path: 'news/:id', element: <NewsDetailPage /> },
 
