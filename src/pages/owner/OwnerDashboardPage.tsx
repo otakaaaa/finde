@@ -6,7 +6,6 @@ import {
   ArrowUpRight, Package, TrendingUp, AlertCircle, BarChart3, Megaphone,
 } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
-import { OwnerPremiumBadge } from '@/components/owner/OwnerPremiumBadge'
 import { useOwnerShops } from '@/hooks/useOwnerShops'
 import { useShopItems, useShopWishAnalytics } from '@/hooks/useShopItems'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
@@ -55,11 +54,10 @@ interface ActionCardProps {
   title: string
   desc: string
   external?: boolean
-  premium?: boolean
   animDelay?: number
 }
 
-const ActionCard = ({ to, icon, index, title, desc, external, premium, animDelay = 0 }: ActionCardProps) => (
+const ActionCard = ({ to, icon, index, title, desc, external, animDelay = 0 }: ActionCardProps) => (
   <Link
     to={to}
     target={external ? '_blank' : undefined}
@@ -79,7 +77,6 @@ const ActionCard = ({ to, icon, index, title, desc, external, premium, animDelay
     <div className="flex-1">
       <p className="flex items-center gap-1.5 font-headline text-[12px] font-black uppercase tracking-[0.15em] text-foreground/80">
         {title}
-        {premium && <OwnerPremiumBadge variant="soft" size="xs" />}
       </p>
       <p className="mt-0.5 text-[10px] text-muted-foreground/50">{desc}</p>
     </div>
@@ -315,7 +312,6 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   index="04"
                   title="ウィッシュ分析"
                   desc="同エリアのウィッシュ需要を確認してマッチング精度を上げる"
-                  premium
                   animDelay={165}
                 />
                 <ActionCard
@@ -324,7 +320,6 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   index="05"
                   title="アクセス解析"
                   desc="店舗詳細の閲覧数(PV/UU)・流入元・人気アイテムを確認する"
-                  premium
                   animDelay={220}
                 />
                 <ActionCard
@@ -333,7 +328,6 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   index="06"
                   title="お知らせを管理"
                   desc="店舗詳細ページに表示するお知らせを登録・掲載する"
-                  premium
                   animDelay={275}
                 />
               </div>

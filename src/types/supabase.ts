@@ -7,30 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -689,128 +669,6 @@ export type Database = {
           min_price?: number | null
         }
         Relationships: []
-      }
-      review_photos: {
-        Row: {
-          created_at: string
-          id: string
-          review_id: string
-          storage_path: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          review_id: string
-          storage_path: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          review_id?: string
-          storage_path?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "review_photos_review_id_fkey"
-            columns: ["review_id"]
-            isOneToOne: false
-            referencedRelation: "reviews"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      review_reports: {
-        Row: {
-          created_at: string
-          id: string
-          note: string | null
-          reason: string
-          reported_by: string
-          review_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          note?: string | null
-          reason: string
-          reported_by: string
-          review_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          note?: string | null
-          reason?: string
-          reported_by?: string
-          review_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "review_reports_reported_by_fkey"
-            columns: ["reported_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "review_reports_review_id_fkey"
-            columns: ["review_id"]
-            isOneToOne: false
-            referencedRelation: "reviews"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reviews: {
-        Row: {
-          body: string
-          created_at: string
-          id: string
-          ng_score: number
-          rating: number
-          shop_id: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          body: string
-          created_at?: string
-          id?: string
-          ng_score?: number
-          rating: number
-          shop_id: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          body?: string
-          created_at?: string
-          id?: string
-          ng_score?: number
-          rating?: number
-          shop_id?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_shop_id_fkey"
-            columns: ["shop_id"]
-            isOneToOne: false
-            referencedRelation: "shops"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       share_bookmark_folders: {
         Row: {
@@ -1711,7 +1569,6 @@ export type Database = {
         Row: {
           address: string | null
           area_id: number | null
-          average_rating: number | null
           business_hours: Json | null
           city_id: number | null
           closed_days: string[] | null
@@ -1726,7 +1583,6 @@ export type Database = {
           phone: string | null
           prefecture_id: number | null
           price_range_id: number | null
-          review_count: number
           search_vector: unknown
           status: string
           tiktok_url: string | null
@@ -1737,7 +1593,6 @@ export type Database = {
         Insert: {
           address?: string | null
           area_id?: number | null
-          average_rating?: number | null
           business_hours?: Json | null
           city_id?: number | null
           closed_days?: string[] | null
@@ -1752,7 +1607,6 @@ export type Database = {
           phone?: string | null
           prefecture_id?: number | null
           price_range_id?: number | null
-          review_count?: number
           search_vector?: unknown
           status?: string
           tiktok_url?: string | null
@@ -1763,7 +1617,6 @@ export type Database = {
         Update: {
           address?: string | null
           area_id?: number | null
-          average_rating?: number | null
           business_hours?: Json | null
           city_id?: number | null
           closed_days?: string[] | null
@@ -1778,7 +1631,6 @@ export type Database = {
           phone?: string | null
           prefecture_id?: number | null
           price_range_id?: number | null
-          review_count?: number
           search_vector?: unknown
           status?: string
           tiktok_url?: string | null
@@ -1956,7 +1808,7 @@ export type Database = {
       wishes: {
         Row: {
           brand_id: string | null
-          city_id: number | null
+          city_id: number
           created_at: string
           id: string
           is_public: boolean
@@ -1975,7 +1827,7 @@ export type Database = {
         }
         Insert: {
           brand_id?: string | null
-          city_id?: number | null
+          city_id: number
           created_at?: string
           id?: string
           is_public?: boolean
@@ -1994,7 +1846,7 @@ export type Database = {
         }
         Update: {
           brand_id?: string | null
-          city_id?: number | null
+          city_id?: number
           created_at?: string
           id?: string
           is_public?: boolean
@@ -2196,7 +2048,6 @@ export type Database = {
         }
         Returns: {
           areas: Json
-          average_rating: number
           created_at: string
           description: string
           favorite_count: number
@@ -2204,7 +2055,6 @@ export type Database = {
           name: string
           price_ranges: Json
           rank: number
-          review_count: number
           shop_brands: Json
           shop_categories: Json
           shop_photos: Json
@@ -2383,11 +2233,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
 } as const
-
