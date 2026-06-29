@@ -1,14 +1,15 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronLeft, Upload, Download, CheckCircle2, XCircle,
   FileText, AlertTriangle, ArrowRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { cn } from '@/lib/utils'
-import type { Area, Category, PriceRange } from '@/types'
+import type { Category, City, PriceRange, Prefecture } from '@/types'
 
 // -----------------------------------------------------------------------
 // CSV パーサー（ダブルクォート対応）
@@ -53,13 +54,16 @@ function parseCSV(text: string): string[][] {
 // -----------------------------------------------------------------------
 const COLUMNS = [
   'name',
-  'area_city',
+  'prefecture',
+  'city',
   'categories',
   'description',
+  'address',
   'phone',
   'website_url',
   'instagram_url',
   'twitter_url',
+  'tiktok_url',
   'status',
   'price_range_label',
 ] as const
@@ -70,13 +74,16 @@ interface ParsedRow {
   rowIndex: number
   raw: Record<ColKey, string>
   name: string
-  area: Area | null
+  prefecture: Prefecture | null
+  city: City | null
   categories: Category[]
   description: string
+  address: string
   phone: string
   websiteUrl: string
   instagramUrl: string
   twitterUrl: string
+  tiktokUrl: string
   status: 'public' | 'private' | 'pending'
   priceRange: PriceRange | null
   errors: string[]
@@ -88,37 +95,11 @@ interface ImportResult {
 }
 
 // -----------------------------------------------------------------------
-// マスターデータ取得
-// -----------------------------------------------------------------------
-const useMasterData = () =>
-  useQuery({
-    queryKey: ['master-data'],
-    queryFn: async () => {
-      const [areas, categories, priceRanges] = await Promise.all([
-        supabase.from('areas').select('id, prefecture, city, slug').order('id') as unknown as Promise<{ data: Area[] | null; error: unknown }>,
-        supabase.from('categories').select('id, code, name').order('id') as unknown as Promise<{ data: Category[] | null; error: unknown }>,
-        supabase.from('price_ranges').select('id, label, min_price, max_price').order('id') as unknown as Promise<{ data: ({ id: number; label: string; min_price: number | null; max_price: number | null })[] | null; error: unknown }>,
-      ])
-      return {
-        areas: areas.data ?? [],
-        categories: categories.data ?? [],
-        priceRanges: (priceRanges.data ?? []).map((p) => ({
-          id: p.id,
-          label: p.label,
-          minPrice: p.min_price,
-          maxPrice: p.max_price,
-        })) as PriceRange[],
-      }
-    },
-    staleTime: Infinity,
-  })
-
-// -----------------------------------------------------------------------
 // サンプル CSV
 // -----------------------------------------------------------------------
-const SAMPLE_CSV = `name,area_city,categories,description,phone,website_url,instagram_url,twitter_url,status,price_range_label
-渋谷古着屋,渋谷区,"ユニセックス,ヴィンテージ",渋谷の古着専門店です,03-1234-5678,https://example.com,https://instagram.com/xxx,,public,〜¥3,000
-原宿セレクト,渋谷区,ユニセックス,原宿発のセレクトショップ,,,,https://twitter.com/yyy,public,¥3,001〜¥10,000
+const SAMPLE_CSV = `name,prefecture,city,categories,description,address,phone,website_url,instagram_url,twitter_url,tiktok_url,status,price_range_label
+渋谷古着屋,東京都,渋谷区,"ユニセックス,ヴィンテージ",渋谷の古着専門店です,東京都渋谷区神南1-1-1,03-1234-5678,https://example.com,https://instagram.com/xxx,,,public,"～5,000円"
+原宿セレクト,東京都,渋谷区,ユニセックス,原宿発のセレクトショップ,,,,,https://twitter.com/yyy,,public,"5,001～10,000円"
 `
 
 function downloadSampleCSV() {
@@ -138,7 +119,8 @@ const URL_RE = /^https?:\/\/.+/
 
 function validateRows(
   rawRows: string[][],
-  areas: Area[],
+  prefectures: Prefecture[],
+  cities: City[],
   categories: Category[],
   priceRanges: PriceRange[],
 ): ParsedRow[] {
@@ -159,8 +141,23 @@ function validateRows(
     const name = raw.name
     if (!name) errors.push('店舗名は必須です')
 
-    const area = areas.find((a) => a.city === raw.area_city) ?? null
-    if (!area) errors.push(`エリア "${raw.area_city}" が見つかりません`)
+    // 都道府県（必須）
+    const prefecture = raw.prefecture
+      ? (prefectures.find((p) => p.name === raw.prefecture) ?? null)
+      : null
+    if (!raw.prefecture) errors.push('都道府県は必須です')
+    else if (!prefecture) errors.push(`都道府県 "${raw.prefecture}" が見つかりません`)
+
+    // 市区町村（任意・都道府県に属するもののみ）
+    let city: City | null = null
+    if (raw.city) {
+      if (prefecture) {
+        city = cities.find((c) => c.prefectureId === prefecture.id && c.name === raw.city) ?? null
+        if (!city) errors.push(`市区町村 "${raw.city}" が "${prefecture.name}" に見つかりません`)
+      } else {
+        city = cities.find((c) => c.name === raw.city) ?? null
+      }
+    }
 
     const catNames = raw.categories.split(',').map((s) => s.trim()).filter(Boolean)
     const matchedCats = catNames
@@ -187,16 +184,20 @@ function validateRows(
       errors.push('instagram_url のURL形式が不正です')
     if (raw.twitter_url && !URL_RE.test(raw.twitter_url))
       errors.push('twitter_url のURL形式が不正です')
+    if (raw.tiktok_url && !URL_RE.test(raw.tiktok_url))
+      errors.push('tiktok_url のURL形式が不正です')
 
     return {
       rowIndex: idx + 2,
-      raw, name, area,
+      raw, name, prefecture, city,
       categories: matchedCats,
       description: raw.description,
+      address: raw.address,
       phone: raw.phone,
       websiteUrl: raw.website_url,
       instagramUrl: raw.instagram_url,
       twitterUrl: raw.twitter_url,
+      tiktokUrl: raw.tiktok_url,
       status, priceRange, errors,
     }
   })
@@ -218,7 +219,7 @@ const AdminShopBulkPage = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
 
-  const { data: masterData, isLoading: masterLoading } = useMasterData()
+  const { data: masterData, isLoading: masterLoading } = useShopMasterData()
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([])
   const [fileError, setFileError] = useState<string | null>(null)
   const [result, setResult] = useState<ImportResult | null>(null)
@@ -237,12 +238,15 @@ const AdminShopBulkPage = () => {
             .insert({
               name: row.name,
               description: row.description || null,
-              area_id: row.area!.id,
+              prefecture_id: row.prefecture!.id,
+              city_id: row.city?.id ?? null,
+              address: row.address || null,
               price_range_id: row.priceRange?.id ?? null,
               phone: row.phone || null,
               website_url: row.websiteUrl || null,
               instagram_url: row.instagramUrl || null,
               twitter_url: row.twitterUrl || null,
+              tiktok_url: row.tiktokUrl || null,
               status: row.status,
               created_by: user.id,
             } as never)
@@ -294,7 +298,7 @@ const AdminShopBulkPage = () => {
       const rawRows = parseCSV(text)
       if (rawRows.length < 2) { setFileError('データ行がありません'); return }
       if (!masterData) { setFileError('マスターデータの読み込みが完了していません'); return }
-      const rows = validateRows(rawRows, masterData.areas, masterData.categories, masterData.priceRanges)
+      const rows = validateRows(rawRows, masterData.prefectures, masterData.cities, masterData.categories, masterData.priceRanges)
       setParsedRows(rows)
     }
     reader.readAsText(file, 'UTF-8')
@@ -372,12 +376,12 @@ const AdminShopBulkPage = () => {
                 <table className="w-full text-[11px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/20">
-                      {(['name', 'area_city', 'categories', 'status'] as const).map((col) => (
+                      {(['name', 'prefecture', 'categories', 'status'] as const).map((col) => (
                         <th key={col} className="px-3 py-2 text-left font-headline font-black uppercase tracking-wider text-primary/70">
                           {col}
                         </th>
                       ))}
-                      {(['description', 'phone', 'website_url', 'instagram_url', 'twitter_url', 'price_range_label'] as const).map((col) => (
+                      {(['city', 'description', 'address', 'phone', 'website_url', 'instagram_url', 'twitter_url', 'tiktok_url', 'price_range_label'] as const).map((col) => (
                         <th key={col} className="px-3 py-2 text-left font-headline font-black uppercase tracking-wider text-muted-foreground/30">
                           {col}
                         </th>
@@ -387,17 +391,20 @@ const AdminShopBulkPage = () => {
                   <tbody>
                     <tr>
                       <td className="px-3 py-2.5 font-medium text-foreground/80">渋谷古着屋</td>
-                      <td className="px-3 py-2.5 text-foreground/60">渋谷区</td>
+                      <td className="px-3 py-2.5 text-foreground/60">東京都</td>
                       <td className="px-3 py-2.5 text-foreground/60">"ユニセックス,ヴィンテージ"</td>
                       <td className="px-3 py-2.5">
                         <span className="rounded-sm bg-emerald-50 px-1.5 py-0.5 font-headline text-[9px] font-black text-emerald-700">public</span>
                       </td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">渋谷区</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">渋谷のセレクトショップ…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">東京都渋谷区神南1-1-1</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">03-0000-0000</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
                       <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
-                      <td className="px-3 py-2.5 text-muted-foreground/40">〜¥3,000</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">https://…</td>
+                      <td className="px-3 py-2.5 text-muted-foreground/40">～5,000円</td>
                     </tr>
                   </tbody>
                 </table>
@@ -531,7 +538,8 @@ const AdminShopBulkPage = () => {
                       <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 w-10">ROW</th>
                       <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 w-8" />
                       <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">店舗名</th>
-                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">エリア</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">都道府県</th>
+                      <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">市区町村</th>
                       <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">カテゴリ</th>
                       <th className="px-3 py-2.5 text-left font-headline text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">ステータス</th>
                       {hasErrors && (
@@ -562,9 +570,16 @@ const AdminShopBulkPage = () => {
                             {row.name || <span className="italic text-red-400">未入力</span>}
                           </td>
                           <td className="px-3 py-2.5">
-                            {row.area?.city
-                              ? <span className="text-foreground/60">{row.area.city}</span>
-                              : <span className="font-medium text-red-500">{row.raw.area_city || '未入力'}</span>}
+                            {row.prefecture
+                              ? <span className="text-foreground/60">{row.prefecture.name}</span>
+                              : <span className="font-medium text-red-500">{row.raw.prefecture || '未入力'}</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {row.city
+                              ? <span className="text-foreground/60">{row.city.name}</span>
+                              : row.raw.city
+                                ? <span className="font-medium text-red-500">{row.raw.city}</span>
+                                : <span className="text-muted-foreground/30">—</span>}
                           </td>
                           <td className="px-3 py-2.5">
                             {row.categories.length > 0
