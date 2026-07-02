@@ -3,6 +3,7 @@ import { SharePhotoGallery } from '@/components/share/SharePhotoGallery'
 import { ShareShopChips } from '@/components/share/ShareShopChips'
 import { ShareScore } from '@/components/share/ShareScore'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
+import { ShareUserAvatar } from '@/components/share/ShareUserAvatar'
 import type { SharePost } from '@/types'
 
 const formatDate = (dateStr: string | null) =>
@@ -21,9 +22,7 @@ export const SharePostView = ({ post, preview = false }: SharePostViewProps) => 
   <article>
     {/* Author */}
     <div className="mb-4 flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-muted font-headline text-[13px] font-black text-muted-foreground/60">
-        {post.user.displayName?.[0]?.toUpperCase() ?? '?'}
-      </div>
+      <ShareUserAvatar displayName={post.user.displayName} avatarUrl={post.user.avatarUrl} size="lg" />
       <div>
         <p className="font-headline text-[13px] font-black tracking-tight text-foreground/90">
           {post.user.displayName ?? '匿名ユーザー'}

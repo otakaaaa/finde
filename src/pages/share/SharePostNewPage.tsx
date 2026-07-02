@@ -1,9 +1,15 @@
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { SharePostForm } from '@/components/share/SharePostForm'
 import { Seo } from '@/components/seo/Seo'
 
 const SharePostNewPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // 店舗詳細の「投稿する」導線から遷移した場合、その店舗を関連店舗に選択済みにする
+  const shopId = searchParams.get('shopId')
+  const shopName = searchParams.get('shopName')
+  const initialShops = shopId && shopName ? [{ id: shopId, name: shopName }] : undefined
 
   return (
     <div>
@@ -27,7 +33,7 @@ const SharePostNewPage = () => {
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-10 md:px-8 md:py-14">
-        <SharePostForm mode="create" />
+        <SharePostForm mode="create" initialShops={initialShops} />
       </div>
     </div>
   )

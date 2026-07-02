@@ -24,9 +24,11 @@ const STEPS = [
 interface SharePostFormProps {
   mode: 'create' | 'edit'
   initial?: SharePost
+  /** 新規作成時にあらかじめ選択しておく関連店舗（店舗詳細からの導線用） */
+  initialShops?: PickedShop[]
 }
 
-export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
+export const SharePostForm = ({ mode, initial, initialShops }: SharePostFormProps) => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addToast } = useUiStore()
@@ -37,7 +39,9 @@ export const SharePostForm = ({ mode, initial }: SharePostFormProps) => {
   const [body, setBody] = useState(initial?.body ?? '')
   const [visibility, setVisibility] = useState<ShareVisibility>(initial?.visibility ?? 'public')
   const [shops, setShops] = useState<PickedShop[]>(
-    (initial?.shops ?? []).map((s) => ({ id: s.id, name: s.name })),
+    initial
+      ? initial.shops.map((s) => ({ id: s.id, name: s.name }))
+      : initialShops ?? [],
   )
   const [selection, setSelection] = useState<SharePhotoSelection>({
     keepPhotoIds: (initial?.photos ?? []).map((p) => p.id),

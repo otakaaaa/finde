@@ -45,6 +45,14 @@ const BrandSearchPage = () => {
   const grouped = groupByInitial(filtered)
   const sortedKeys = sortKeys(Object.keys(grouped))
 
+  // 絞り込み前の初期表示: 取り扱い店舗数の多い順に人気ブランドを見せる
+  const popularBrands = query
+    ? []
+    : (brands ?? [])
+        .filter((b) => b.shopCount > 0)
+        .sort((a, b) => b.shopCount - a.shopCount)
+        .slice(0, 12)
+
   const handleSelect = (brand: Brand) => {
     navigate(`/brands/${brand.id}`)
   }
@@ -70,10 +78,10 @@ const BrandSearchPage = () => {
         <div className="relative mx-auto max-w-6xl">
           <div className="pb-6">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
-              — Archive
+              — BRANDS
             </p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
-              BRAND INDEX
+              ブランド一覧
             </h1>
           </div>
         </div>
@@ -128,8 +136,45 @@ const BrandSearchPage = () => {
                 No Results
               </p>
               <p className="mt-2 text-xs text-muted-foreground/50">
-                「{query}」に一致するブランドが見つかりません
+                {query
+                  ? `「${query}」に一致するブランドが見つかりません`
+                  : 'ブランド情報は現在準備中です'}
               </p>
+            </div>
+          )}
+
+          {/* Popular brands（初期表示のみ） */}
+          {!isLoading && popularBrands.length > 0 && (
+            <div className="mb-12">
+              <div className="mb-4 flex items-baseline gap-3">
+                <span className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground/25">
+                  Popular
+                </span>
+                <span className="text-[10px] font-bold text-muted-foreground/40">人気ブランド</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {popularBrands.map((brand, i) => (
+                  <button
+                    key={brand.id}
+                    onClick={() => handleSelect(brand)}
+                    className={cn(
+                      'wish-card-enter group flex items-center gap-2 border border-primary/15 bg-white px-3 py-2',
+                      'transition-all duration-150 hover:border-primary/40 hover:bg-primary/[0.02] editorial-shadow',
+                    )}
+                    style={{ animationDelay: `${Math.min(i * 12, 300)}ms` }}
+                  >
+                    <span className="font-headline text-[12px] font-black tracking-tight text-foreground/80 transition-colors group-hover:text-primary/80">
+                      {brand.name}
+                    </span>
+                    <span className="font-headline text-[9px] font-black tabular-nums text-muted-foreground/35">
+                      {brand.shopCount}店舗
+                    </span>
+                    <ArrowUpRight className="h-2.5 w-2.5 shrink-0 text-primary/0 transition-all group-hover:text-primary/40" />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
