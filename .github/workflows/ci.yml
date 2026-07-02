@@ -1,0 +1,46 @@
+name: CI
+
+# main への PR と push で、依存の整合性・型・Lint・テスト・隠れUnicodeを検証する。
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 同一ブランチの古い実行はキャンセルする
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # package-lock.json との整合を強制（依存の改竄・不整合を検知）
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      # 双方向制御文字・ゼロ幅文字など隠れ Unicode の混入を検知（Trojan Source 対策）
+      - name: Hidden Unicode scan
+        run: npm run check:unicode

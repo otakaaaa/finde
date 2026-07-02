@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "check:unicode": "node scripts/check-hidden-unicode.mjs",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:types": "npx supabase gen types typescript --local > src/types/supabase.ts",
