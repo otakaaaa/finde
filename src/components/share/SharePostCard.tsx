@@ -10,6 +10,7 @@ import { ShareBookmarkButton } from '@/components/share/ShareBookmarkButton'
 import { ShareRatingPopover } from '@/components/share/ShareRatingPopover'
 import { ShareCommentSheet } from '@/components/share/ShareCommentSheet'
 import { ImpressionTracker } from '@/components/share/ImpressionTracker'
+import { ShareUserAvatar } from '@/components/share/ShareUserAvatar'
 import type { SharePost } from '@/types'
 
 const formatDate = (dateStr: string | null) =>
@@ -38,9 +39,7 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
           {/* Header */}
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-muted font-headline text-[11px] font-black text-muted-foreground/60">
-                {post.user.displayName?.[0]?.toUpperCase() ?? '?'}
-              </div>
+              <ShareUserAvatar displayName={post.user.displayName} avatarUrl={post.user.avatarUrl} size="md" />
               <div>
                 <p className="font-headline text-[12px] font-black tracking-tight text-foreground/80">
                   {post.user.displayName ?? '匿名ユーザー'}

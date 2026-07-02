@@ -8,6 +8,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
+import { safeExternalHref } from '@/lib/url'
 import { PAGE_SIZE_OPTIONS, type PageSizeOption } from '@/hooks/usePagination'
 import { AdminPagination } from '@/components/admin/AdminPagination'
 
@@ -247,10 +248,16 @@ const ListingRow = ({ req, index, onApprove, onReject, isUpdating }: ListingRowP
                 </span>
               )}
               {req.website_url && (
-                <a href={req.website_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-primary">
-                  <Globe className="h-2.5 w-2.5" />{req.website_url}<ExternalLink className="h-2 w-2" />
-                </a>
+                safeExternalHref(req.website_url) ? (
+                  <a href={safeExternalHref(req.website_url)} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-primary">
+                    <Globe className="h-2.5 w-2.5" />{req.website_url}<ExternalLink className="h-2 w-2" />
+                  </a>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                    <Globe className="h-2.5 w-2.5" />{req.website_url}
+                  </span>
+                )
               )}
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40">
                 <User className="h-2.5 w-2.5" />{req.users?.display_name ?? '不明'}

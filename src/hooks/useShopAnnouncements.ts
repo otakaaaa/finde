@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { toNullableInput } from '@/lib/shopAnnouncement'
+import { safeExternalHref } from '@/lib/url'
 import type { ShopAnnouncement, ShopAnnouncementFormValues } from '@/types'
 
 export const SHOP_ANNOUNCEMENT_BUCKET = 'shop-announcements'
@@ -88,7 +89,8 @@ const invalidate = (shopId: string) => (queryClient: ReturnType<typeof useQueryC
 const toPayload = (values: ShopAnnouncementFormValues) => ({
   title: values.title.trim(),
   body: values.body.trim(),
-  link_url: toNullableInput(values.linkUrl),
+  // http/https 以外（javascript: 等）は保存しない — 格納型XSS対策
+  link_url: safeExternalHref(toNullableInput(values.linkUrl) ?? undefined) ?? null,
   is_active: values.isActive,
   starts_at: toNullableInput(values.startsAt),
   ends_at: toNullableInput(values.endsAt),

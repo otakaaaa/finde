@@ -117,16 +117,29 @@ const mapShopForBrand = (row: ShopForBrandRow): Shop => ({
   updatedAt: row.updated_at,
 })
 
+interface BrandListRow extends BrandRow {
+  shop_brands: { count: number }[] | null
+}
+
+export interface BrandWithShopCount extends Brand {
+  /** 取り扱い店舗数（人気順の並び替えに使用） */
+  shopCount: number
+}
+
 export const useBrands = () =>
   useQuery({
     queryKey: ['brands-all'],
-    queryFn: async () => {
-      const { data } = await supabase
+    queryFn: async (): Promise<BrandWithShopCount[]> => {
+      const { data, error } = await supabase
         .from('brands')
-        .select('id, name, name_kana, aliases, status')
+        .select('id, name, name_kana, aliases, status, shop_brands(count)')
         .eq('status', 'active')
-        .order('name') as unknown as { data: BrandRow[] | null; error: unknown }
-      return (data ?? []).map(mapBrand)
+        .order('name') as unknown as { data: BrandListRow[] | null; error: { message: string } | null }
+      if (error) throw new Error(error.message)
+      return (data ?? []).map((b) => ({
+        ...mapBrand(b),
+        shopCount: b.shop_brands?.[0]?.count ?? 0,
+      }))
     },
     staleTime: 10 * 60 * 1000,
   })

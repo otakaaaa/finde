@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { ChevronLeft, X, Pencil, ExternalLink, Calendar } from 'lucide-react'
 import { getR2Url } from '@/lib/r2'
+import { safeExternalHref } from '@/lib/url'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { ShopPhotoUploadInput } from '@/components/shop/ShopPhotoUploadInput'
 import { inputClass } from '@/components/shop/ShopFormUI'
@@ -249,7 +250,7 @@ const AnnouncementRow = ({ announcement, shopId }: AnnouncementRowProps) => {
 
             {announcement.linkUrl && (
               <a
-                href={announcement.linkUrl}
+                href={safeExternalHref(announcement.linkUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 truncate text-[11px] text-muted-foreground/70 transition-colors hover:text-primary"

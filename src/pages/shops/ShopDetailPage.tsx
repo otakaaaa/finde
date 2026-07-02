@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router'
-import { MapPin, Phone, Globe, Instagram, Heart, ChevronLeft, ArrowUpRight, Store } from 'lucide-react'
+import { MapPin, Phone, Globe, Instagram, Heart, ChevronLeft, ArrowUpRight, Store, Pencil } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
@@ -13,6 +13,7 @@ import { useSharePostsByShop } from '@/hooks/useSharePosts'
 import { SharePostCard } from '@/components/share/SharePostCard'
 import { useShopItems } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
+import { safeExternalHref } from '@/lib/url'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import { useRecordShopView, useRecordShopAction } from '@/hooks/useShopEvent'
 import { ShopAnnouncements } from '@/components/shop/ShopAnnouncements'
@@ -101,6 +102,12 @@ const ShopDetailPage = () => {
     toggleFavorite(isFavorited ?? false)
   }
 
+  const handleSharePost = () => {
+    if (!shop) return
+    if (!user) { navigate('/auth/login'); return }
+    navigate(`/share/new?shopId=${shop.id}&shopName=${encodeURIComponent(shop.name)}`)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -133,6 +140,10 @@ const ShopDetailPage = () => {
   }
 
   const selectedPhoto = shop.photos[selectedPhotoIdx]
+
+  // 営業時間が1日も登録されていない店舗ではセクション自体を出さない
+  const hasBusinessHours =
+    shop.businessHours != null && Object.values(shop.businessHours).some((day) => day != null)
 
   const prefName = masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name
   const cityName = masterData?.cities.find((c) => c.id === shop.cityId)?.name
@@ -356,12 +367,14 @@ const ShopDetailPage = () => {
               )}
 
               {/* 営業時間 */}
-              <div className="border-b border-border px-5 py-4">
-                <PanelLabel>営業時間</PanelLabel>
-                <div className="mt-3">
-                  <BusinessHoursGrid hours={shop.businessHours} closedDays={shop.closedDays} />
+              {hasBusinessHours && (
+                <div className="border-b border-border px-5 py-4">
+                  <PanelLabel>営業時間</PanelLabel>
+                  <div className="mt-3">
+                    <BusinessHoursGrid hours={shop.businessHours} closedDays={shop.closedDays} />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Links */}
               {(shop.phone ?? shop.websiteUrl ?? shop.instagramUrl ?? shop.twitterUrl ?? shop.tiktokUrl) && (
@@ -503,6 +516,14 @@ const ShopDetailPage = () => {
                 )}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={handleSharePost}
+              className="flex shrink-0 items-center gap-2 bg-foreground px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.25em] text-background transition-opacity hover:opacity-80"
+            >
+              <Pencil className="h-3 w-3" />
+              投稿する
+            </button>
           </div>
 
           {(sharePosts?.length ?? 0) === 0 ? (
@@ -514,6 +535,17 @@ const ShopDetailPage = () => {
                 0
               </p>
               <p className="mt-3 text-xs text-muted-foreground">まだシャレ活の投稿がありません</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                この店舗で見つけたアイテムやコーデを、最初にシェアしてみませんか？
+              </p>
+              <button
+                type="button"
+                onClick={handleSharePost}
+                className="mt-5 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary underline underline-offset-4 transition-colors hover:text-primary/70"
+              >
+                <Pencil className="h-3 w-3" />
+                この店舗のシャレ活を投稿する
+              </button>
             </div>
           ) : (
             <div className="gap-3 divide-y divide-border border-t border-border">
@@ -546,9 +578,14 @@ const ExternalLink = ({
   icon: React.ReactNode
   children: React.ReactNode
   onClick?: () => void
-}) => (
+}) => {
+  // http/https 以外（javascript: 等）は描画しない — 格納型XSS対策
+  const safeHref = safeExternalHref(href)
+  if (!safeHref) return null
+
+  return (
   <a
-    href={href}
+    href={safeHref}
     target="_blank"
     rel="noopener noreferrer"
     onClick={onClick}
@@ -560,6 +597,7 @@ const ExternalLink = ({
     </span>
     <ArrowUpRight className="h-3 w-3 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
   </a>
-)
+  )
+}
 
 export default ShopDetailPage

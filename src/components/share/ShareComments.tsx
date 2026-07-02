@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
 import { useShareComments, useAddComment, useDeleteComment } from '@/hooks/useShareComments'
 import { useReportShare } from '@/hooks/useShareReports'
+import { ShareUserAvatar } from '@/components/share/ShareUserAvatar'
 import { cn } from '@/lib/utils'
 import type { ShareComment } from '@/types'
 
@@ -31,9 +32,7 @@ const CommentItem = ({ comment }: { comment: ShareComment }) => {
 
   return (
     <div className="flex gap-2.5 py-3">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-muted font-headline text-[10px] font-black text-muted-foreground/60">
-        {comment.user.displayName?.[0]?.toUpperCase() ?? '?'}
-      </div>
+      <ShareUserAvatar displayName={comment.user.displayName} avatarUrl={comment.user.avatarUrl} size="sm" />
       <div className="min-w-0 flex-1">
         <div className="mb-0.5 flex items-center gap-2">
           <span className="font-headline text-[11px] font-black tracking-tight text-foreground/80">

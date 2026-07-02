@@ -11,6 +11,7 @@ import { ShareToXButton } from '@/components/share/ShareToXButton'
 import { ShareRatingPopover } from '@/components/share/ShareRatingPopover'
 import { ShareCommentSheet } from '@/components/share/ShareCommentSheet'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
+import { ShareUserAvatar } from '@/components/share/ShareUserAvatar'
 import { Seo } from '@/components/seo/Seo'
 
 const formatDate = (dateStr: string | null) =>
@@ -68,9 +69,7 @@ const SharePostDetailPage = () => {
         <div className="border-l-[3px] border-l-border bg-white px-5 py-6 editorial-shadow">
           {/* 投稿者 */}
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-muted font-headline text-[13px] font-black text-muted-foreground/60">
-              {post.user.displayName?.[0]?.toUpperCase() ?? '?'}
-            </div>
+            <ShareUserAvatar displayName={post.user.displayName} avatarUrl={post.user.avatarUrl} size="lg" />
             <div>
               <p className="font-headline text-[13px] font-black tracking-tight text-foreground/90">
                 {post.user.displayName ?? '匿名ユーザー'}
