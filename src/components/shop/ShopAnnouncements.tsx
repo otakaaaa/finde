@@ -4,6 +4,7 @@ import { getR2Url } from '@/lib/r2'
 import { usePublicShopAnnouncements, SHOP_ANNOUNCEMENT_BUCKET } from '@/hooks/useShopAnnouncements'
 import { isAnnouncementLive, formatAnnouncementDate } from '@/lib/shopAnnouncement'
 import { cn } from '@/lib/utils'
+import { safeExternalHref } from '@/lib/url'
 import type { ShopAnnouncement } from '@/types'
 
 const getImageUrl = (imagePath: string) => getR2Url(SHOP_ANNOUNCEMENT_BUCKET, imagePath)
@@ -107,9 +108,9 @@ const AnnouncementModal = ({ announcement, onClose }: AnnouncementModalProps) =>
               {announcement.body}
             </p>
 
-            {announcement.linkUrl && (
+            {safeExternalHref(announcement.linkUrl) && (
               <a
-                href={announcement.linkUrl}
+                href={safeExternalHref(announcement.linkUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex items-center gap-2 bg-foreground px-5 py-2.5 font-headline text-[10px] font-black uppercase tracking-wider text-white transition-opacity hover:opacity-75"

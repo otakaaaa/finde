@@ -4,6 +4,7 @@ import {
   DEFAULT_HOURS_ENTRY,
   toFormEntry,
 } from '@/components/shop/ShopBusinessHoursSection'
+import { optionalHttpUrlSchema } from '@/lib/url'
 import type { BusinessHours, PriceRange } from '@/types'
 
 export const shopFormSchema = z.object({
@@ -18,10 +19,10 @@ export const shopFormSchema = z.object({
   priceRangeId: z.number().optional(),
   categoryIds:  z.array(z.number()).min(1, 'カテゴリを1つ以上選択してください'),
   phone:        z.string().max(20).optional(),
-  websiteUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  instagramUrl: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  twitterUrl:   z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
-  tiktokUrl:    z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  websiteUrl:   optionalHttpUrlSchema,
+  instagramUrl: optionalHttpUrlSchema,
+  twitterUrl:   optionalHttpUrlSchema,
+  tiktokUrl:    optionalHttpUrlSchema,
   status:       z.enum(['public', 'private', 'pending']).default('public'),
   businessHours: businessHoursSchema,
 })

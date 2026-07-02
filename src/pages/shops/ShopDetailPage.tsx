@@ -13,6 +13,7 @@ import { useSharePostsByShop } from '@/hooks/useSharePosts'
 import { SharePostCard } from '@/components/share/SharePostCard'
 import { useShopItems } from '@/hooks/useShopItems'
 import { cn } from '@/lib/utils'
+import { safeExternalHref } from '@/lib/url'
 import { OWNER_FEATURE_ENABLED } from '@/config/features'
 import { useRecordShopView, useRecordShopAction } from '@/hooks/useShopEvent'
 import { ShopAnnouncements } from '@/components/shop/ShopAnnouncements'
@@ -577,9 +578,14 @@ const ExternalLink = ({
   icon: React.ReactNode
   children: React.ReactNode
   onClick?: () => void
-}) => (
+}) => {
+  // http/https 以外（javascript: 等）は描画しない — 格納型XSS対策
+  const safeHref = safeExternalHref(href)
+  if (!safeHref) return null
+
+  return (
   <a
-    href={href}
+    href={safeHref}
     target="_blank"
     rel="noopener noreferrer"
     onClick={onClick}
@@ -591,6 +597,7 @@ const ExternalLink = ({
     </span>
     <ArrowUpRight className="h-3 w-3 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
   </a>
-)
+  )
+}
 
 export default ShopDetailPage

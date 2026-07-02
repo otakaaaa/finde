@@ -10,6 +10,7 @@ import { useOwnerShops } from '@/hooks/useOwnerShops'
 import { useShopItems, useShopWishAnalytics } from '@/hooks/useShopItems'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { cn } from '@/lib/utils'
+import { safeExternalHref } from '@/lib/url'
 import type { Shop } from '@/types'
 
 // ── Config ─────────────────────────────────────────────────────
@@ -387,21 +388,21 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                   icon={<Globe className="h-3.5 w-3.5" />}
                   label="公式サイト"
                   value={shop.websiteUrl}
-                  href={shop.websiteUrl ?? undefined}
+                  href={safeExternalHref(shop.websiteUrl)}
                   editTo={editHref}
                 />
                 <InfoRow
                   icon={<Instagram className="h-3.5 w-3.5" />}
                   label="Instagram"
                   value={shop.instagramUrl}
-                  href={shop.instagramUrl ?? undefined}
+                  href={safeExternalHref(shop.instagramUrl)}
                   editTo={editHref}
                 />
                 <InfoRow
                   icon={<XLogo className="h-3.5 w-3.5" />}
                   label="X"
                   value={shop.twitterUrl}
-                  href={shop.twitterUrl ?? undefined}
+                  href={safeExternalHref(shop.twitterUrl)}
                   editTo={editHref}
                 />
               </div>
