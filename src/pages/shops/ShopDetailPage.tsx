@@ -5,7 +5,6 @@ import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopHasOwner } from '@/hooks/useShopHasOwner'
-import { Seo } from '@/components/seo/Seo'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
 import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
 import { useAuth } from '@/hooks/useAuth'
@@ -129,7 +128,7 @@ const ShopDetailPage = () => {
   if (isError || !shop) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-16">
-        <Seo title="店舗が見つかりません" noindex />
+        {/* SEOメタはルートの meta エクスポート（routes/shop-detail.tsx）が出力する */}
         <div className="border border-border p-12 text-center">
           <p className="font-headline text-sm font-bold text-muted-foreground">
             店舗情報の読み込みに失敗しました
@@ -145,30 +144,9 @@ const ShopDetailPage = () => {
   const hasBusinessHours =
     shop.businessHours != null && Object.values(shop.businessHours).some((day) => day != null)
 
-  const prefName = masterData?.prefectures.find((p) => p.id === shop.prefectureId)?.name
-  const cityName = masterData?.cities.find((c) => c.id === shop.cityId)?.name
-  const locationText = [prefName, cityName].filter(Boolean).join(' ')
-  const categoryText = shop.categories.map((c) => c.name).join('・')
-  const seoTitle = locationText ? `${shop.name}（${locationText}）` : shop.name
-  const seoDescription =
-    shop.description?.trim() ||
-    [
-      locationText && `${locationText}の`,
-      categoryText || 'セレクトショップ',
-      `「${shop.name}」の店舗情報・取り扱いブランド・営業時間をFINDEでチェック。`,
-    ]
-      .filter(Boolean)
-      .join('')
-  const seoImage = shop.photos[0] ? getPhotoUrl(shop.photos[0].storagePath) : undefined
-
   return (
     <div className="bg-background">
-      <Seo
-        title={seoTitle}
-        description={seoDescription.slice(0, 120)}
-        path={`/shops/${shop.id}`}
-        image={seoImage}
-      />
+      {/* SEOメタはルートの meta エクスポート（routes/shop-detail.tsx）が出力する */}
       {/* ── Hero Gallery ──────────────────────────────── */}
       <div className="relative overflow-hidden bg-primary">
         {/* Back nav */}

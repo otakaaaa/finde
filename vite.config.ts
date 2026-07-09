@@ -1,80 +1,28 @@
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+import { reactRouter } from '@react-router/dev/vite'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
 import { cloudflare } from '@cloudflare/vite-plugin'
-import sitemap from 'vite-plugin-sitemap'
+import path from 'path'
 
-const HOSTNAME = 'https://finde-cloud.com'
-
-const STATIC_ROUTES = [
-  '/',
-  '/shops',
-  '/brands',
-  '/contact',
-  '/terms',
-  '/privacy',
-  '/faq',
-  '/about',
-  '/news',
-  '/share',
-]
-
-async function fetchDynamicRoutes(supabaseUrl: string, supabaseKey: string): Promise<string[]> {
-  const { createClient } = await import('@supabase/supabase-js')
-  const client = createClient(supabaseUrl, supabaseKey)
-
-  const [shopsRes, brandsRes, newsRes, sharesRes] = await Promise.all([
-    client.from('shops').select('id').eq('status', 'public'),
-    client.from('brands').select('id').eq('status', 'active'),
-    client.from('press_releases').select('id').not('published_at', 'is', null),
-    client
-      .from('share_posts')
-      .select('id')
-      .eq('visibility', 'public')
-      .eq('state', 'published')
-      .eq('status', 'published'),
-  ])
-
-  const shopRoutes = (shopsRes.data ?? []).map((r) => `/shops/${r.id}`)
-  const brandRoutes = (brandsRes.data ?? []).map((r) => `/brands/${r.id}`)
-  const newsRoutes = (newsRes.data ?? []).map((r) => `/news/${r.id}`)
-  const shareRoutes = (sharesRes.data ?? []).map((r) => `/share/${r.id}`)
-
-  return [...shopRoutes, ...brandRoutes, ...newsRoutes, ...shareRoutes]
-}
-
-export default defineConfig(async ({ command, mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const supabaseUrl = env.VITE_SUPABASE_URL
-  const supabaseKey = env.VITE_SUPABASE_PUBLISHABLE_KEY
-
-  let dynamicRoutes: string[] = []
-
-  if (command === 'build' && supabaseUrl && supabaseKey) {
-    try {
-      dynamicRoutes = await fetchDynamicRoutes(supabaseUrl, supabaseKey)
-      console.log(`[sitemap] Dynamic routes: ${dynamicRoutes.length} entries fetched`)
-    } catch (err) {
-      console.warn('[sitemap] Failed to fetch dynamic routes:', err)
-    }
-  }
-
-  return {
-    plugins: [
-      react(),
-      tailwindcss(),
-      cloudflare(),
-      sitemap({
-        hostname: HOSTNAME,
-        dynamicRoutes: [...STATIC_ROUTES, ...dynamicRoutes],
-        exclude: ['/auth/*', '/mypage/*', '/admin/*', '/owner/*', '/wishes/*', '/owner-application/*', '/listing-request', '/share/new', '/share/*/edit'],
-      }),
-    ],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-      },
+// sitemap.xml は vite-plugin-sitemap ではなく、SSRのリソースルート
+// （src/routes/sitemap.ts）で常に最新のDB内容から動的生成する。
+export default defineConfig({
+  // 通常は未設定（node_modules/.vite）。書き込み制限のある環境でのみ
+  // VITE_CACHE_DIR で外部パスへ逃がせるようにする。
+  cacheDir: process.env.VITE_CACHE_DIR || undefined,
+  plugins: [
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    tailwindcss(),
+    reactRouter(),
+  ],
+  build: {
+    // 旧SPAビルドの残骸（dist/ 直下）を消そうとして権限エラーになるのを回避。
+    // 新ビルドは dist/client（アセット）と dist/finde（Worker）に出力される。
+    emptyOutDir: false,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
-  }
+  },
 })

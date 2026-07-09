@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "react-router dev",
+    "build": "tsc -b && react-router build",
     "lint": "eslint .",
-    "preview": "npm run build && wrangler pages dev dist",
+    "preview": "npm run build && wrangler dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -20,7 +20,7 @@
     "supabase:functions": "npx supabase functions serve --env-file supabase/.env.local",
     "supabase:setup-storage": "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env 2>/dev/null | grep SERVICE_ROLE_KEY | cut -d= -f2 | tr -d '\"') node scripts/setup-storage.js",
     "supabase:reset": "npx supabase db reset",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name finde"
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -38,12 +38,13 @@
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "isbot": "^5.2.0",
     "lucide-react": "^0.487.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.72.1",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.17.0",
+    "react-router": "^7.18.1",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^3.25.76",
@@ -53,6 +54,7 @@
     "@cloudflare/vite-plugin": "^1.31.2",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",
+    "@react-router/dev": "^7.18.1",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -68,7 +70,6 @@
     "tailwindcss": "^4.2.2",
     "typescript": "~5.7.2",
     "vite": "^6.4.2",
-    "vite-plugin-sitemap": "^0.8.2",
     "vitest": "^2.1.9",
     "wrangler": "^4.81.1"
   }

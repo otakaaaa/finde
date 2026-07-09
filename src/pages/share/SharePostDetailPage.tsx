@@ -12,7 +12,6 @@ import { ShareRatingPopover } from '@/components/share/ShareRatingPopover'
 import { ShareCommentSheet } from '@/components/share/ShareCommentSheet'
 import { getSharePhotoUrl } from '@/components/share/sharePhoto'
 import { ShareUserAvatar } from '@/components/share/ShareUserAvatar'
-import { Seo } from '@/components/seo/Seo'
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -54,7 +53,7 @@ const SharePostDetailPage = () => {
 
   return (
     <div className="bg-background">
-      <Seo title="シャレ活" description={post.body.slice(0, 100)} path={`/share/${post.id}`} />
+      {/* SEOメタはルートの meta エクスポート（routes/share-post-detail.tsx）が出力する */}
 
       <div className="mx-auto max-w-2xl px-4 py-8 md:px-8 md:py-12">
         <button
