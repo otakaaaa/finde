@@ -1,4 +1,25 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "finde",
-  "pages_build_output_dir": "dist"
+  "compatibility_date": "2026-04-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./workers/app.ts",
+  "assets": {
+    "directory": "./dist/client"
+  },
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  }
 }

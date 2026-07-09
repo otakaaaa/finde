@@ -2,22 +2,10 @@ import { Navigate, Link, useParams } from 'react-router'
 import ReactMarkdown from 'react-markdown'
 import { ArrowLeft } from 'lucide-react'
 import { usePressRelease } from '@/hooks/usePressReleases'
-import { Seo } from '@/components/seo/Seo'
 
 const formatDate = (iso: string) => {
   const d = new Date(iso)
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-}
-
-/** Markdown 記法を除去してプレーンテキストの抜粋を作る */
-const toExcerpt = (markdown: string, max = 120): string => {
-  const plain = markdown
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[#*_>`~\-]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  return plain.length > max ? `${plain.slice(0, max)}…` : plain
 }
 
 const NewsDetailPage = () => {
@@ -46,12 +34,7 @@ const NewsDetailPage = () => {
 
   return (
     <div className="bg-background">
-      <Seo
-        title={item.title}
-        description={toExcerpt(item.body)}
-        path={`/news/${item.id}`}
-        type="article"
-      />
+      {/* SEOメタはルートの meta エクスポート（routes/news-detail.tsx）が出力する */}
       <div className="mx-auto max-w-3xl px-6 py-12 md:px-16 md:py-16">
         {/* Back link */}
         <Link

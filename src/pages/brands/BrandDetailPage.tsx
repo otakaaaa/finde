@@ -2,7 +2,6 @@ import { Link, useParams } from 'react-router'
 import { ChevronLeft, Store } from 'lucide-react'
 import { useBrand, useShopsByBrand } from '@/hooks/useBrands'
 import { ShopCard } from '@/components/shop/ShopCard'
-import { Seo } from '@/components/seo/Seo'
 
 const ShopGridSkeleton = () => (
   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -26,7 +25,7 @@ const BrandDetailPage = () => {
   if (brandError) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-16">
-        <Seo title="ブランドが見つかりません" noindex />
+        {/* SEOメタはルートの meta エクスポート（routes/brand-detail.tsx）が出力する */}
         <div className="border border-border p-12 text-center">
           <p className="text-sm font-bold text-muted-foreground">ブランド情報の読み込みに失敗しました</p>
         </div>
@@ -36,13 +35,7 @@ const BrandDetailPage = () => {
 
   return (
     <div>
-      {brand && (
-        <Seo
-          title={`${brand.name}の取り扱い店舗`}
-          description={`${brand.name}${brand.nameKana ? `（${brand.nameKana}）` : ''}を取り扱うセレクトショップ・古着屋をFINDEで検索。ブランドを扱うお店の一覧と店舗情報をチェックできます。`}
-          path={`/brands/${brand.id}`}
-        />
-      )}
+      {/* SEOメタはルートの meta エクスポート（routes/brand-detail.tsx）が出力する */}
       {/* ── Header ──────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
