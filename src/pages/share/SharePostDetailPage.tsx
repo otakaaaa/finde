@@ -108,7 +108,7 @@ const SharePostDetailPage = () => {
 
             {/* シャレ度 — 自分の投稿以外はポップオーバートリガー */}
             {isOwn ? (
-              <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} size="lg" />
+              <ShareScore totalScore={post.ratingSum} ratingCount={post.ratingCount} size="lg" />
             ) : (
               <div className="relative">
                 <button
@@ -118,7 +118,7 @@ const SharePostDetailPage = () => {
                   aria-label="シャレ度を送る"
                   aria-expanded={ratingOpen}
                 >
-                  <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} size="lg" />
+                  <ShareScore totalScore={post.ratingSum} ratingCount={post.ratingCount} size="lg" />
                 </button>
                 {ratingOpen && (
                   <ShareRatingPopover post={post} onClose={() => setRatingOpen(false)} />

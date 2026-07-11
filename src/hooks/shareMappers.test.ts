@@ -24,14 +24,16 @@ const baseRow = (overrides: Partial<SharePostRow> = {}): SharePostRow => ({
 })
 
 describe('mapSharePostRow', () => {
-  it('averageScore は票がなければ null', () => {
-    const post = mapSharePostRow(baseRow(), null)
-    expect(post.averageScore).toBeNull()
+  it('ratingSum（シャレ度合計）と ratingCount をそのままマップする', () => {
+    const post = mapSharePostRow(baseRow({ rating_count: 4, rating_sum: 30 }), null)
+    expect(post.ratingSum).toBe(30)
+    expect(post.ratingCount).toBe(4)
   })
 
-  it('averageScore = rating_sum / rating_count', () => {
-    const post = mapSharePostRow(baseRow({ rating_count: 4, rating_sum: 30 }), null)
-    expect(post.averageScore).toBe(7.5)
+  it('票がなければ ratingSum は 0', () => {
+    const post = mapSharePostRow(baseRow(), null)
+    expect(post.ratingSum).toBe(0)
+    expect(post.ratingCount).toBe(0)
   })
 
   it('isBookmarked は bookmarks 行の有無で決まる', () => {

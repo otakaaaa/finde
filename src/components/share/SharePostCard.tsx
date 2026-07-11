@@ -81,7 +81,7 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
         <div className="flex items-center gap-4 border-t border-border px-4 py-2.5 sm:px-5">
           {/* シャレ度 — 自分の投稿以外はポップオーバートリガー */}
           {isOwn ? (
-            <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} />
+            <ShareScore totalScore={post.ratingSum} ratingCount={post.ratingCount} />
           ) : (
             <div className="relative">
               <button
@@ -91,7 +91,7 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
                 aria-label="シャレ度を送る"
                 aria-expanded={ratingOpen}
               >
-                <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} />
+                <ShareScore totalScore={post.ratingSum} ratingCount={post.ratingCount} />
               </button>
               {ratingOpen && (
                 <ShareRatingPopover post={post} onClose={() => setRatingOpen(false)} />
