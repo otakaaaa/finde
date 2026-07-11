@@ -39,9 +39,7 @@ const SharePostEditPage = () => {
           >
             ← Back
           </button>
-          <p className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-foreground/25">
-            — Edit Post —
-          </p>
+          <p className="text-sm font-bold text-foreground">シャレ活を編集</p>
           <div className="w-14" />
         </div>
       </div>
