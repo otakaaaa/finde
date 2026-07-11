@@ -15,11 +15,6 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
   ],
-  build: {
-    // 旧SPAビルドの残骸（dist/ 直下）を消そうとして権限エラーになるのを回避。
-    // 新ビルドは dist/client（アセット）と dist/finde（Worker）に出力される。
-    emptyOutDir: false,
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
