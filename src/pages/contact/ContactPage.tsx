@@ -152,7 +152,7 @@ const ContactPage = () => {
               SENT
             </span>
           </div>
-          <div className="relative mx-auto max-w-3xl pb-8">
+          <div className="relative mx-auto max-w-6xl pb-8">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— Contact</p>
             <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               SENT
@@ -161,7 +161,7 @@ const ContactPage = () => {
         </section>
 
         <div className="bg-background">
-          <div className="mx-auto max-w-3xl px-4 py-20 md:px-16 md:py-24">
+          <div className="mx-auto max-w-6xl px-4 py-20 md:px-16 md:py-24">
             <div className="wish-card-enter flex flex-col items-center gap-5 border border-border bg-white px-8 py-14 text-center editorial-shadow">
               <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-emerald-50">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -215,7 +215,7 @@ const ContactPage = () => {
           </span>
         </div>
 
-        <div className="relative mx-auto max-w-3xl">
+        <div className="relative mx-auto max-w-6xl">
           <div className="pb-8">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — Support
@@ -233,7 +233,7 @@ const ContactPage = () => {
 
       {/* ── FAQ banner ───────────────────────────── */}
       <div className="border-b border-border bg-muted/30 px-4 py-4 md:px-16">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <p className="text-[11px] text-muted-foreground/60">
             <span className="mr-1.5 font-bold text-foreground/60">まず確認：</span>
             よくあるご質問で解決できる場合があります。
@@ -252,7 +252,7 @@ const ContactPage = () => {
 
       {/* ── Form section ─────────────────────────── */}
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-12 md:px-16 md:py-16">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:px-16 md:py-16">
 
           {/* Error */}
           {error && (

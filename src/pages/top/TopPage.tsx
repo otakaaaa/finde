@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Search, MapPin, ChevronRight, Store, Megaphone } from 'lucide-react'
+import { Search, MapPin, ChevronRight, Megaphone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useShops } from '@/hooks/useShops'
 import { useShareTimeline } from '@/hooks/useShareTimeline'
@@ -40,13 +40,11 @@ const ShopFeedCard = ({ shop }: { shop: Shop }) => {
     <article className="overflow-hidden rounded-xl border border-border bg-background">
       {/* Header */}
       <Link to={`/shops/${shop.id}`} className="flex items-center gap-3 px-4 py-3">
-        {photo ? (
-          <img src={getPhotoUrl(photo.storagePath)} alt="" className="h-8 w-8 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-            <Store className="h-4 w-4 text-muted-foreground" />
-          </span>
-        )}
+        <img
+          src={photo ? getPhotoUrl(photo.storagePath) : '/noimage.png'}
+          alt=""
+          className="h-8 w-8 rounded-full object-cover"
+        />
         <span className="min-w-0">
           <span className="block truncate text-[13px] font-bold leading-tight">{shop.name}</span>
           {location && (
@@ -60,18 +58,12 @@ const ShopFeedCard = ({ shop }: { shop: Shop }) => {
 
       {/* Photo */}
       <Link to={`/shops/${shop.id}`} className="block bg-muted">
-        {photo ? (
-          <img
-            src={getPhotoUrl(photo.storagePath)}
-            alt={shop.name}
-            className="aspect-square w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <span className="flex aspect-square w-full items-center justify-center">
-            <Store className="h-10 w-10 text-muted-foreground/50" />
-          </span>
-        )}
+        <img
+          src={photo ? getPhotoUrl(photo.storagePath) : '/noimage.png'}
+          alt={shop.name}
+          className="aspect-square w-full object-cover"
+          loading="lazy"
+        />
       </Link>
 
       {/* Body */}
