@@ -15,9 +15,9 @@ const ShopItemTypesPage = () => {
     <div className="min-h-[calc(100dvh-56px)]">
 
       {/* ── Page header ─────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
+          <span className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
             ITEMS
           </span>
         </div>
@@ -27,18 +27,18 @@ const ShopItemTypesPage = () => {
             <button
               type="button"
               onClick={() => navigate('/owner')}
-              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60"
             >
               <ChevronLeft className="h-3 w-3" />
               ダッシュボードへ
             </button>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Owner</p>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— Owner</p>
             <div className="flex items-end justify-between">
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                 アイテム管理
               </h1>
               {!isLoading && totalItems > 0 && (
-                <span className="mb-1 font-headline text-[11px] font-black tabular-nums text-white/30">
+                <span className="mb-1 font-headline text-[11px] font-black tabular-nums text-foreground/30">
                   {String(totalItems).padStart(2, '0')} 登録
                 </span>
               )}

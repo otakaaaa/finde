@@ -198,10 +198,10 @@ const WishEditPage = () => {
   if (isWishLoading) {
     return (
       <div>
-        <section className="bg-primary px-6 pb-0 pt-10 md:px-16">
+        <section className="bg-background px-6 pb-0 pt-10 md:px-16">
           <div className="mx-auto max-w-3xl pb-6">
-            <div className="mb-3 h-3 w-24 animate-pulse rounded-sm bg-white/10" />
-            <div className="h-10 w-48 animate-pulse rounded-sm bg-white/10" />
+            <div className="mb-3 h-3 w-24 animate-pulse rounded-sm bg-foreground/10" />
+            <div className="h-10 w-48 animate-pulse rounded-sm bg-foreground/10" />
           </div>
         </section>
         <div className="bg-background">
@@ -238,24 +238,24 @@ const WishEditPage = () => {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
+          <span className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
             EDIT
           </span>
         </div>
         <div className="relative mx-auto max-w-3xl">
           <div className="pb-6">
-            <button type="button" onClick={() => navigate('/wishes')} className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60">
+            <button type="button" onClick={() => navigate('/wishes')} className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60">
               <ChevronLeft className="h-3 w-3" />
               一覧へ戻る
             </button>
             <div className="flex items-end justify-between">
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— WISHES</p>
-                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">ウィッシュ編集</h1>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— WISHES</p>
+                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">ウィッシュ編集</h1>
               </div>
-              <span className="mb-1 font-headline text-[10px] font-black tabular-nums text-white/20">
+              <span className="mb-1 font-headline text-[10px] font-black tabular-nums text-foreground/20">
                 {new Date(wish.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' })}
               </span>
             </div>
@@ -473,7 +473,7 @@ const WishEditPage = () => {
                     <button type="button" onClick={() => field.onChange(!watchedIsPublic)}
                       className={cn('flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all', watchedIsPublic ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white')}
                     >
-                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-sm', watchedIsPublic ? 'bg-primary text-white' : 'bg-muted text-muted-foreground')}>
+                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-sm', watchedIsPublic ? 'bg-background text-foreground' : 'bg-muted text-muted-foreground')}>
                         {watchedIsPublic ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
                       </div>
                       <div className="text-left">
@@ -491,7 +491,7 @@ const WishEditPage = () => {
                     <button type="button" onClick={() => field.onChange(!watchedNotifyEmail)}
                       className={cn('flex flex-1 items-center gap-3 rounded-sm border px-4 py-3.5 transition-all', watchedNotifyEmail ? 'border-primary/20 bg-primary/[0.04]' : 'border-border bg-white')}
                     >
-                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-sm', watchedNotifyEmail ? 'bg-primary text-white' : 'bg-muted text-muted-foreground')}>
+                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-sm', watchedNotifyEmail ? 'bg-background text-foreground' : 'bg-muted text-muted-foreground')}>
                         {watchedNotifyEmail ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
                       </div>
                       <div className="text-left">

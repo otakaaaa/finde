@@ -98,24 +98,24 @@ const FaqPage = () => {
       />
 
       {/* ── Hero ────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             FAQ
           </span>
         </div>
-        <div className="relative mx-auto max-w-4xl">
+        <div className="relative mx-auto max-w-6xl">
           <div className="pb-8 pt-2">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.5em] text-white/30">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/30">
               — Help
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               よくあるご質問
             </h1>
-            <p className="mt-3 text-[11px] text-white/30">
+            <p className="mt-3 text-[11px] text-foreground/30">
               {FAQ_CATEGORIES.length}カテゴリ・{totalQuestions}件の回答
             </p>
           </div>
@@ -123,7 +123,7 @@ const FaqPage = () => {
       </section>
 
       {/* ── Body ────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-4xl px-4 py-12 md:px-16 md:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 md:px-16 md:py-16">
 
         {/* Category filter */}
         <div className="mb-10 flex flex-wrap gap-2">

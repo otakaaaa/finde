@@ -46,7 +46,7 @@ const MySharesPage = () => {
     <div className="bg-background">
       <Seo title="シャレ活の管理" description="自分のシャレ活投稿を管理します。" path="/mypage/share" noindex />
 
-      <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="font-headline text-2xl font-black tracking-tight text-foreground">シャレ活</h1>
           <Link

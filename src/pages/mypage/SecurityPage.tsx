@@ -148,36 +148,36 @@ const SecurityPage = () => {
   return (
     <div className="bg-background">
       {/* ── Header ───────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-10 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-10 pt-10 md:px-16">
         <div className="pointer-events-none absolute inset-0 flex items-center justify-end select-none overflow-hidden pr-4 md:pr-10">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(120px, 22vw, 240px)' }}
           >
             2FA
           </span>
         </div>
 
-        <div className="relative mx-auto max-w-3xl">
-          <div className="mb-8 inline-flex items-center gap-1.5 border border-white/10 px-3 py-1">
-            <span className="h-1 w-1 rounded-full bg-white/40" />
-            <span className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-white/40">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="mb-8 inline-flex items-center gap-1.5 border border-border px-3 py-1">
+            <span className="h-1 w-1 rounded-full bg-foreground/40" />
+            <span className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-foreground/40">
               Security
             </span>
           </div>
 
           <div>
-            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.4em] text-white/30">
+            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.4em] text-foreground/30">
               — Settings
             </p>
-            <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
+            <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-foreground md:text-3xl">
               セキュリティ設定
             </h1>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-3xl px-4 py-10 md:px-16">
+      <div className="mx-auto max-w-6xl px-4 py-10 md:px-16">
 
         {/* ── MFA status card ──────────────────────── */}
         <div className="mb-8 wish-card-enter">

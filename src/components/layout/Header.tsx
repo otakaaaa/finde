@@ -148,7 +148,7 @@ export const Header = () => {
                   type="button"
                   onClick={() => setProfileOpen((v) => !v)}
                   className={cn(
-                    'flex h-7 w-7 shrink-0 overflow-hidden bg-primary font-headline text-[10px] font-black text-white',
+                    'flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white',
                     'ring-offset-background transition-all duration-150',
                     profileOpen ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80',
                   )}
@@ -165,7 +165,7 @@ export const Header = () => {
                 <div
                   className={cn(
                     'absolute right-0 top-full z-50 mt-2 w-52 origin-top-right',
-                    'border border-border bg-background editorial-shadow',
+                    'overflow-hidden rounded-xl border border-border bg-background editorial-shadow',
                     'transition-all duration-150',
                     profileOpen
                       ? 'pointer-events-auto translate-y-0 opacity-100'
@@ -247,12 +247,12 @@ export const Header = () => {
               <Link
                 to="/auth/login"
                 className={cn(
-                  'flex h-8 items-center border border-foreground/20 px-4',
-                  'font-headline text-[10px] font-black uppercase tracking-[0.25em] text-foreground/70',
-                  'transition-all duration-150 hover:border-foreground hover:text-foreground',
+                  'flex h-8 items-center rounded-lg bg-primary px-4',
+                  'text-[13px] font-bold text-primary-foreground',
+                  'transition-opacity duration-150 hover:opacity-85',
                 )}
               >
-                Login
+                ログイン
               </Link>
             )}
           </nav>
@@ -266,7 +266,7 @@ export const Header = () => {
                     type="button"
                     onClick={() => { setMenuOpen(false); setProfileOpen((v) => !v) }}
                     className={cn(
-                      'flex h-7 w-7 shrink-0 overflow-hidden bg-primary font-headline text-[10px] font-black text-white',
+                      'flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-primary font-headline text-[10px] font-black text-white',
                       'ring-offset-background transition-all duration-150',
                       profileOpen ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80',
                     )}
@@ -283,7 +283,7 @@ export const Header = () => {
                   <div
                     className={cn(
                       'absolute right-0 top-full z-50 mt-2 w-52 origin-top-right',
-                      'border border-border bg-background editorial-shadow',
+                      'overflow-hidden rounded-xl border border-border bg-background editorial-shadow',
                       'transition-all duration-150',
                       profileOpen
                         ? 'pointer-events-auto translate-y-0 opacity-100'

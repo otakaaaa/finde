@@ -311,10 +311,10 @@ const AdminShopBulkPage = () => {
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             IMPORT
@@ -326,22 +326,22 @@ const AdminShopBulkPage = () => {
             <button
               type="button"
               onClick={() => navigate('/admin/shops')}
-              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60"
             >
               <ChevronLeft className="h-3 w-3" />
               店舗管理
             </button>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — Admin
             </p>
             <div className="flex flex-wrap items-end justify-between gap-3">
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                 CSVインポート
               </h1>
               <button
                 type="button"
                 onClick={downloadSampleCSV}
-                className="flex items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                className="flex items-center gap-1.5 rounded-sm border border-border bg-foreground/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/70 transition-colors hover:bg-foreground/20 hover:text-foreground"
               >
                 <Download className="h-3 w-3" />
                 サンプル CSV

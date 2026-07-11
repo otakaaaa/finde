@@ -65,10 +65,10 @@ const BrandSearchPage = () => {
         path="/brands"
       />
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             BRANDS
@@ -77,10 +77,10 @@ const BrandSearchPage = () => {
 
         <div className="relative mx-auto max-w-6xl">
           <div className="pb-6">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — BRANDS
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               ブランド一覧
             </h1>
           </div>
@@ -88,29 +88,29 @@ const BrandSearchPage = () => {
       </section>
 
       {/* ── Sticky search bar ────────────────────── */}
-      <div className="sticky top-14 z-40 border-b border-white/10 bg-primary">
+      <div className="sticky top-14 z-40 border-b border-border bg-background">
         <div className="mx-auto max-w-6xl px-4 py-3 md:px-16">
           <div className="flex items-center gap-4">
             <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground/40" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="ブランド名・カナ・別名で絞り込み…"
-                className="h-8 w-full border border-white/20 bg-transparent pl-9 pr-8 text-xs text-white placeholder:text-white/30 transition-colors focus:border-white/40 focus:outline-none"
+                className="h-8 w-full border border-border bg-transparent pl-9 pr-8 text-xs text-foreground placeholder:text-foreground/30 transition-colors focus:border-border focus:outline-none"
               />
               {query && (
                 <button
                   onClick={() => setQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
             {query && (
-              <span className="shrink-0 font-headline text-[10px] font-black tabular-nums text-white/25">
+              <span className="shrink-0 font-headline text-[10px] font-black tabular-nums text-foreground/25">
                 {filtered.length} 件
               </span>
             )}

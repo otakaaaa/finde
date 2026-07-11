@@ -179,10 +179,10 @@ const PrivacyPolicyPage = () => {
       />
 
       {/* ── Hero ────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(60px, 11vw, 130px)' }}
           >
             PRIVACY
@@ -190,16 +190,16 @@ const PrivacyPolicyPage = () => {
         </div>
         <div className="relative mx-auto max-w-5xl">
           <div className="pb-8 pt-2">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.5em] text-white/30">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/30">
               — Legal
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               プライバシーポリシー
             </h1>
-            <p className="mt-3 text-[11px] text-white/30">
+            <p className="mt-3 text-[11px] text-foreground/30">
               発効日: {version.effectiveDate}
               {!isLatest && (
-                <span className="ml-3 inline-flex items-center gap-1 rounded-sm bg-white/10 px-2 py-0.5 font-headline text-[9px] font-black uppercase tracking-wide text-white/50">
+                <span className="ml-3 inline-flex items-center gap-1 rounded-sm bg-foreground/10 px-2 py-0.5 font-headline text-[9px] font-black uppercase tracking-wide text-foreground/50">
                   旧版
                 </span>
               )}

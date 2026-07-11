@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { BottomNav } from './BottomNav'
 import { ToastStack } from '@/components/ui/Toast'
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal'
 import { DeleteAccountModal } from '@/components/auth/DeleteAccountModal'
@@ -35,11 +36,13 @@ export const Layout = () => (
     <AuthHashRedirector />
     <Header />
     <MaintenanceGuard>
-      <main className="flex-1">
+      {/* モバイルはボトムタブバー分の余白を確保 */}
+      <main className="flex-1 pb-14 md:pb-0">
         <Outlet />
       </main>
     </MaintenanceGuard>
     <Footer />
+    <BottomNav />
     <ToastStack />
     <LogoutConfirmModal />
     <DeleteAccountModal />

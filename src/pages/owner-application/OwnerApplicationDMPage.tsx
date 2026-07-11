@@ -248,10 +248,10 @@ const OwnerApplicationDMPage = () => {
     <div className="flex min-h-[calc(100vh-56px)] flex-col">
 
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-8 md:px-10">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-8 md:px-10">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             DM
@@ -261,24 +261,24 @@ const OwnerApplicationDMPage = () => {
           <div className="pb-5">
             <Link
               to={backPath}
-              className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+              className="mb-3 flex w-fit items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60"
             >
               <ChevronLeft className="h-3 w-3" />
               {isAdmin ? 'Applications' : 'マイページ'}
             </Link>
 
             {appLoading ? (
-              <div className="h-8 w-48 animate-pulse rounded-sm bg-white/10" />
+              <div className="h-8 w-48 animate-pulse rounded-sm bg-foreground/10" />
             ) : application ? (
               <div>
                 <div className="mb-1 flex items-center gap-2">
-                  <Store className="h-3.5 w-3.5 text-white/40" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">
+                  <Store className="h-3.5 w-3.5 text-foreground/40" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-foreground/40">
                     オーナー申請 DM
                   </p>
                 </div>
                 <div className="flex flex-wrap items-end gap-3">
-                  <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
+                  <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-foreground md:text-3xl">
                     {application.shop_name}
                   </h1>
                   {statusConf && (
@@ -291,7 +291,7 @@ const OwnerApplicationDMPage = () => {
                   )}
                 </div>
                 {!isAdmin && (
-                  <p className="mt-2 text-[10px] text-white/30">
+                  <p className="mt-2 text-[10px] text-foreground/30">
                     FINDE運営とのやり取りで本人確認を行います
                   </p>
                 )}

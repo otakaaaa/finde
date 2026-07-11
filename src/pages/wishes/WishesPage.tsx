@@ -290,10 +290,10 @@ const WishesPage = () => {
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             WANTS
@@ -303,23 +303,23 @@ const WishesPage = () => {
         <div className="relative mx-auto max-w-6xl">
           <div className="flex items-end justify-between pb-6">
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
                 — WISHES
               </p>
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                 ウィッシュリスト
               </h1>
             </div>
 
             <div className="mb-0.5 flex items-center gap-3">
               {!isLoading && wishes && wishes.length > 0 && (
-                <span className="font-headline text-[11px] font-black tabular-nums text-white/25">
+                <span className="font-headline text-[11px] font-black tabular-nums text-foreground/25">
                   {String(wishes.length).padStart(3, '0')}
                 </span>
               )}
               <Link
                 to="/wishes/new"
-                className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                className="flex h-8 items-center gap-1.5 rounded-sm border border-border bg-foreground/10 px-3 text-xs font-bold text-foreground/80 transition-colors hover:bg-foreground/20 hover:text-foreground"
               >
                 <Plus className="h-3.5 w-3.5" />
                 追加する
