@@ -37,10 +37,10 @@ const BrandDetailPage = () => {
     <div>
       {/* SEOメタはルートの meta エクスポート（routes/brand-detail.tsx）が出力する */}
       {/* ── Header ──────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(60px, 12vw, 130px)' }}
           >
             BRAND
@@ -51,7 +51,7 @@ const BrandDetailPage = () => {
           <div className="pb-6">
             <Link
               to="/brands"
-              className="mb-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 transition-colors hover:text-white/70"
+              className="mb-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/40 transition-colors hover:text-foreground/70"
             >
               <ChevronLeft className="h-3 w-3" />
               取扱店舗一覧
@@ -59,17 +59,17 @@ const BrandDetailPage = () => {
 
             {brandLoading ? (
               <div className="space-y-2">
-                <div className="h-3 w-20 animate-pulse rounded-sm bg-white/10" />
-                <div className="h-9 w-48 animate-pulse rounded-sm bg-white/10" />
+                <div className="h-3 w-20 animate-pulse rounded-sm bg-foreground/10" />
+                <div className="h-9 w-48 animate-pulse rounded-sm bg-foreground/10" />
               </div>
             ) : (
               <>
                 {brand?.nameKana && (
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.5em] text-white/30">
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/30">
                     {brand.nameKana}
                   </p>
                 )}
-                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                   {brand?.name}
                 </h1>
               </>

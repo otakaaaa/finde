@@ -262,10 +262,10 @@ const AdminShopsPage = () => {
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             SHOPS
@@ -276,17 +276,17 @@ const AdminShopsPage = () => {
           <div className="pb-6">
             <Link
               to="/admin"
-              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60 w-fit"
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60 w-fit"
             >
               <ChevronLeft className="h-3 w-3" />
               ダッシュボード
             </Link>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
                   — Admin
                 </p>
-                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+                <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                   店舗管理
                 </h1>
               </div>
@@ -294,14 +294,14 @@ const AdminShopsPage = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/admin/shops/bulk"
-                  className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                  className="flex h-8 items-center gap-1.5 rounded-sm border border-border bg-foreground/10 px-3 text-xs font-bold text-foreground/70 transition-colors hover:bg-foreground/20 hover:text-foreground"
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5" />
                   CSV
                 </Link>
                 <Link
                   to="/admin/shops/new"
-                  className="flex h-8 items-center gap-1.5 rounded-sm border border-white/20 bg-white/10 px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                  className="flex h-8 items-center gap-1.5 rounded-sm border border-border bg-foreground/10 px-3 text-xs font-bold text-foreground/80 transition-colors hover:bg-foreground/20 hover:text-foreground"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   新規登録

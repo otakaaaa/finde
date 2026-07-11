@@ -36,20 +36,20 @@ const ShareTimelinePage = () => {
       <Seo title="シャレ活" description="ユーザーのおしゃれな投稿（シャレ活）を見て、シャレ度を送り合おう。" path="/share" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
+          <span className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
             SHARE
           </span>
         </div>
-        <div className="relative mx-auto max-w-3xl pb-8">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Share</p>
-          <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">シャレ活</h1>
+        <div className="relative mx-auto max-w-6xl pb-8">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— Share</p>
+          <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">シャレ活</h1>
         </div>
       </section>
 
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-10">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-10">
           {/* Tabs + Post button */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex gap-1">

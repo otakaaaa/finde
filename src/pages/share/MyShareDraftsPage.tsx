@@ -77,7 +77,7 @@ const MyShareDraftsPage = () => {
     <div className="bg-background">
       <Seo title="シャレ活の下書き" description="シャレ活の下書きを管理します。" path="/mypage/share/drafts" noindex />
 
-      <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
         <h1 className="mb-6 font-headline text-2xl font-black tracking-tight text-foreground">シャレ活</h1>
         <ShareMypageNav />
 

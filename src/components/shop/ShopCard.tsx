@@ -22,7 +22,7 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
   return (
     <Link
       to={`/shops/${shop.id}`}
-      className="group relative block overflow-hidden bg-muted"
+      className="group relative block overflow-hidden rounded-xl border border-border bg-background"
     >
       {/* Photo */}
       <div className={cn('relative overflow-hidden', featured ? 'aspect-video' : 'aspect-[3/4]')}>
@@ -66,7 +66,7 @@ export const ShopCard = ({ shop, featured = false }: ShopCardProps) => {
       {/* Category tag */}
       {shop.categories[0] && (
         <div className="absolute left-3 top-3">
-          <span className="bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
+          <span className="rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-foreground">
             {shop.categories[0].name}
           </span>
         </div>

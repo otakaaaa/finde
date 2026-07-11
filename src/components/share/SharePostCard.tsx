@@ -34,7 +34,7 @@ export const SharePostCard = ({ post, showVisibility = false }: SharePostCardPro
 
   return (
     <ImpressionTracker postId={post.id}>
-      <article className="wish-card-enter group relative border-l-[3px] border-l-border bg-white editorial-shadow transition-colors hover:border-l-primary">
+      <article className="wish-card-enter group relative overflow-hidden rounded-xl border border-border bg-background">
         <Link to={`/share/${post.id}`} className="block px-4 pb-3 pt-4 sm:px-5">
           {/* Header */}
           <div className="mb-3 flex items-start justify-between gap-3">

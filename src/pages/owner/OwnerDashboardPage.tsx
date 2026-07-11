@@ -171,10 +171,10 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
   return (
     <>
       {/* ── Shop header section */}
-      <div className="relative overflow-hidden bg-primary px-6 pb-0 pt-8 md:px-16">
+      <div className="relative overflow-hidden bg-background px-6 pb-0 pt-8 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             OWN
@@ -192,18 +192,18 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 {statusConf.label}
               </span>
               {cityName && (
-                <span className="flex items-center gap-1 text-[10px] text-white/30">
+                <span className="flex items-center gap-1 text-[10px] text-foreground/30">
                   <MapPin className="h-2.5 w-2.5" />
                   {cityName}
                 </span>
               )}
             </div>
 
-            <h1 className="font-headline text-2xl font-black leading-tight tracking-tight text-white md:text-3xl">
+            <h1 className="font-headline text-2xl font-black leading-tight tracking-tight text-foreground md:text-3xl">
               {shop.name}
             </h1>
             {shop.namePending && (
-              <p className="mt-1 flex items-center gap-1.5 text-[10px] text-white/30">
+              <p className="mt-1 flex items-center gap-1.5 text-[10px] text-foreground/30">
                 <span className="rounded-sm border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-black uppercase tracking-wider text-amber-300">
                   変更審査中
                 </span>
@@ -349,7 +349,7 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 rel="noopener noreferrer"
                 className="wish-card-enter group mb-3 flex items-center gap-3 border border-border bg-white px-4 py-3 transition-all hover:border-primary/20 hover:bg-primary/[0.02] editorial-shadow"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-white">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted text-muted-foreground transition-colors group-hover:bg-background group-hover:text-foreground">
                   <ExternalLink className="h-3.5 w-3.5" />
                 </div>
                 <span className="flex-1 font-headline text-[11px] font-black uppercase tracking-[0.15em] text-foreground/80">
@@ -439,13 +439,13 @@ const OwnerDashboardPage = () => {
     <div className="min-h-[calc(100dvh-56px)]">
 
       {/* ── Global page header */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="relative mx-auto max-w-5xl">
           <div className="pb-6">
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — Owner
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               ダッシュボード
             </h1>
           </div>
@@ -462,8 +462,8 @@ const OwnerDashboardPage = () => {
                     className={cn(
                       'flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-3 font-headline text-[10px] font-black uppercase tracking-[0.25em] transition-colors',
                       isActive
-                        ? 'border-white text-white'
-                        : 'border-transparent text-white/30 hover:text-white/60',
+                        ? 'border-border text-foreground'
+                        : 'border-transparent text-foreground/30 hover:text-foreground/60',
                     )}
                   >
                     {shop.name}

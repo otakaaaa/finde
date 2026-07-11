@@ -115,16 +115,16 @@ interface SubmittedScreenProps {
 
 const SubmittedScreen = ({ requestId, onBack }: SubmittedScreenProps) => (
   <div>
-    <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+    <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
       <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-        <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+        <span className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
           style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
           SENT
         </span>
       </div>
       <div className="relative mx-auto max-w-3xl pb-6">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— MYPAGE</p>
-        <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— MYPAGE</p>
+        <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
           SUBMITTED
         </h1>
       </div>
@@ -363,9 +363,9 @@ const OwnerApplicationNewPage = () => {
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+          <span className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
             OWNER
           </span>
@@ -373,15 +373,15 @@ const OwnerApplicationNewPage = () => {
         <div className="relative mx-auto max-w-5xl">
           <div className="pb-6">
             <button type="button" onClick={() => navigate(-1)}
-              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+              className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60"
             >
               <ChevronLeft className="h-3 w-3" />
               Back
             </button>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — MYPAGE
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               オーナー申請
             </h1>
           </div>
@@ -416,7 +416,7 @@ const OwnerApplicationNewPage = () => {
                   {OWNER_PROCESS_STEPS.map((step, i) => (
                     <div key={step.num} className="flex gap-3">
                       <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-background text-foreground">
                           <span className="font-headline text-[9px] font-black tabular-nums">{step.num}</span>
                         </div>
                         {i < OWNER_PROCESS_STEPS.length - 1 && (
@@ -699,7 +699,7 @@ const OwnerApplicationNewPage = () => {
                                   field.value === opt.value ? 'border-primary' : 'border-border',
                                 )}>
                                   {field.value === opt.value && (
-                                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-background" />
                                   )}
                                 </div>
                                 <div>
@@ -758,7 +758,7 @@ const OwnerApplicationNewPage = () => {
                           '・その他、審査に役立つ情報があればご記入ください',
                         ].join('\n')}
                         className={cn(
-                          'w-full border border-border bg-white px-3 py-2.5 text-sm leading-relaxed resize-none',
+                          'w-full border border-border bg-background px-3 py-2.5 text-sm leading-relaxed resize-none',
                           'placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/50',
                         )}
                         {...register('note')}
@@ -774,13 +774,13 @@ const OwnerApplicationNewPage = () => {
                       type="submit"
                       disabled={isPending}
                       className={cn(
-                        'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-white transition-opacity',
+                        'bg-primary px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-foreground transition-opacity',
                         'hover:opacity-90 disabled:opacity-40',
                       )}
                     >
                       {isPending ? (
                         <span className="flex items-center gap-2">
-                          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-white" />
                           送信中...
                         </span>
                       ) : (

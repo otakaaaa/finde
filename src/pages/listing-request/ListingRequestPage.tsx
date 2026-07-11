@@ -64,18 +64,18 @@ const SUBMISSION_GUIDELINES = [
 
 const SubmittedScreen = ({ onBack }: { onBack: () => void }) => (
   <div>
-    <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+    <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
       <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
         <span
-          className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+          className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
           style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
         >
           DONE
         </span>
       </div>
       <div className="relative mx-auto max-w-3xl pb-6">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Application</p>
-        <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— Application</p>
+        <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
           SUBMITTED
         </h1>
       </div>
@@ -205,10 +205,10 @@ const ListingRequestPage = () => {
   return (
     <div>
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             APPLY
@@ -220,17 +220,17 @@ const ListingRequestPage = () => {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="mb-4 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 transition-colors hover:text-white/60"
+                className="mb-4 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/30 transition-colors hover:text-foreground/60"
               >
                 ← Back
               </button>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
                 — Shop Application
               </p>
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-5xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-5xl">
                 店舗掲載申請
               </h1>
-              <p className="mt-3 text-sm text-white/50">
+              <p className="mt-3 text-sm text-foreground/50">
                 FINDEへの店舗掲載をご希望の方はこちらからお申し込みください
               </p>
             </div>
@@ -282,7 +282,7 @@ const ListingRequestPage = () => {
                   {PROCESS_STEPS.map((step, i) => (
                     <div key={step.num} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-background text-foreground">
                           <span className="font-headline text-[10px] font-black tabular-nums">{step.num}</span>
                         </div>
                         {i < PROCESS_STEPS.length - 1 && (

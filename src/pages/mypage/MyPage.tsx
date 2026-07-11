@@ -198,22 +198,22 @@ const MyPage = () => {
   return (
     <div>
       {/* ── Hero / Profile header ─────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-10 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-10 pt-10 md:px-16">
         {/* Giant monogram watermark */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-end select-none overflow-hidden pr-4 md:pr-10">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(120px, 22vw, 240px)' }}
           >
             {initial}
           </span>
         </div>
 
-        <div className="relative mx-auto max-w-3xl">
+        <div className="relative mx-auto max-w-6xl">
           {/* Role badge */}
-          <div className="mb-8 inline-flex items-center gap-1.5 border border-white/10 px-3 py-1">
-            <span className="h-1 w-1 rounded-full bg-white/40" />
-            <span className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-white/40">
+          <div className="mb-8 inline-flex items-center gap-1.5 border border-border px-3 py-1">
+            <span className="h-1 w-1 rounded-full bg-foreground/40" />
+            <span className="font-headline text-[9px] font-black uppercase tracking-[0.5em] text-foreground/40">
               {roleLabel}
             </span>
           </div>
@@ -226,7 +226,7 @@ const MyPage = () => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="group relative block h-16 w-16 overflow-hidden rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                className="group relative block h-16 w-16 overflow-hidden rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-border"
                 title="プロフィール画像を変更"
               >
                 {user?.avatarUrl ? (
@@ -236,8 +236,8 @@ const MyPage = () => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center border border-white/10 bg-white/[0.06]">
-                    <span className="font-headline text-2xl font-black text-white/60">{initial}</span>
+                  <div className="flex h-full w-full items-center justify-center border border-border bg-white/[0.06]">
+                    <span className="font-headline text-2xl font-black text-foreground/60">{initial}</span>
                   </div>
                 )}
 
@@ -247,11 +247,11 @@ const MyPage = () => {
                   uploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
                 )}>
                   {uploading ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-white" />
                   ) : (
                     <>
-                      <Camera className="h-4 w-4 text-white" />
-                      <span className="font-headline text-[7px] font-black uppercase tracking-widest text-white/80">
+                      <Camera className="h-4 w-4 text-foreground" />
+                      <span className="font-headline text-[7px] font-black uppercase tracking-widest text-foreground/80">
                         変更
                       </span>
                     </>
@@ -269,10 +269,10 @@ const MyPage = () => {
             </div>
 
             <div className="pb-0.5">
-              <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.4em] text-white/30">
+              <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.4em] text-foreground/30">
                 — Profile
               </p>
-              <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
+              <h1 className="font-headline text-2xl font-black leading-none tracking-tight text-foreground md:text-3xl">
                 {user?.displayName ?? '名前未設定'}
               </h1>
             </div>
@@ -282,8 +282,8 @@ const MyPage = () => {
 
       {/* ── Upload error ─────────────────────────── */}
       {uploadError && (
-        <div className="bg-primary px-6 pb-4 md:px-16">
-          <div className="mx-auto max-w-3xl">
+        <div className="bg-background px-6 pb-4 md:px-16">
+          <div className="mx-auto max-w-6xl">
             <p className="text-[11px] font-medium text-red-300">{uploadError}</p>
           </div>
         </div>
@@ -291,7 +291,7 @@ const MyPage = () => {
 
       {/* ── Stats ────────────────────────────────── */}
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 md:px-16">
+        <div className="mx-auto max-w-6xl px-4 md:px-16">
           {/* Stats row overlapping the section break slightly */}
           <div className="-mt-0 grid grid-cols-2 gap-3 pt-8 md:gap-4">
             <StatPanel
@@ -311,7 +311,7 @@ const MyPage = () => {
 
       {/* ── Navigation ───────────────────────────── */}
       <div className="bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-10 md:px-16 md:py-12">
+        <div className="mx-auto max-w-6xl px-4 py-10 md:px-16 md:py-12">
 
           {/* Section label */}
           <div className="mb-5 flex items-baseline gap-3">
@@ -472,7 +472,7 @@ const MyPage = () => {
                     style={{ animationDelay: '220ms' }}
                   >
                     <span className="font-headline text-[9px] font-black tabular-nums text-primary/25">01</span>
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-background text-foreground">
                       <Store className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex-1">
@@ -490,7 +490,7 @@ const MyPage = () => {
                     style={{ animationDelay: '220ms' }}
                   >
                     <span className="font-headline text-[9px] font-black tabular-nums text-primary/25">01</span>
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-white">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-background text-foreground">
                       <Store className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex-1">

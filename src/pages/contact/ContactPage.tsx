@@ -143,18 +143,18 @@ const ContactPage = () => {
   if (doneId) {
     return (
       <div>
-        <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+        <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
           <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
             <span
-              className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+              className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
               style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
             >
               SENT
             </span>
           </div>
           <div className="relative mx-auto max-w-3xl pb-8">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">— Contact</p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">— Contact</p>
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               SENT
             </h1>
           </div>
@@ -205,10 +205,10 @@ const ContactPage = () => {
         path="/contact"
       />
       {/* ── Page header ──────────────────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
         <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.04]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
             style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
           >
             CONTACT
@@ -217,13 +217,13 @@ const ContactPage = () => {
 
         <div className="relative mx-auto max-w-3xl">
           <div className="pb-8">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
               — Support
             </p>
-            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+            <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
               お問い合わせ
             </h1>
-            <p className="mt-4 max-w-sm text-[11px] leading-[1.8] text-white/40">
+            <p className="mt-4 max-w-sm text-[11px] leading-[1.8] text-foreground/40">
               ご不明な点やご要望はお気軽にお問い合わせください。<br />
               通常 1 週間以内にご返信いたします。
             </p>

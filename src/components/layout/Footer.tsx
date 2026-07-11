@@ -32,65 +32,48 @@ const NAV_COLUMNS = [
   },
 ]
 
+/**
+ * Instagram風の白基調フッター。
+ * モバイルはボトムタブバーがあるため非表示（md以上のみ表示）。
+ */
 export const Footer = () => (
-  <footer className="relative overflow-hidden bg-primary">
-
+  <footer className="relative hidden overflow-hidden border-t border-border bg-background md:block">
     {/* Watermark */}
     <div
       aria-hidden
       className="pointer-events-none absolute bottom-0 left-0 select-none leading-none"
     >
       <span
-        className="font-headline font-black tracking-tighter text-white/[0.03]"
+        className="font-headline font-black tracking-tighter text-foreground/[0.03]"
         style={{ fontSize: 'clamp(100px, 22vw, 220px)', lineHeight: 0.85 }}
       >
         FINDE
       </span>
     </div>
 
-    {/* Main content */}
-    <div className="relative mx-auto max-w-5xl px-6 pb-10 pt-14 md:px-16">
-
-      {/* Top row: logo + nav grid */}
+    <div className="relative mx-auto max-w-[975px] px-6 pb-8 pt-10">
       <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_2fr]">
-
         {/* Brand column */}
-        <div className="flex flex-col justify-between gap-8">
-          <div>
-            {/* Logo */}
-            <div className="mb-5">
-              <FindeLogo size="md" variant="inverse" />
-            </div>
-
-            {/* Tagline */}
-            <p className="max-w-[164px] text-[11px] leading-relaxed text-white/35">
-              古着・セレクトショップの探し方が変わる。
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-5">
-            {/* CTA */}
+        <div className="flex flex-col gap-5">
+          <FindeLogo size="md" />
+          <p className="max-w-[200px] text-xs leading-relaxed text-muted-foreground">
+            古着・セレクトショップの探し方が変わる。
+          </p>
+          <div className="flex items-center gap-3">
             <Link
               to="/listing-request"
-              className="group inline-flex w-fit items-center gap-2 border border-white/20 px-4 py-2.5 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
+              className="inline-flex h-8 items-center rounded-lg bg-muted px-3 text-xs font-bold text-foreground transition-colors hover:bg-border/60"
             >
-              <span className="font-headline text-[9px] font-black uppercase tracking-[0.3em] text-white/60 transition-colors group-hover:text-white/90">
-                店舗掲載申請
-              </span>
-              <span className="font-headline text-[9px] font-black text-white/20 transition-colors group-hover:text-white/40">
-                →
-              </span>
+              店舗掲載申請
             </Link>
-
-            {/* Social */}
             <a
               href={SITE.social.x}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="FINDE公式X"
-              className="group inline-flex h-9 w-9 items-center justify-center border border-white/20 transition-colors duration-150 hover:border-white/50 hover:bg-white/5"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted transition-colors hover:bg-border/60"
             >
-              <XLogo className="h-3.5 w-3.5 text-white/50 transition-colors group-hover:text-white/90" />
+              <XLogo className="h-3.5 w-3.5 text-foreground/70" />
             </a>
           </div>
         </div>
@@ -99,15 +82,15 @@ export const Footer = () => (
         <div className="grid grid-cols-3 gap-6">
           {NAV_COLUMNS.map((col) => (
             <div key={col.label}>
-              <p className="mb-4 font-headline text-[9px] font-black uppercase tracking-[0.4em] text-white/25">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {col.label}
               </p>
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="text-[11px] text-white/45 transition-colors duration-100 hover:text-white/80"
+                      className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.text}
                     </Link>
@@ -117,19 +100,13 @@ export const Footer = () => (
             </div>
           ))}
         </div>
-
       </div>
 
       {/* Bottom strip */}
-      <div className="mt-12 flex flex-col items-start gap-2 border-t border-white/[0.07] pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <span className="font-headline text-[9px] font-black tabular-nums tracking-[0.3em] text-white/20">
-          © 2026 FINDE
-        </span>
-        <span className="font-headline text-[9px] font-bold uppercase tracking-[0.2em] text-white/15">
-          古着 · セレクト ・ ユニセックス
-        </span>
+      <div className="mt-10 flex items-center justify-between border-t border-border pt-5">
+        <span className="text-[11px] tabular-nums text-muted-foreground">© 2026 FINDE</span>
+        <span className="text-[11px] text-muted-foreground/70">古着 · セレクト · ユニセックス</span>
       </div>
-
     </div>
   </footer>
 )

@@ -29,10 +29,10 @@ const FilterSelect = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        'h-8 appearance-none rounded-sm border pl-3 pr-7 text-xs font-bold transition-all focus:outline-none',
+        'h-8 appearance-none rounded-full border pl-3 pr-7 text-xs font-bold transition-all focus:outline-none',
         isActive
-          ? 'border-white/70 bg-white text-primary'
-          : 'border-white/20 bg-transparent text-white/55 hover:border-white/40 hover:text-white/80'
+          ? 'border-foreground bg-foreground text-background'
+          : 'border-border bg-background text-foreground/70 hover:border-foreground/40'
       )}
     >
       <option value="">{placeholder}</option>
@@ -41,7 +41,7 @@ const FilterSelect = ({
     <ChevronDown
       className={cn(
         'pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2',
-        isActive ? 'text-primary' : 'text-white/35'
+        isActive ? 'text-background' : 'text-muted-foreground'
       )}
     />
   </div>
@@ -80,25 +80,28 @@ const ShopsPage = () => {
         path="/shops"
       />
       {/* ── Page header (scrolls away) ──────────────── */}
-      <section className="relative overflow-hidden bg-primary px-6 pb-0 pt-10 md:px-16">
-        {/* Decorative watermark */}
-        <div className="pointer-events-none absolute bottom-0 right-0 select-none translate-y-1/4 pr-2 md:pr-6">
-          <span className="font-headline font-black leading-none tracking-tighter text-white/[0.04]" style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}>
+      <section className="relative overflow-hidden bg-background px-6 pb-0 pt-10 md:px-16">
+        <div className="pointer-events-none absolute bottom-0 right-0 translate-y-1/4 select-none pr-2 md:pr-6">
+          <span
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.04]"
+            style={{ fontSize: 'clamp(80px, 14vw, 160px)' }}
+          >
             SHOPS
           </span>
         </div>
+
         <div className="relative mx-auto max-w-6xl">
           <div className="flex items-end justify-between pb-6">
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/40">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.5em] text-foreground/40">
                 — SHOPS
               </p>
-              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-white md:text-4xl">
+              <h1 className="font-headline text-3xl font-black leading-none tracking-tight text-foreground md:text-4xl">
                 店舗一覧
               </h1>
             </div>
             {shops.length > 0 && !isLoading && (
-              <span className="mb-0.5 font-headline text-[11px] font-black tabular-nums text-white/25">
+              <span className="mb-0.5 text-[11px] font-black tabular-nums text-muted-foreground/60">
                 {String(shops.length).padStart(3, '0')}
               </span>
             )}
@@ -106,8 +109,8 @@ const ShopsPage = () => {
         </div>
       </section>
 
-      {/* ── Sticky filter bar (dark) ────────────────── */}
-      <div className="sticky top-14 z-40 border-b border-white/10 bg-primary">
+      {/* ── Sticky filter bar ────────────────────────── */}
+      <div className="sticky top-14 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 md:px-16">
           <div className="no-scrollbar flex items-center gap-2 overflow-x-auto py-3">
             {/* Sort tabs */}
@@ -117,10 +120,10 @@ const ShopsPage = () => {
                   key={opt.value}
                   onClick={() => update({ sort: opt.value })}
                   className={cn(
-                    'h-8 rounded-sm px-3 text-xs font-bold transition-all',
+                    'h-8 rounded-full px-3 text-xs font-bold transition-all',
                     activeSort === opt.value
-                      ? 'border border-white/30 bg-white/15 text-white'
-                      : 'border border-white/15 text-white/45 hover:border-white/30 hover:text-white/75'
+                      ? 'bg-foreground text-background'
+                      : 'bg-muted text-foreground/70 hover:bg-border/70'
                   )}
                 >
                   {opt.label}
@@ -128,7 +131,7 @@ const ShopsPage = () => {
               ))}
             </div>
 
-            <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
+            <div className="mx-1 h-4 w-px shrink-0 bg-border" />
 
             <FilterSelect
               value={shopFilters.prefectureId?.toString() ?? ''}
@@ -213,10 +216,10 @@ const ShopsPage = () => {
 
             {hasActiveFilters && (
               <>
-                <div className="mx-1 h-4 w-px shrink-0 bg-white/15" />
+                <div className="mx-1 h-4 w-px shrink-0 bg-border" />
                 <button
                   onClick={() => setShopFilters({ sort: shopFilters.sort })}
-                  className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-white"
+                  className="shrink-0 text-xs font-bold text-foreground underline-offset-2 hover:underline"
                 >
                   クリア
                 </button>

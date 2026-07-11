@@ -31,7 +31,7 @@ const RegisterPage = () => {
     <div className="flex min-h-[calc(100vh-56px)]">
 
       {/* ── Left decorative panel ─────────────────── */}
-      <div className="relative hidden overflow-hidden bg-primary lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-12">
+      <div className="relative hidden overflow-hidden bg-background lg:flex lg:w-[42%] lg:flex-col lg:justify-between lg:p-12">
 
         <div
           className="pointer-events-none absolute inset-0"
@@ -43,7 +43,7 @@ const RegisterPage = () => {
 
         <div className="pointer-events-none absolute -bottom-8 -left-6 select-none">
           <span
-            className="font-headline font-black leading-none tracking-tighter text-white/[0.05]"
+            className="font-headline font-black leading-none tracking-tighter text-foreground/[0.05]"
             style={{ fontSize: 'clamp(120px, 20vw, 260px)' }}
           >
             UP
@@ -58,24 +58,24 @@ const RegisterPage = () => {
         />
 
         <div className="relative">
-          <p className="font-headline text-[9px] font-black uppercase tracking-[0.6em] text-white/30">
+          <p className="font-headline text-[9px] font-black uppercase tracking-[0.6em] text-foreground/30">
             FINDE
           </p>
         </div>
 
         <div className="relative">
-          <div className="mb-6 h-px w-10 bg-white/20" />
-          <h2 className="mb-5 font-headline text-[52px] font-black leading-[0.88] tracking-tighter text-white">
+          <div className="mb-6 h-px w-10 bg-foreground/20" />
+          <h2 className="mb-5 font-headline text-[52px] font-black leading-[0.88] tracking-tighter text-foreground">
             START<br />YOUR<br />JOURNEY.
           </h2>
-          <p className="max-w-[200px] text-[12px] leading-[1.8] text-white/35">
+          <p className="max-w-[200px] text-[12px] leading-[1.8] text-foreground/35">
             アカウントを作成して<br />理想の一着を探そう。
           </p>
         </div>
 
         <div className="relative flex items-center gap-3">
-          <span className="h-[2px] w-6 bg-white/25" />
-          <span className="font-headline text-[8px] font-black uppercase tracking-[0.5em] text-white/20">
+          <span className="h-[2px] w-6 bg-foreground/25" />
+          <span className="font-headline text-[8px] font-black uppercase tracking-[0.5em] text-foreground/20">
             Register
           </span>
         </div>
