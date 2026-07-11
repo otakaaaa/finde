@@ -256,7 +256,9 @@ const resolveShareMeta = async (
     .slice()
     .sort((a, b) => a.order - b.order)[0]
   const image = firstPhoto ? sharePhotoUrl(config, firstPhoto.storage_path) : undefined
-  const bodyText = post.body.replace(/\s+/g, ' ').trim()
+  // 本文は任意のため、空の場合はフォールバック文を使う
+  const bodyText =
+    post.body.replace(/\s+/g, ' ').trim() || `${authorName}さんのシャレ活投稿をFINDEでチェック。`
 
   const jsonLd: Record<string, unknown>[] = [
     {
