@@ -36,8 +36,8 @@ export const Layout = () => (
     <AuthHashRedirector />
     <Header />
     <MaintenanceGuard>
-      {/* モバイルはボトムタブバー分の余白を確保 */}
-      <main className="flex-1 pb-14 md:pb-0">
+      {/* ボトムタブバー分の余白はフッター側（コンパクト版）で確保する */}
+      <main className="flex-1">
         <Outlet />
       </main>
     </MaintenanceGuard>

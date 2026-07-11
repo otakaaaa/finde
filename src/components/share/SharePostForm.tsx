@@ -15,8 +15,8 @@ import type { SharePost, ShareState, ShareVisibility } from '@/types'
 const MAX_BODY = 1000
 
 const STEPS = [
-  { num: '01', title: '写真', label: 'optional' },
-  { num: '02', title: '本文', label: 'required' },
+  { num: '01', title: '写真', label: 'required' },
+  { num: '02', title: '本文', label: 'optional' },
   { num: '03', title: '関連店舗', label: 'optional' },
   { num: '04', title: '公開範囲', label: '' },
 ]
@@ -57,24 +57,30 @@ export const SharePostForm = ({ mode, initial, initialShops }: SharePostFormProp
   const isFirstStep = step === 0
   const isLastStep = step === STEPS.length - 1
 
+  const validatePhotos = (): string | null => {
+    const photoCount = selection.keepPhotoIds.length + selection.newFiles.length
+    if (photoCount < 1) return '写真を1枚以上追加してください'
+    if (photoCount > SHARE_PHOTO_MAX_COUNT) {
+      return `画像は最大${SHARE_PHOTO_MAX_COUNT}枚までです。${photoCount - SHARE_PHOTO_MAX_COUNT}枚削除してください。`
+    }
+    return null
+  }
+
   const validate = (): string | null => {
-    const trimmed = body.trim()
-    if (trimmed.length < 1) return '本文を入力してください'
-    if (trimmed.length > MAX_BODY) return `本文は${MAX_BODY}文字以内で入力してください`
+    const photoError = validatePhotos()
+    if (photoError) return photoError
+    if (body.trim().length > MAX_BODY) return `本文は${MAX_BODY}文字以内で入力してください`
     return null
   }
 
   const goNext = () => {
     if (step === 0) {
-      const photoCount = selection.keepPhotoIds.length + selection.newFiles.length
-      if (photoCount > SHARE_PHOTO_MAX_COUNT) {
-        setError(`画像は最大${SHARE_PHOTO_MAX_COUNT}枚までです。${photoCount - SHARE_PHOTO_MAX_COUNT}枚削除してください。`)
-        return
-      }
-    }
-    if (step === 1) {
-      const err = validate()
+      const err = validatePhotos()
       if (err) { setError(err); return }
+    }
+    if (step === 1 && body.trim().length > MAX_BODY) {
+      setError(`本文は${MAX_BODY}文字以内で入力してください`)
+      return
     }
     setError(null)
     setStep((s) => Math.min(s + 1, STEPS.length - 1))
@@ -213,7 +219,7 @@ export const SharePostForm = ({ mode, initial, initialShops }: SharePostFormProp
               value={body}
               maxLength={MAX_BODY}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="今日のおしゃれ、こだわり、言動など…"
+              placeholder="今日のおしゃれ、こだわり、言動など…（未入力でもOK）"
               autoFocus
               className="w-full resize-none border-b border-border bg-transparent py-2 text-[15px] leading-[1.9] text-foreground/80 placeholder:text-muted-foreground/20 focus:border-foreground/30 focus:outline-none"
             />
