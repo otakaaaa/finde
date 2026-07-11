@@ -129,7 +129,6 @@ export const mapSharePostRow = (row: SharePostRow, myScore: number | null): Shar
   ratingSum: row.rating_sum,
   commentCount: row.comment_count,
   bookmarkCount: row.bookmark_count,
-  averageScore: row.rating_count > 0 ? row.rating_sum / row.rating_count : null,
   myScore,
   isBookmarked: (row.bookmarks?.length ?? 0) > 0,
   bookmarkFolderId: row.bookmarks?.[0]?.folder_id ?? null,

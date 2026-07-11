@@ -445,7 +445,6 @@ export interface SharePost {
   ratingSum: number
   commentCount: number
   bookmarkCount: number
-  averageScore: number | null
   // 閲覧者依存の状態（ログイン時のみ）
   myScore: number | null
   isBookmarked: boolean

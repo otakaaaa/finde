@@ -57,7 +57,7 @@ export const SharePostView = ({ post, preview = false }: SharePostViewProps) => 
 
     {/* Readonly metrics */}
     <div className="mt-5 flex items-center gap-4 border-t border-border pt-4">
-      <ShareScore averageScore={post.averageScore} ratingCount={post.ratingCount} size="lg" />
+      <ShareScore totalScore={post.ratingSum} ratingCount={post.ratingCount} size="lg" />
       <span className="inline-flex items-center gap-1 text-[11px] font-black tabular-nums text-muted-foreground/50">
         <MessageCircle className="h-4 w-4" />
         {post.commentCount}
