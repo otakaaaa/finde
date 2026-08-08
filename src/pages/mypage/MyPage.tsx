@@ -6,7 +6,7 @@ import { getR2Url, uploadToR2, deleteFromR2 } from '@/lib/r2'
 import { validateAllowedImageFiles } from '@/lib/fileValidation'
 import { useAuth } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/uiStore'
-import { useFavoriteShops } from '@/hooks/useFavorites'
+import { useFollowedShops } from '@/hooks/useShopFollows'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { OWNER_FEATURE_ENABLED, WISH_FEATURE_ENABLED } from '@/config/features'
@@ -102,7 +102,7 @@ const NavItem = ({ to, icon, index, label, sublabel, animDelay = 0 }: NavItemPro
 const MyPage = () => {
   const { user, refreshUser } = useAuth()
   const { openLogoutModal, openDeleteAccountModal } = useUiStore()
-  const { data: favorites } = useFavoriteShops()
+  const { data: follows } = useFollowedShops()
 
   const { data: ownerApplications } = useQuery({
     queryKey: ['my-owner-applications', user?.id],
@@ -193,7 +193,7 @@ const MyPage = () => {
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit' })
     : '—'
-  const favoriteCount = favorites?.length ?? 0
+  const followCount = follows?.length ?? 0
 
   return (
     <div>
@@ -295,9 +295,9 @@ const MyPage = () => {
           {/* Stats row overlapping the section break slightly */}
           <div className="-mt-0 grid grid-cols-2 gap-3 pt-8 md:gap-4">
             <StatPanel
-              value={String(favoriteCount).padStart(2, '0')}
-              label="Favorites"
-              sublabel="お気に入り店舗"
+              value={String(followCount).padStart(2, '0')}
+              label="Follows"
+              sublabel="フォロー中の店舗"
               index={0}
             />
             <StatPanel
@@ -331,11 +331,11 @@ const MyPage = () => {
               animDelay={0}
             />
             <NavItem
-              to="/mypage/favorites"
+              to="/mypage/follows"
               icon={<Heart className="h-3.5 w-3.5" />}
               index="02"
-              label="お気に入り"
-              sublabel="保存した店舗を確認する"
+              label="フォロー中の店舗"
+              sublabel="フォローしたお店を確認する"
               animDelay={55}
             />
             <NavItem

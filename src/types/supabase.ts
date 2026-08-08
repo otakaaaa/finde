@@ -246,7 +246,36 @@ export type Database = {
           },
         ]
       }
-      favorites: {
+      user_notification_settings: {
+        Row: {
+          followed_shop_email: boolean
+          followed_shop_in_app: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          followed_shop_email?: boolean
+          followed_shop_in_app?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          followed_shop_email?: boolean
+          followed_shop_in_app?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_follows: {
         Row: {
           created_at: string
           id: string
@@ -267,14 +296,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "favorites_shop_id_fkey"
+            foreignKeyName: "shop_follows_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "favorites_user_id_fkey"
+            foreignKeyName: "shop_follows_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -1050,6 +1079,8 @@ export type Database = {
           image_path: string | null
           is_active: boolean
           link_url: string | null
+          notify_email: boolean
+          notify_in_app: boolean
           shop_id: string
           starts_at: string | null
           title: string
@@ -1063,6 +1094,8 @@ export type Database = {
           image_path?: string | null
           is_active?: boolean
           link_url?: string | null
+          notify_email?: boolean
+          notify_in_app?: boolean
           shop_id: string
           starts_at?: string | null
           title: string
@@ -1076,6 +1109,8 @@ export type Database = {
           image_path?: string | null
           is_active?: boolean
           link_url?: string | null
+          notify_email?: boolean
+          notify_in_app?: boolean
           shop_id?: string
           starts_at?: string | null
           title?: string
@@ -1575,7 +1610,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
-          favorite_count: number
+          follower_count: number
           id: string
           instagram_url: string | null
           name: string
@@ -1599,7 +1634,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
-          favorite_count?: number
+          follower_count?: number
           id?: string
           instagram_url?: string | null
           name: string
@@ -1623,7 +1658,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
-          favorite_count?: number
+          follower_count?: number
           id?: string
           instagram_url?: string | null
           name?: string
@@ -2050,7 +2085,7 @@ export type Database = {
           areas: Json
           created_at: string
           description: string
-          favorite_count: number
+          follower_count: number
           id: string
           name: string
           price_ranges: Json

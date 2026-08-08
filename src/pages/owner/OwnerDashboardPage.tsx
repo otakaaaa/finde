@@ -407,14 +407,14 @@ const ShopDashboard = ({ shop }: { shop: Shop }) => {
                 />
               </div>
 
-              {/* Favorites detail */}
+              {/* Followers detail */}
               <div className="mt-6 wish-card-enter border border-border bg-white px-4 py-4 editorial-shadow">
                 <Link
                   to={`/shops/${shop.id}`}
                   className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground/40 transition-colors hover:text-foreground/60"
                 >
                   <Heart className="h-3 w-3" />
-                  お気に入り {shop.favoriteCount} 件
+                  フォロワー {shop.followerCount} 人
                 </Link>
               </div>
             </aside>

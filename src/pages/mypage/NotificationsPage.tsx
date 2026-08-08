@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { Notification } from '@/types'
 import type { PageSizeOption } from '@/hooks/usePagination'
 import { AdminPagination } from '@/components/admin/AdminPagination'
+import { NotificationSettingsPanel } from '@/components/notification/NotificationSettingsPanel'
 
 // ── Notification List Item (wide layout) ─────────────────────
 
@@ -169,6 +170,11 @@ const NotificationsPage = () => {
       {/* ── Content ────────────────────────────────── */}
       <div className="bg-background">
         <div className="mx-auto max-w-6xl px-4 py-8 md:px-16 md:py-10">
+
+          {/* 受信設定 */}
+          <div className="mb-8">
+            <NotificationSettingsPanel />
+          </div>
 
           {/* Filter */}
           <div className="mb-6 flex items-center gap-2">

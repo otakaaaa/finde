@@ -135,6 +135,8 @@ export interface ShopAnnouncement {
   linkUrl: string | null
   imagePath: string | null
   isActive: boolean
+  notifyInApp: boolean
+  notifyEmail: boolean
   startsAt: string | null
   endsAt: string | null
   createdAt: string
@@ -146,6 +148,10 @@ export interface ShopAnnouncementFormValues {
   body: string
   linkUrl: string
   isActive: boolean
+  /** 公開時にフォロワーへアプリ内通知を送る */
+  notifyInApp: boolean
+  /** 公開時にフォロワーへメール通知を送る */
+  notifyEmail: boolean
   startsAt: string
   endsAt: string
 }
@@ -172,7 +178,7 @@ export interface Shop {
   tags: Tag[]
   brands: Brand[]
   photos: ShopPhoto[]
-  favoriteCount: number
+  followerCount: number
   createdAt: string
   updatedAt: string
 }
@@ -372,6 +378,7 @@ export type NotificationType =
   | 'welcome'
   | 'share_rated'
   | 'share_commented'
+  | 'followed_shop_announcement'
 
 export interface Notification {
   id: string
@@ -517,7 +524,7 @@ export interface ShopViewAnalytics {
   prevTotals: ShopAnalyticsTotals
   bySource: ShopAnalyticsSourceCount[]
   actions: ShopAnalyticsActionCount[]
-  favorites: number
+  follows: number
   topItems: ShopAnalyticsItemCount[]
   byHour: ShopAnalyticsHourCount[]
   byWeekday: ShopAnalyticsWeekdayCount[]

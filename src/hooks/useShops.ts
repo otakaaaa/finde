@@ -17,7 +17,7 @@ interface ShopRow {
   business_hours: Shop['businessHours']
   closed_days: string[]
   status: string
-  favorite_count: number
+  follower_count: number
   created_at: string
   updated_at: string
   prefecture_id: number | null
@@ -61,7 +61,7 @@ const mapShopRow = (row: ShopRow): Shop => ({
       order: p.order,
       createdAt: p.created_at,
     })),
-  favoriteCount: row.favorite_count,
+  followerCount: row.follower_count,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 })
@@ -113,7 +113,7 @@ const fetchShops = async ({
     .select(`
       id, name, name_pending, description, phone, website_url,
       instagram_url, twitter_url, tiktok_url, business_hours, closed_days,
-      status, favorite_count,
+      status, follower_count,
       prefecture_id, city_id, address, created_at, updated_at,
       areas ( id, prefecture, city, slug ),
       price_ranges ( id, label, min_price, max_price ),
@@ -138,7 +138,7 @@ const fetchShops = async ({
       query = query.order('created_at', { ascending: false })
       break
     default: // popular
-      query = query.order('favorite_count', { ascending: false })
+      query = query.order('follower_count', { ascending: false })
   }
 
   const { data, error } = await query as {

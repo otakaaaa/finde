@@ -99,6 +99,9 @@ type Pages = {
   "/mypage/security": {
     params: {};
   };
+  "/mypage/follows": {
+    params: {};
+  };
   "/mypage/favorites": {
     params: {};
   };
@@ -256,7 +259,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/shops" | "/shops/:id" | "/shops/:shopId/items/:itemId" | "/brands" | "/brands/:id" | "/contact" | "/terms" | "/privacy" | "/faq" | "/news" | "/news/:id" | "/share" | "/share/:id" | "/auth/login" | "/auth/register" | "/auth/callback" | "/auth/link-account" | "/auth/mfa" | "/auth/error" | "/auth/setup-profile" | "/share/new" | "/share/:id/edit" | "/mypage" | "/mypage/security" | "/mypage/favorites" | "/mypage/contacts" | "/mypage/notifications" | "/mypage/profile/edit" | "/mypage/account" | "/mypage/share" | "/mypage/share/drafts" | "/mypage/share/bookmarks" | "/listing-request" | "/wishes" | "/wishes/new" | "/wishes/:id/edit" | "/owner-application" | "/owner-application/new" | "/owner-application/:requestId" | "/owner" | "/owner/shops/:id/edit" | "/owner/shops/:id/brands" | "/owner/shops/:shopId/items" | "/owner/shops/:shopId/items/new" | "/owner/shops/:shopId/items/:itemId/edit" | "/owner/shops/:shopId/wish-analytics" | "/owner/shops/:shopId/analytics" | "/owner/shops/:shopId/announcements" | "/admin" | "/admin/shops" | "/admin/shops/new" | "/admin/shops/bulk" | "/admin/shops/:id/edit" | "/admin/shops/:id/brands" | "/admin/brands" | "/admin/applications" | "/admin/contacts" | "/admin/users" | "/admin/news" | "/admin/news/new" | "/admin/news/:id/edit" | "/admin/analytics" | "/admin/share-reports" | "/sitemap.xml" | "/*";
+    page: "/" | "/shops" | "/shops/:id" | "/shops/:shopId/items/:itemId" | "/brands" | "/brands/:id" | "/contact" | "/terms" | "/privacy" | "/faq" | "/news" | "/news/:id" | "/share" | "/share/:id" | "/auth/login" | "/auth/register" | "/auth/callback" | "/auth/link-account" | "/auth/mfa" | "/auth/error" | "/auth/setup-profile" | "/share/new" | "/share/:id/edit" | "/mypage" | "/mypage/security" | "/mypage/follows" | "/mypage/favorites" | "/mypage/contacts" | "/mypage/notifications" | "/mypage/profile/edit" | "/mypage/account" | "/mypage/share" | "/mypage/share/drafts" | "/mypage/share/bookmarks" | "/listing-request" | "/wishes" | "/wishes/new" | "/wishes/:id/edit" | "/owner-application" | "/owner-application/new" | "/owner-application/:requestId" | "/owner" | "/owner/shops/:id/edit" | "/owner/shops/:id/brands" | "/owner/shops/:shopId/items" | "/owner/shops/:shopId/items/new" | "/owner/shops/:shopId/items/:itemId/edit" | "/owner/shops/:shopId/wish-analytics" | "/owner/shops/:shopId/analytics" | "/owner/shops/:shopId/announcements" | "/admin" | "/admin/shops" | "/admin/shops/new" | "/admin/shops/bulk" | "/admin/shops/:id/edit" | "/admin/shops/:id/brands" | "/admin/brands" | "/admin/applications" | "/admin/contacts" | "/admin/users" | "/admin/news" | "/admin/news/new" | "/admin/news/:id/edit" | "/admin/analytics" | "/admin/share-reports" | "/sitemap.xml" | "/*";
   };
   "pages/top/TopPage.tsx": {
     id: "pages/top/TopPage";
@@ -340,7 +343,7 @@ type RouteFiles = {
   };
   "routes/require-auth.tsx": {
     id: "routes/require-auth";
-    page: "/auth/setup-profile" | "/share/new" | "/share/:id/edit" | "/mypage" | "/mypage/security" | "/mypage/favorites" | "/mypage/contacts" | "/mypage/notifications" | "/mypage/profile/edit" | "/mypage/account" | "/mypage/share" | "/mypage/share/drafts" | "/mypage/share/bookmarks" | "/listing-request";
+    page: "/auth/setup-profile" | "/share/new" | "/share/:id/edit" | "/mypage" | "/mypage/security" | "/mypage/follows" | "/mypage/favorites" | "/mypage/contacts" | "/mypage/notifications" | "/mypage/profile/edit" | "/mypage/account" | "/mypage/share" | "/mypage/share/drafts" | "/mypage/share/bookmarks" | "/listing-request";
   };
   "pages/auth/SetupProfilePage.tsx": {
     id: "pages/auth/SetupProfilePage";
@@ -362,8 +365,12 @@ type RouteFiles = {
     id: "pages/mypage/SecurityPage";
     page: "/mypage/security";
   };
-  "pages/mypage/FavoritesPage.tsx": {
-    id: "pages/mypage/FavoritesPage";
+  "pages/mypage/FollowedShopsPage.tsx": {
+    id: "pages/mypage/FollowedShopsPage";
+    page: "/mypage/follows";
+  };
+  "routes/mypage-favorites-redirect.tsx": {
+    id: "routes/mypage-favorites-redirect";
     page: "/mypage/favorites";
   };
   "pages/mypage/ContactsPage.tsx": {
@@ -572,7 +579,8 @@ type RouteModules = {
   "pages/share/SharePostEditPage": typeof import("./src/pages/share/SharePostEditPage.tsx");
   "pages/mypage/MyPage": typeof import("./src/pages/mypage/MyPage.tsx");
   "pages/mypage/SecurityPage": typeof import("./src/pages/mypage/SecurityPage.tsx");
-  "pages/mypage/FavoritesPage": typeof import("./src/pages/mypage/FavoritesPage.tsx");
+  "pages/mypage/FollowedShopsPage": typeof import("./src/pages/mypage/FollowedShopsPage.tsx");
+  "routes/mypage-favorites-redirect": typeof import("./src/routes/mypage-favorites-redirect.tsx");
   "pages/mypage/ContactsPage": typeof import("./src/pages/mypage/ContactsPage.tsx");
   "pages/mypage/NotificationsPage": typeof import("./src/pages/mypage/NotificationsPage.tsx");
   "pages/mypage/ProfileEditPage": typeof import("./src/pages/mypage/ProfileEditPage.tsx");

@@ -379,6 +379,10 @@ allow_dynamic_registration = false
 [functions.stripe-webhook]
 verify_jwt = false
 
+# メール内の配信停止リンク（署名付きトークンで本人性を検証するため公開）
+[functions.unsubscribe-follow-email]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # サポートされているリクエストポリシー: `oneshot`、`per_worker`。

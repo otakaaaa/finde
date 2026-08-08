@@ -17,6 +17,8 @@ interface ShopAnnouncementRow {
   link_url: string | null
   image_path: string | null
   is_active: boolean
+  notify_in_app: boolean
+  notify_email: boolean
   starts_at: string | null
   ends_at: string | null
   created_at: string
@@ -24,7 +26,7 @@ interface ShopAnnouncementRow {
 }
 
 const SELECT =
-  'id, shop_id, title, body, link_url, image_path, is_active, starts_at, ends_at, created_at, updated_at'
+  'id, shop_id, title, body, link_url, image_path, is_active, notify_in_app, notify_email, starts_at, ends_at, created_at, updated_at'
 
 const mapRow = (row: ShopAnnouncementRow): ShopAnnouncement => ({
   id: row.id,
@@ -34,6 +36,8 @@ const mapRow = (row: ShopAnnouncementRow): ShopAnnouncement => ({
   linkUrl: row.link_url,
   imagePath: row.image_path,
   isActive: row.is_active,
+  notifyInApp: row.notify_in_app,
+  notifyEmail: row.notify_email,
   startsAt: row.starts_at,
   endsAt: row.ends_at,
   createdAt: row.created_at,
@@ -92,6 +96,8 @@ const toPayload = (values: ShopAnnouncementFormValues) => ({
   // http/https 以外（javascript: 等）は保存しない — 格納型XSS対策
   link_url: safeExternalHref(toNullableInput(values.linkUrl) ?? undefined) ?? null,
   is_active: values.isActive,
+  notify_in_app: values.notifyInApp,
+  notify_email: values.notifyEmail,
   starts_at: toNullableInput(values.startsAt),
   ends_at: toNullableInput(values.endsAt),
 })

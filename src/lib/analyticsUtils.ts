@@ -9,7 +9,9 @@ export interface SnapshotMetrics {
   users: number
   shops: number
   listing_requests: { pending: number; approved: number; rejected: number }
-  favorites: number
+  follows?: number
+  /** 旧キー（2026-07 リネーム前のスナップショット互換） */
+  favorites?: number
   wishes: number
   subscriptions: { new: number; canceled: number }
 }
@@ -68,7 +70,7 @@ export interface SnapshotAllChartData {
   users:           { chartData: ChartPoint[]; total: number }
   shops:           { chartData: ChartPoint[]; total: number }
   listingRequests: { chartData: ChartPoint[]; totals: { pending: number; approved: number; rejected: number } }
-  engagement:      { chartData: ChartPoint[]; totals: { favorites: number; wishes: number } }
+  engagement:      { chartData: ChartPoint[]; totals: { follows: number; wishes: number } }
   subscriptions:   { chartData: ChartPoint[]; totals: { newSubs: number; canceled: number } }
 }
 
@@ -80,7 +82,7 @@ export function snapshotsToAllChartData(
   const pendingMap:  Record<string, number> = {}
   const approvedMap: Record<string, number> = {}
   const rejectedMap: Record<string, number> = {}
-  const favoritesMap:Record<string, number> = {}
+  const followsMap:Record<string, number> = {}
   const wishesMap:   Record<string, number> = {}
   const newSubsMap:  Record<string, number> = {}
   const canceledMap: Record<string, number> = {}
@@ -92,7 +94,7 @@ export function snapshotsToAllChartData(
     pendingMap[d]   = s.metrics.listing_requests.pending
     approvedMap[d]  = s.metrics.listing_requests.approved
     rejectedMap[d]  = s.metrics.listing_requests.rejected
-    favoritesMap[d] = s.metrics.favorites
+    followsMap[d] = s.metrics.follows ?? s.metrics.favorites ?? 0
     wishesMap[d]    = s.metrics.wishes
     newSubsMap[d]   = s.metrics.subscriptions.new
     canceledMap[d]  = s.metrics.subscriptions.canceled
@@ -118,9 +120,9 @@ export function snapshotsToAllChartData(
       },
     },
     engagement: {
-      chartData: toChartData(series, { favorites: favoritesMap, wishes: wishesMap }),
+      chartData: toChartData(series, { follows: followsMap, wishes: wishesMap }),
       totals: {
-        favorites: sumValues(favoritesMap),
+        follows: sumValues(followsMap),
         wishes:    sumValues(wishesMap),
       },
     },

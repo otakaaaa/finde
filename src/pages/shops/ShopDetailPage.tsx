@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router'
-import { MapPin, Phone, Globe, Instagram, Heart, ChevronLeft, ArrowUpRight, Store, Pencil } from 'lucide-react'
+import { MapPin, Phone, Globe, Instagram, Check, ChevronLeft, ArrowUpRight, Store, Pencil } from 'lucide-react'
 import { XLogo } from '@/components/icons/XLogo'
 import { TikTokLogo } from '@/components/icons/TikTokLogo'
 import { useShop } from '@/hooks/useShop'
 import { useShopHasOwner } from '@/hooks/useShopHasOwner'
 import { useShopMasterData } from '@/hooks/useShopMasterData'
-import { useFavoriteStatus, useToggleFavorite } from '@/hooks/useFavorites'
+import { useFollowStatus, useToggleFollow } from '@/hooks/useShopFollows'
 import { useAuth } from '@/hooks/useAuth'
 import { useSharePostsByShop } from '@/hooks/useSharePosts'
 import { SharePostCard } from '@/components/share/SharePostCard'
@@ -89,16 +89,16 @@ const ShopDetailPage = () => {
   const { data: shop, isLoading, isError } = useShop(id ?? '')
   const { data: shopHasOwner } = useShopHasOwner(id ?? '')
   const { data: masterData } = useShopMasterData()
-  const { data: isFavorited } = useFavoriteStatus(id ?? '')
-  const { mutate: toggleFavorite } = useToggleFavorite(id ?? '')
+  const { data: isFollowing } = useFollowStatus(id ?? '')
+  const { mutate: toggleFollow } = useToggleFollow(id ?? '')
   const { data: sharePosts } = useSharePostsByShop(id ?? '')
   const { data: shopItems } = useShopItems(id ?? '')
   const availableItems = (shopItems ?? []).filter((item) => item.isAvailable)
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
 
-  const handleToggleFavorite = () => {
+  const handleToggleFollow = () => {
     if (!user) { navigate('/auth/login'); return }
-    toggleFavorite(isFavorited ?? false)
+    toggleFollow(isFollowing ?? false)
   }
 
   const handleSharePost = () => {
@@ -235,17 +235,22 @@ const ShopDetailPage = () => {
 
           {/* ── Left: Content ─────────────────────────── */}
           <div className="min-w-0">
-            {/* Favorite (mobile only) */}
-            <div className="mb-8 flex items-center lg:hidden">
+            {/* フォロー (mobile only) */}
+            <div className="mb-8 flex items-center justify-between gap-4 lg:hidden">
+              <span className="text-xs text-muted-foreground">
+                フォロワー <span className="font-bold tabular-nums text-foreground">{shop.followerCount}</span>人
+              </span>
               <button
-                onClick={handleToggleFavorite}
+                onClick={handleToggleFollow}
                 className={cn(
-                  'ml-auto flex items-center gap-1.5 text-sm font-bold transition-colors',
-                  isFavorited ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                  'flex h-9 items-center gap-1.5 rounded-lg px-5 text-[13px] font-bold transition-colors',
+                  isFollowing
+                    ? 'border border-border bg-background text-foreground hover:bg-muted'
+                    : 'bg-primary text-primary-foreground hover:opacity-85',
                 )}
               >
-                <Heart className={cn('h-5 w-5 transition-all', isFavorited ? 'fill-primary' : '')} />
-                <span className="tabular-nums text-xs">{shop.favoriteCount}</span>
+                {isFollowing && <Check className="h-3.5 w-3.5" />}
+                {isFollowing ? 'フォロー中' : 'フォローする'}
               </button>
             </div>
 
@@ -301,18 +306,23 @@ const ShopDetailPage = () => {
           {/* ── Right: Info Panel ─────────────────────── */}
           <aside className="lg:sticky lg:top-[calc(56px+24px)] lg:self-start">
             <div className="border border-border">
-              {/* Favorite (desktop) */}
-              <div className="hidden border-b border-border px-5 py-4 lg:flex items-center justify-end">
+              {/* フォロー (desktop) */}
+              <div className="hidden border-b border-border px-5 py-4 lg:flex items-center justify-between gap-3">
+                <span className="text-xs text-muted-foreground">
+                  フォロワー <span className="font-bold tabular-nums text-foreground">{shop.followerCount}</span>人
+                </span>
                 <button
-                  onClick={handleToggleFavorite}
+                  onClick={handleToggleFollow}
                   className={cn(
-                    'flex items-center gap-1.5 text-xs font-bold transition-colors',
-                    isFavorited ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                    'flex h-8 items-center gap-1.5 rounded-lg px-4 text-xs font-bold transition-colors',
+                    isFollowing
+                      ? 'border border-border bg-background text-foreground hover:bg-muted'
+                      : 'bg-primary text-primary-foreground hover:opacity-85',
                   )}
-                  title={isFavorited ? 'お気に入り解除' : 'お気に入り追加'}
+                  title={isFollowing ? 'フォローを解除' : 'この店舗をフォロー'}
                 >
-                  <Heart className={cn('h-4 w-4 transition-all', isFavorited ? 'fill-primary' : '')} />
-                  <span className="tabular-nums">{shop.favoriteCount}</span>
+                  {isFollowing && <Check className="h-3.5 w-3.5" />}
+                  {isFollowing ? 'フォロー中' : 'フォローする'}
                 </button>
               </div>
 

@@ -1,4 +1,4 @@
-import { Heart, FileCheck2, Store, Mail, Newspaper, PartyPopper, Sparkles, MessageCircle } from 'lucide-react'
+import { Heart, FileCheck2, Store, Mail, Newspaper, PartyPopper, Sparkles, MessageCircle, Megaphone } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { NotificationType } from '@/types'
 
@@ -57,5 +57,11 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> =
     iconClass: 'text-sky-600',
     bgClass: 'bg-sky-50',
     label: 'コメント',
+  },
+  followed_shop_announcement: {
+    icon: Megaphone,
+    iconClass: 'text-amber-600',
+    bgClass: 'bg-amber-50',
+    label: 'フォロー中の店舗',
   },
 }

@@ -355,8 +355,8 @@ const OwnerShopAnalyticsPage = () => {
                 />
                 <KpiCard
                   icon={<Heart className="h-3.5 w-3.5" />}
-                  label="お気に入り"
-                  value={analytics.favorites}
+                  label="フォロワー"
+                  value={analytics.follows}
                 />
               </div>
 

@@ -119,7 +119,7 @@ export const useListingRequests = (days: DateRange, options: QueryOptions = {}) 
 
 export interface EngagementData {
   chartData: ChartPoint[]
-  totals: { favorites: number; wishes: number }
+  totals: { follows: number; wishes: number }
 }
 
 export const useEngagement = (days: DateRange, options: QueryOptions = {}) =>
@@ -127,9 +127,9 @@ export const useEngagement = (days: DateRange, options: QueryOptions = {}) =>
     queryKey: ['analytics-engagement', days],
     enabled: options.enabled ?? true,
     queryFn: async (): Promise<EngagementData> => {
-      const [favoritesRes, wishesRes] = await Promise.all([
+      const [followsRes, wishesRes] = await Promise.all([
         supabase
-          .from('favorites')
+          .from('shop_follows')
           .select('created_at')
           .gte('created_at', startDateISO(days)) as unknown as Promise<{
             data: { created_at: string }[] | null
@@ -143,16 +143,16 @@ export const useEngagement = (days: DateRange, options: QueryOptions = {}) =>
             error: { message: string } | null
           }>,
       ])
-      if (favoritesRes.error) throw new Error(favoritesRes.error.message)
+      if (followsRes.error) throw new Error(followsRes.error.message)
       if (wishesRes.error) throw new Error(wishesRes.error.message)
 
       const series    = generateDateSeries(days)
-      const favorites = groupByDay(favoritesRes.data ?? [])
+      const follows = groupByDay(followsRes.data ?? [])
       const wishes    = groupByDay(wishesRes.data ?? [])
       return {
-        chartData: toChartData(series, { favorites, wishes }),
+        chartData: toChartData(series, { follows, wishes }),
         totals: {
-          favorites: sumValues(favorites),
+          follows: sumValues(follows),
           wishes:    sumValues(wishes),
         },
       }

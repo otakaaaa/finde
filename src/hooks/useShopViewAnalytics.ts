@@ -15,7 +15,7 @@ export interface AnalyticsRpcResult {
   prev_totals: TotalsRpc | null
   by_source: { source: string; count: number }[] | null
   actions: { type: string; count: number }[] | null
-  favorites: number | null
+  follows: number | null
   top_items: { itemId: string; name: string; count: number }[] | null
   by_hour: { hour: number; count: number }[] | null
   by_weekday: { weekday: number; count: number }[] | null
@@ -29,7 +29,7 @@ export const mapResult = (data: AnalyticsRpcResult): ShopViewAnalytics => ({
   prevTotals: data.prev_totals ?? EMPTY_TOTALS,
   bySource: data.by_source ?? [],
   actions: data.actions ?? [],
-  favorites: data.favorites ?? 0,
+  follows: data.follows ?? 0,
   topItems: data.top_items ?? [],
   byHour: data.by_hour ?? [],
   byWeekday: data.by_weekday ?? [],

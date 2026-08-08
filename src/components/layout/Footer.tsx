@@ -18,7 +18,7 @@ const NAV_COLUMNS = [
       { to: '/news', text: 'お知らせ' },
       { to: '/listing-request', text: '店舗掲載申請' },
       { to: '/mypage', text: 'マイページ' },
-      { to: '/mypage/favorites', text: 'お気に入り' },
+      { to: '/mypage/follows', text: 'フォロー中のお店' },
       { to: '/faq', text: 'よくあるご質問' },
       { to: '/contact', text: 'お問い合わせ' },
     ],

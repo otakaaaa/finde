@@ -340,15 +340,15 @@ const AdminAnalyticsPage = () => {
           {/* Row 3: Engagement full-width */}
           <ChartCard
             title="Engagement"
-            description="お気に入り・ウィッシュの推移 — リテンションの代理指標"
+            description="フォロー・ウィッシュの推移 — リテンションの代理指標"
             data={engage?.chartData}
             isLoading={isLoading}
             series={[
-              { key: 'favorites', color: '#f43f5e', label: 'お気に入り' },
+              { key: 'follows', color: '#f43f5e', label: 'フォロー' },
               { key: 'wishes',    color: '#8b5cf6', label: 'ウィッシュ' },
             ]}
             badges={[
-              { label: 'お気に入り',   value: engage?.totals.favorites ?? 0, color: '#f43f5e' },
+              { label: 'フォロー',     value: engage?.totals.follows ?? 0, color: '#f43f5e' },
               { label: 'ウィッシュ',   value: engage?.totals.wishes    ?? 0, color: '#8b5cf6' },
             ]}
           />

@@ -39,7 +39,9 @@ export default [
     route('share/:id/edit', 'pages/share/SharePostEditPage.tsx'),
     route('mypage', 'pages/mypage/MyPage.tsx'),
     route('mypage/security', 'pages/mypage/SecurityPage.tsx'),
-    route('mypage/favorites', 'pages/mypage/FavoritesPage.tsx'),
+    route('mypage/follows', 'pages/mypage/FollowedShopsPage.tsx'),
+    // 旧URL互換（お気に入り → フォローへの改名）
+    route('mypage/favorites', 'routes/mypage-favorites-redirect.tsx'),
     route('mypage/contacts', 'pages/mypage/ContactsPage.tsx'),
     route('mypage/notifications', 'pages/mypage/NotificationsPage.tsx'),
     route('mypage/profile/edit', 'pages/mypage/ProfileEditPage.tsx'),

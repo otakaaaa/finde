@@ -35,6 +35,8 @@ const EMPTY_FORM: ShopAnnouncementFormValues = {
   body: '',
   linkUrl: '',
   isActive: true,
+  notifyInApp: true,
+  notifyEmail: false,
   startsAt: '',
   endsAt: '',
 }
@@ -122,6 +124,30 @@ const AnnouncementFields = ({ values, onChange }: AnnouncementFieldsProps) => (
       />
       公開する
     </label>
+
+    {/* フォロワーへの通知チャネル（公開時のみ送信される） */}
+    <div className="space-y-1.5">
+      <p className="text-[11px] font-bold text-muted-foreground">フォロワーへの通知</p>
+      <label className="flex items-center gap-2 text-xs font-medium">
+        <input
+          type="checkbox"
+          checked={values.notifyInApp}
+          onChange={(e) => onChange({ ...values, notifyInApp: e.target.checked })}
+          className="h-4 w-4 accent-primary"
+        />
+        アプリ内通知を送る
+      </label>
+      <label className="flex items-center gap-2 text-xs font-medium">
+        <input
+          type="checkbox"
+          checked={values.notifyEmail}
+          onChange={(e) => onChange({ ...values, notifyEmail: e.target.checked })}
+          className="h-4 w-4 accent-primary"
+        />
+        メール通知を送る
+        <span className="text-[10px] text-muted-foreground/60">（同一店舗からのメールは1日1通まで）</span>
+      </label>
+    </div>
   </div>
 )
 
@@ -163,6 +189,8 @@ const AnnouncementRow = ({ announcement, shopId }: AnnouncementRowProps) => {
     body: announcement.body,
     linkUrl: announcement.linkUrl ?? '',
     isActive: announcement.isActive,
+    notifyInApp: announcement.notifyInApp,
+    notifyEmail: announcement.notifyEmail,
     startsAt: toLocalDatetimeInput(announcement.startsAt),
     endsAt: toLocalDatetimeInput(announcement.endsAt),
   })
